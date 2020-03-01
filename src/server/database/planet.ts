@@ -1,0 +1,398 @@
+import { Planet, PlanetMap, Traits } from 'common/Planet';
+
+export const Planets: readonly Planet[] = [
+    //
+    // Home planets
+    //
+    {
+        name: 'Nestphar',
+        home: 'The Arborec',
+        resources: 3,
+        influence: 2,
+    },
+    {
+        name: 'Creuss',
+        home: 'The Ghosts of Creuss',
+        resources: 4,
+        influence: 2,
+    },
+    {
+        name: 'Hercant',
+        home: 'The Emirates of Hacan',
+        resources: 1,
+        influence: 1,
+    },
+    {
+        name: 'Arretze',
+        home: 'The Emirates of Hacan',
+        resources: 2,
+        influence: 0,
+    },
+    {
+        name: 'Kamdorn',
+        home: 'The Emirates of Hacan',
+        resources: 0,
+        influence: 1,
+    },
+    {
+        name: 'Jol',
+        home: 'The Universities of Jol-Nar',
+        resources: 1,
+        influence: 2,
+    },
+    {
+        name: 'Nar',
+        home: 'The Universities of Jol-Nar',
+        resources: 2,
+        influence: 3,
+    },
+    {
+        name: '[0.0.0]',
+        home: 'The L1Z1X Mindnet',
+        resources: 5,
+        influence: 0,
+    },
+    {
+        name: 'Arc Prime',
+        home: 'The Barony of Letnev',
+        resources: 4,
+        influence: 0,
+    },
+    {
+        name: 'Wren Terra',
+        home: 'The Barony of Letnev',
+        resources: 2,
+        influence: 1,
+    },
+    {
+        name: 'Moll Primus',
+        home: 'The Mentak Coalition',
+        resources: 4,
+        influence: 1,
+    },
+    {
+        name: 'Muaat',
+        home: 'The Embers of Muaat',
+        resources: 4,
+        influence: 1,
+    },
+    {
+        name: 'Druaa',
+        home: 'The Naalu Collective',
+        resources: 3,
+        influence: 1,
+    },
+    {
+        name: 'Maaluuk',
+        home: 'The Naalu Collective',
+        resources: 0,
+        influence: 2,
+    },
+    {
+        name: 'Mordai II',
+        home: 'The Nekro Virus',
+        resources: 4,
+        influence: 0,
+    },
+    {
+        name: 'Lisis II',
+        home: 'The Clan of Saar',
+        resources: 1,
+        influence: 0,
+    },
+    {
+        name: 'Ragh',
+        home: 'The Clan of Saar',
+        resources: 2,
+        influence: 1,
+    },
+    {
+        name: "Tren'Lak",
+        home: "The Sardakk N'orr",
+        resources: 1,
+        influence: 0,
+    },
+    {
+        name: 'Quinarra',
+        home: "The Sardakk N'orr",
+        resources: 3,
+        influence: 1,
+    },
+    {
+        name: 'Jord',
+        home: 'The Federation of Sol',
+        resources: 4,
+        influence: 2,
+    },
+    {
+        name: 'Winnu',
+        home: 'The Winnu',
+        resources: 3,
+        influence: 4,
+    },
+    {
+        name: 'Archon Ren',
+        home: 'The Xxcha Kingdom',
+        resources: 2,
+        influence: 3,
+    },
+    {
+        name: 'Archon Tau',
+        home: 'The Xxcha Kingdom',
+        resources: 1,
+        influence: 1,
+    },
+    {
+        name: 'Darien',
+        home: 'The Yin Brotherhood',
+        resources: 4,
+        influence: 4,
+    },
+    {
+        name: 'Retillion',
+        home: 'The Yssaril Tribes',
+        resources: 2,
+        influence: 3,
+    },
+    {
+        name: 'Shalloq',
+        home: 'The Yssaril Tribes',
+        resources: 1,
+        influence: 2,
+    },
+
+    //
+    // Other planets
+    //
+    {
+        name: 'Mecatol Rex',
+        resources: 1,
+        influence: 6,
+    },
+    {
+        name: 'Abyz',
+        trait: Traits.HAZARDOUS,
+        resources: 3,
+        influence: 0,
+    },
+    {
+        name: 'Fria',
+        trait: Traits.HAZARDOUS,
+        resources: 2,
+        influence: 0,
+    },
+    {
+        name: 'Arinam',
+        trait: Traits.INDUSTRIAL,
+        resources: 1,
+        influence: 2,
+    },
+    {
+        name: 'Meer',
+        trait: Traits.HAZARDOUS,
+        resources: 0,
+        influence: 4,
+        warfare: 1,
+    },
+    {
+        name: 'Arnor',
+        trait: Traits.INDUSTRIAL,
+        resources: 1,
+        influence: 2,
+    },
+    {
+        name: 'Lor',
+        trait: Traits.INDUSTRIAL,
+        resources: 2,
+        influence: 1,
+    },
+    {
+        name: 'Bereg',
+        trait: Traits.HAZARDOUS,
+        resources: 3,
+        influence: 1,
+    },
+    {
+        name: 'Lirta IV',
+        trait: Traits.HAZARDOUS,
+        resources: 2,
+        influence: 3,
+    },
+    {
+        name: 'Centauri',
+        trait: Traits.CULTURAL,
+        resources: 1,
+        influence: 3,
+    },
+    {
+        name: 'Gral',
+        trait: Traits.INDUSTRIAL,
+        resources: 1,
+        influence: 1,
+        propulsion: 1,
+    },
+    {
+        name: 'Coorneeq',
+        trait: Traits.CULTURAL,
+        resources: 1,
+        influence: 2,
+    },
+    {
+        name: 'Rescuion',
+        trait: Traits.CULTURAL,
+        resources: 2,
+        influence: 0,
+    },
+    {
+        name: 'Dal Bootha',
+        trait: Traits.CULTURAL,
+        resources: 0,
+        influence: 2,
+    },
+    {
+        name: 'Xxehan',
+        trait: Traits.CULTURAL,
+        resources: 1,
+        influence: 1,
+    },
+    {
+        name: 'Lazar',
+        trait: Traits.INDUSTRIAL,
+        resources: 1,
+        influence: 0,
+        cybernetic: 1,
+    },
+    {
+        name: 'Sakulag',
+        trait: Traits.HAZARDOUS,
+        resources: 2,
+        influence: 1,
+    },
+    {
+        name: 'Lodor',
+        trait: Traits.CULTURAL,
+        resources: 3,
+        influence: 1,
+    },
+    {
+        name: 'Mehar Xull',
+        trait: Traits.HAZARDOUS,
+        resources: 1,
+        influence: 3,
+        warfare: 1,
+    },
+    {
+        name: 'Mellon',
+        trait: Traits.CULTURAL,
+        resources: 0,
+        influence: 2,
+    },
+    {
+        name: 'Zhobat',
+        trait: Traits.HAZARDOUS,
+        resources: 3,
+        influence: 1,
+    },
+    {
+        name: 'New Albion',
+        trait: Traits.INDUSTRIAL,
+        resources: 1,
+        influence: 1,
+        biotic: 1,
+    },
+    {
+        name: 'Starpoint',
+        trait: Traits.HAZARDOUS,
+        resources: 3,
+        influence: 1,
+    },
+    {
+        name: 'Quann',
+        trait: Traits.CULTURAL,
+        resources: 2,
+        influence: 1,
+    },
+    {
+        name: "Qucen'n",
+        trait: Traits.INDUSTRIAL,
+        resources: 1,
+        influence: 2,
+    },
+    {
+        name: 'Rarron',
+        trait: Traits.CULTURAL,
+        resources: 0,
+        influence: 3,
+    },
+    {
+        name: 'Saudor',
+        trait: Traits.INDUSTRIAL,
+        resources: 2,
+        influence: 2,
+    },
+    {
+        name: "Tar'Mann",
+        trait: Traits.INDUSTRIAL,
+        resources: 1,
+        influence: 1,
+        biotic: 1,
+    },
+    {
+        name: "Tequ'ran",
+        trait: Traits.HAZARDOUS,
+        resources: 2,
+        influence: 0,
+    },
+    {
+        name: 'Torkan',
+        trait: Traits.CULTURAL,
+        resources: 0,
+        influence: 3,
+    },
+    {
+        name: 'Thibah',
+        trait: Traits.INDUSTRIAL,
+        resources: 1,
+        influence: 1,
+        propulsion: 1,
+    },
+    {
+        name: 'Vefut II',
+        trait: Traits.HAZARDOUS,
+        resources: 2,
+        influence: 2,
+    },
+    {
+        name: 'Wellon',
+        trait: Traits.INDUSTRIAL,
+        resources: 1,
+        influence: 2,
+        cybernetic: 1,
+    },
+].sort((aa, bb) => {
+    // Sort alphabetically
+    const a = aa.name.toLowerCase();
+    const b = bb.name.toLowerCase();
+    if (a === b) {
+        return 0;
+    }
+
+    return a < b ? -1 : 1;
+});
+
+export const PlanetsMap: Readonly<PlanetMap> = Planets.reduce((m: PlanetMap, p: Planet): PlanetMap => {
+    m[p.name] = p;
+    return m;
+}, {});
+
+export function listPlanets(): Readonly<PlanetMap> {
+    return PlanetsMap;
+}
+
+export function getFactionPlanets(name: string) {
+    if (!name) {
+        return [];
+    }
+
+    return Planets.filter(p => p.home === name);
+}
