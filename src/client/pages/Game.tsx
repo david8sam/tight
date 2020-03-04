@@ -7,41 +7,37 @@ import {
     Button,
     CircularProgress,
     Divider,
-    ExpansionPanel as MuiExpansionPanel,
-    ExpansionPanelSummary,
     ExpansionPanelDetails,
     Grid,
-    Paper,
+    IconButton,
     Stepper,
     Step,
     StepLabel,
     Theme,
     Toolbar,
     Typography,
+    Tooltip,
 } from '@material-ui/core';
-import { makeStyles, withStyles } from '@material-ui/styles';
+import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
+import NavigateNextIcon from '@material-ui/icons/NavigateNext';
+import { makeStyles } from '@material-ui/styles';
 
-import { GameStatus, Phase } from 'common/Game';
+import { GameStatus, Phase, StrategyCardIndex } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
+import { ExpansionPanel, ExpansionPanelSummary } from '../components/ExpansionPanel';
 import PlayerSetup from '../components/PlayerSetup';
-import StrategyPhase from '../components/StrategyPhase';
-import useAccountInfo from '../hooks/useAccountInfo';
 
-const ExpansionPanel = withStyles({
-    root: {
-        '&$expanded': {
-            margin: 0,
-        },
-    },
-    expanded: {},
-})(MuiExpansionPanel);
+import StrategyPhase from '../components/StrategyPhase';
+import ActionPhase from '../components/ActionPhase';
+
+import useAccountInfo from '../hooks/useAccountInfo';
 
 const PHASE_KEYS = Object.keys(Phase);
 const STEPS = PHASE_KEYS.slice(PHASE_KEYS.length / 2);
 
-const PHASE_COMPONENTS: React.ComponentType[] = [StrategyPhase];
+const PHASE_COMPONENTS: React.ComponentType[] = [StrategyPhase, ActionPhase];
 
 function getPhaseContents(phase: number) {
     const Component = PHASE_COMPONENTS[phase];
@@ -53,6 +49,15 @@ function getPhaseContents(phase: number) {
 }
 
 const useStyles = makeStyles((theme: Theme) => ({
+    phaseActionDetails: {
+        padding: 0,
+    },
+    phaseStepPanel: {
+        width: '100%',
+    },
+    phaseActions: {
+        width: 'auto',
+    },
     stepper: {
         width: '100%',
         padding: theme.spacing(1),
@@ -76,11 +81,14 @@ function Game(props: object) {
         started: true,
         round: 1,
         phase: Phase.STRATEGY,
+        turn: StrategyCardIndex.NONE,
+        passed: [],
         speaker: game ? game.creator : playerId || '',
         pickOrder: [game ? game.creator : playerId || ''],
         pickTurn: 0,
     });
     const [pending, setPending] = useState(false);
+    const [actionExpanded, setActionExpaned] = useState(false);
 
     useEffect(() => {
         const { status } = game || {};
@@ -138,46 +146,68 @@ function Game(props: object) {
         setPending(true);
     };
 
-    const playerTurn = phase === Phase.STRATEGY ? pickOrder[pickTurn] : turn;
+    let playerTurn = null;
+    if (phase === Phase.STRATEGY) {
+        playerTurn = pickOrder[pickTurn];
+    } else {
+        const player = Object.values(game.players).find(p => p.strategyCard === turn);
+        playerTurn = player ? player.name : null;
+    }
 
     return (
         <Grid container direction="column">
-            <Toolbar component={Paper}>
-                <Grid container justify="space-between" alignItems="center">
-                    <Typography>{`Round: ${round}`}</Typography>
-                    <Typography>{`Turn: ${playerTurn}`}</Typography>
-                </Grid>
-            </Toolbar>
-            <ExpansionPanel>
-                <ExpansionPanelSummary>
+            <ExpansionPanel expanded={actionExpanded} onChange={() => setActionExpaned(expanded => !expanded)}>
+                <ExpansionPanelSummary disableMargin>
                     <Grid container justify="space-between" alignItems="center">
-                        <Button
-                            disabled={pending || !canBack}
-                            color="primary"
-                            variant="contained"
-                            onClick={e => onPhaseClick(e, false)}
-                        >
-                            {pending ? <CircularProgress size="24" /> : `< ${Phase[prevPhase]}`}
-                        </Button>
-                        <Typography>{`${Phase[phase]}`}</Typography>
-                        <Button
-                            disabled={pending || !canNext}
-                            color="primary"
-                            variant="contained"
-                            onClick={e => onPhaseClick(e, true)}
-                        >
-                            {pending ? <CircularProgress size="24" /> : `${Phase[nextPhase]} >`}
-                        </Button>
+                        <Typography>{`Turn: ${playerTurn || ''}`}</Typography>
+                        <Grid container justify="center" alignItems="center" classes={{ root: classes.phaseActions }}>
+                            <Tooltip title={Phase[prevPhase]}>
+                                <span>
+                                    <IconButton
+                                        disabled={pending || !canBack || phase === Phase.STRATEGY}
+                                        onClick={e => onPhaseClick(e, false)}
+                                    >
+                                        <NavigateBeforeIcon />
+                                    </IconButton>
+                                </span>
+                            </Tooltip>
+                            {pending ? <CircularProgress size="24" /> : <Typography>{`${Phase[phase]}`}</Typography>}
+                            <Tooltip title={Phase[nextPhase]}>
+                                <span>
+                                    <IconButton
+                                        disabled={pending || !canNext || phase === Phase.AGENDA}
+                                        onClick={e => onPhaseClick(e, true)}
+                                    >
+                                        <NavigateNextIcon />
+                                    </IconButton>
+                                </span>
+                            </Tooltip>
+                        </Grid>
+                        <Typography>{`Round: ${round}`}</Typography>
                     </Grid>
                 </ExpansionPanelSummary>
-                <ExpansionPanelDetails>
-                    <Stepper classes={{ root: classes.stepper }} activeStep={phase} alternativeLabel>
-                        {STEPS.map(label => (
-                            <Step classes={{ alternativeLabel: classes.stepLabelAlternativeLabel }} key={label}>
-                                <StepLabel>{label}</StepLabel>
-                            </Step>
-                        ))}
-                    </Stepper>
+                <ExpansionPanelDetails classes={{ root: classes.phaseActionDetails }}>
+                    <Grid container direction="column">
+                        <Toolbar>
+                            <Grid container justify="center" alignItems="center">
+                                <Button
+                                    disabled={pending || !canNext || phase !== Phase.AGENDA}
+                                    color="primary"
+                                    variant="contained"
+                                    onClick={e => onPhaseClick(e, true)}
+                                >
+                                    {pending ? <CircularProgress size="24" /> : 'Start Next Round'}
+                                </Button>
+                            </Grid>
+                        </Toolbar>
+                        <Stepper classes={{ root: classes.stepper }} activeStep={phase} alternativeLabel>
+                            {STEPS.map(label => (
+                                <Step classes={{ alternativeLabel: classes.stepLabelAlternativeLabel }} key={label}>
+                                    <StepLabel>{label}</StepLabel>
+                                </Step>
+                            ))}
+                        </Stepper>
+                    </Grid>
                 </ExpansionPanelDetails>
             </ExpansionPanel>
             <Divider classes={{ root: classes.divider }} />

@@ -64,7 +64,7 @@ export const initialState = {
  * @returns The updated state
  */
 function updateState(state: State, payload: ChangeData) {
-    let newState = { ...state, initialized: true };
+    let newState = { ...state };
 
     // Update app level states
     const { games, planets, accounts } = payload;
@@ -130,7 +130,7 @@ export default function reducer(state: State, action: Action): State {
             return { ...state, loginStatus: payload.status, accountId: payload.accountId };
 
         case ActionType.initializeState:
-            return { ...state, ...payload };
+            return { ...state, ...payload, initialized: true };
         case ActionType.updateState:
             return updateState(state, payload);
 
@@ -155,7 +155,7 @@ export default function reducer(state: State, action: Action): State {
 
         // Account actions
         case ActionType.setAccounts:
-            return { ...state, planets: { ...state.accounts, ...payload } };
+            return { ...state, accounts: { ...state.accounts, ...payload } };
 
         default:
             return state;

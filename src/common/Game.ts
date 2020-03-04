@@ -53,18 +53,18 @@ export enum StrategyCardIndex {
     WARFARE,
     TECHNOLOGY,
     IMPERIAL,
+    END,
 }
 
 export interface GameStatus {
     started: boolean;
-
     round: number;
     phase: Phase;
-    turn?: StrategyCardIndex;
-
+    turn: StrategyCardIndex;
     speaker: string;
     pickOrder: string[]; // starting with speaker, the order of players for picking strategy cards
     pickTurn: number;
+    passed: string[]; // list of players that pased on the current round
 }
 
 export interface GamePlanet {
@@ -88,8 +88,6 @@ export interface GamePlayer {
     strategyCard: StrategyCardIndex;
     strategyCardTaken: boolean;
     stragetyCardUsed: boolean;
-
-    passed: boolean;
 
     planets: string[];
     victoryPoints: number;

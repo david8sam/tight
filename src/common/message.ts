@@ -58,11 +58,14 @@ export enum MessageType {
     PLAYER_SET_FACTION = '/player/setFaction',
 
     // Strategy Card actions
-    // data: { gameId: string, playerId: string, strategyCard: number }
+    // data: { gameId: string, round: number, playerId: string, strategyCard: number }
     PLAYER_TAKE_STRATEGY_CARD = '/player/takeStrategyCard',
     PLAYER_RETURN_STRATEGY_CARD = '/player/returnStrategyCard',
     PLAYER_USE_STRATEGY_CARD = '/player/useStrategyCard',
     PLAYER_RESET_STRATEGY_CARDS = '/player/resetStrategyCards',
+
+    PLAYER_PASS_TURN = '/player/passTurn',
+    PLAYER_SET_VICTORY_POINTS = '/player/setVictoryPoints',
 
     // Planet actions
     // data: { gameId, playerId, planetId }

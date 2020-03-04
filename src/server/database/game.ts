@@ -68,6 +68,9 @@ export function createGame({ creator, version = Version.TI4, name }: CreateGameP
             started: false,
             round: 1,
             phase: Phase.STRATEGY,
+            turn: StrategyCardIndex.NONE,
+            passed: [],
+
             speaker: creator,
             pickOrder: [creator],
             pickTurn: 0,
@@ -118,7 +121,6 @@ export function addPlayer(gameId: string, playerId: string | string[]) {
                 strategyCard: StrategyCardIndex.NONE,
                 strategyCardTaken: false,
                 stragetyCardUsed: false,
-                passed: false,
                 planets: [],
                 victoryPoints: 0,
             };

@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent } from 'react';
 import { MenuItem, Select, Table, TableHead, TableRow, TableCell, TableBody } from '@material-ui/core';
 
 import { useAppContext } from '../Context';
@@ -8,8 +8,6 @@ import { MessageType } from 'common/message';
 const DEFAULT_PLAYER = 'PLAYER';
 
 function PlayerOrder(props: object) {
-    const [orderMap, setOrderMap] = useState<{ [player: string]: number }>({});
-
     const { sendData } = useAppContext();
     const { game, gameId } = useAccountInfo();
     if (!game) {

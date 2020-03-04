@@ -12,6 +12,7 @@ import * as StrategyDB from './database/strategy';
 
 import { dirty, isDirty, setDirty, getDirtyGameData } from './dirty';
 import handleMessage from './handleMessage';
+import log from './log';
 import { WebSocket, WebSocketServer, sendData, broadcastChangeData } from './WebSocket';
 
 interface OnConnectionParam {
@@ -60,7 +61,7 @@ export default function initialize(app: express.Application) {
         wss.clients.forEach((websocket: ws) => {
             const ws: WebSocket = websocket as WebSocket;
             if (!ws.isAlive) {
-                console.log('Terminating websocket');
+                log(`Terminating websocket (${ws.accountId})`);
                 return ws.terminate();
             }
 
@@ -92,7 +93,7 @@ export default function initialize(app: express.Application) {
         setDirty(false);
 
         broadcastChangeData({ wss, type: MessageType.STATE_CHANGE, data });
-    }, 1000);
+    }, 300);
 
     server.listen(8080, () => {
         console.log(`WebSocket server started on port: 8080`);

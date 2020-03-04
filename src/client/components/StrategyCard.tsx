@@ -3,21 +3,29 @@ import React from 'react';
 import {
     Button,
     ButtonProps,
-    ExpansionPanel,
-    ExpansionPanelSummary,
+    ExpansionPanelDetails,
+    ExpansionPanelDetailsProps,
     Grid,
     Typography,
-    ExpansionPanelDetails,
-    TextField,
     Theme,
 } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { makeStyles } from '@material-ui/styles';
 
 import { StrategyCard } from 'common/Game';
+import {
+    ExpansionPanel,
+    ExpansionPanelProps,
+    ExpansionPanelSummary,
+    ExpansionPanelSummaryProps,
+} from '../components/ExpansionPanel';
+import StrategyCardDetails from './StrategyCardDetails';
 
 export interface StrategyCardProps {
     card: StrategyCard;
+    PanelProps?: ExpansionPanelProps;
+    SummaryProps?: ExpansionPanelSummaryProps;
+    DetailsProps?: ExpansionPanelDetailsProps;
     hideButton?: boolean;
     ButtonProps?: ButtonProps;
     buttonLabel?: React.ReactNode;
@@ -27,17 +35,11 @@ const useStyles = makeStyles((theme: Theme) => ({
     button: {
         marginRight: theme.spacing(1),
     },
-    primary: {
-        marginBottom: theme.spacing(2),
-    },
-    disabledText: {
-        color: theme.palette.text.primary,
-    },
 }));
 
 function StrategyCard(props: StrategyCardProps) {
     const classes = useStyles(props);
-    const { card, hideButton, ButtonProps, buttonLabel } = props;
+    const { card, hideButton, ButtonProps, buttonLabel, PanelProps, SummaryProps, DetailsProps } = props;
     const { name, initiative, primary, secondary } = card;
 
     let button = null;
@@ -50,35 +52,15 @@ function StrategyCard(props: StrategyCardProps) {
     }
 
     return (
-        <ExpansionPanel key={name}>
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+        <ExpansionPanel key={name} {...PanelProps}>
+            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} {...SummaryProps}>
                 <Grid container direction="row" alignItems="center">
                     {button}
                     <Typography>{`${initiative}. ${name.toUpperCase()}`}</Typography>
                 </Grid>
             </ExpansionPanelSummary>
-            <ExpansionPanelDetails>
-                <Grid container direction="column">
-                    <TextField
-                        classes={{ root: classes.primary }}
-                        InputProps={{ classes: { disabled: classes.disabledText } }}
-                        disabled
-                        fullWidth
-                        multiline
-                        variant="outlined"
-                        label="Primary"
-                        value={`\u2022 ${primary.join('\n\u2022 ')}`}
-                    />
-                    <TextField
-                        InputProps={{ classes: { disabled: classes.disabledText } }}
-                        disabled
-                        fullWidth
-                        multiline
-                        variant="outlined"
-                        label="Secondary"
-                        value={`\u2022 ${secondary.join('\n\u2022 ')}`}
-                    />
-                </Grid>
+            <ExpansionPanelDetails {...DetailsProps}>
+                <StrategyCardDetails primary={primary} secondary={secondary} />
             </ExpansionPanelDetails>
         </ExpansionPanel>
     );

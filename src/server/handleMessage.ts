@@ -1,4 +1,5 @@
 import isNil from 'lodash/isNil';
+import uniq from 'lodash/uniq';
 
 import { ErrorType } from 'common/error';
 import { StrategyCardIndex } from 'common/Game';
@@ -181,7 +182,7 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
         }
 
         case MessageType.GAME_STATUS_SET: {
-            const { round, phase, turn, speaker, pickOrder, pickTurn } = data;
+            const { round, phase, turn, passed, speaker, pickOrder, pickTurn } = data;
             const { status } = game;
 
             if (round > status.round) {
@@ -196,7 +197,7 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
 
             status.round = round || status.round;
             status.phase = !isNil(phase) ? phase : status.phase;
-            status.turn = turn || status.turn;
+            status.turn = !isNil(turn) ? turn : status.turn;
             status.speaker = speaker || status.speaker;
             status.pickOrder = pickOrder || status.pickOrder;
             status.pickTurn = !isNil(pickTurn) ? pickTurn : status.pickTurn;
@@ -240,7 +241,8 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
 
         // Strategy Card actions
         case MessageType.PLAYER_TAKE_STRATEGY_CARD: {
-            const owner = Object.values(players).find(p => p.strategyCard === data.strategyCard);
+            const playersArray = Object.values(players);
+            const owner = playersArray.find(p => p.strategyCard === data.strategyCard);
             if (owner && owner !== playerId) {
                 return;
             }
@@ -254,6 +256,10 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
                 status.pickTurn = pickTurn === pickOrder.length - 1 ? 0 : pickTurn + 1;
             }
 
+            if (status.turn === StrategyCardIndex.NONE || data.strategyCard < status.turn) {
+                status.turn = data.strategyCard;
+            }
+
             markGameDirty(gameId, { players: true, status: true });
             break;
         }
@@ -263,10 +269,42 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             markGameDirty(gameId, { players: true });
             break;
 
-        case MessageType.PLAYER_RETURN_STRATEGY_CARD:
+        case MessageType.PLAYER_RETURN_STRATEGY_CARD: {
+            // Reset card data for player
+            const returnedCard = player.strategyCard;
             player.strategyCard = StrategyCardIndex.NONE;
             player.stragetyCardUsed = false;
             markGameDirty(gameId, { players: true });
+
+            // If player is returning card that is the first turn, clear out the game turn and set to next player.
+            if (game.status.turn === returnedCard) {
+                const stratCards = Object.values(players)
+                    .filter(p => p.strategyCard > StrategyCardIndex.NONE)
+                    .map(p => p.strategyCard)
+                    .sort();
+                game.status.turn = stratCards[0];
+
+                markGameDirty(gameId, { status: true });
+            }
+
+            break;
+        }
+
+        case MessageType.PLAYER_PASS_TURN:
+            if (data.unpass) {
+                game.status.passed = game.status.passed.filter(p => p !== playerId);
+            } else {
+                game.status.passed = uniq([...game.status.passed, playerId]).sort();
+            }
+
+            markGameDirty(gameId, { status: true });
+            break;
+
+        case MessageType.PLAYER_SET_VICTORY_POINTS:
+            if (typeof data.victoryPoints === 'number') {
+                player.victoryPoints = data.victoryPoints;
+                markGameDirty(gameId, { players: true });
+            }
             break;
 
         // Planet actions
