@@ -1,11 +1,14 @@
 import React, { MouseEvent, useState } from 'react';
 
-import { Grid } from '@material-ui/core';
+import { ExpansionPanelDetails, Grid, Toolbar, Typography } from '@material-ui/core';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 import { StrategyCard as StrategyCardType, StrategyCardIndex } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
+import AssignStrategyCardTable from '../components/AssignStrategyCardTable';
+import { ExpansionPanel, ExpansionPanelSummary } from '../components/ExpansionPanel';
 import StrategyCard from '../components/StrategyCard';
 import useAccountInfo from '../hooks/useAccountInfo';
 
@@ -17,10 +20,6 @@ function StrategyPhase(props: object) {
     if (!game || !player) {
         return null;
     }
-
-    const { status } = game;
-    const { pickOrder, pickTurn } = status;
-    const picker = pickOrder[pickTurn];
 
     const playersArray = Object.values(game.players);
     const stratCardOwners: string[] = [''];
@@ -55,6 +54,15 @@ function StrategyPhase(props: object) {
 
                 return <StrategyCard key={name} card={card} ButtonProps={ButtonProps} buttonLabel={buttonLabel} />;
             })}
+            <Toolbar />
+            <ExpansionPanel disableMargin>
+                <ExpansionPanelSummary disableMargin expandIcon={<ExpandMoreIcon />}>
+                    <Typography>Re-assign Cards</Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                    <AssignStrategyCardTable />
+                </ExpansionPanelDetails>
+            </ExpansionPanel>
         </Grid>
     );
 }

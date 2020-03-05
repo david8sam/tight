@@ -82,7 +82,6 @@ function Game(props: object) {
         round: 1,
         phase: Phase.STRATEGY,
         turn: StrategyCardIndex.NONE,
-        passed: [],
         speaker: game ? game.creator : playerId || '',
         pickOrder: [game ? game.creator : playerId || ''],
         pickTurn: 0,
@@ -149,6 +148,8 @@ function Game(props: object) {
     let playerTurn = null;
     if (phase === Phase.STRATEGY) {
         playerTurn = pickOrder[pickTurn];
+    } else if (turn === StrategyCardIndex.END) {
+        playerTurn = 'END';
     } else {
         const player = Object.values(game.players).find(p => p.strategyCard === turn);
         playerTurn = player ? player.name : null;
@@ -191,7 +192,7 @@ function Game(props: object) {
                         <Toolbar>
                             <Grid container justify="center" alignItems="center">
                                 <Button
-                                    disabled={pending || !canNext || phase !== Phase.AGENDA}
+                                    disabled={pending || phase !== Phase.AGENDA}
                                     color="primary"
                                     variant="contained"
                                     onClick={e => onPhaseClick(e, true)}

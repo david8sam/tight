@@ -1,11 +1,11 @@
-import React, { MouseEvent, useState } from 'react';
+import React, { MouseEvent } from 'react';
 
 import { Button, Card, CardContent, Grid, Typography, Theme, Toolbar } from '@material-ui/core';
 import { makeStyles, useTheme } from '@material-ui/styles';
 
 import classNames from 'classnames';
 
-import { StrategyCard as StrategyCardType, StrategyCardIndex } from 'common/Game';
+import { GamePlayer, StrategyCardIndex, getPlayerOrder, getNextPlayer } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
@@ -51,69 +51,57 @@ function ActionPhase(props: object) {
     const { state, sendData } = useAppContext();
     const { strategyCards } = state;
 
-    const { game, gameId, player, playerId } = useAccountInfo();
+    const { game, gameId, player } = useAccountInfo();
     if (!game || !player) {
         return null;
     }
 
     const { status } = game;
-    const { turn, passed } = status;
+    const { turn } = status;
+    const playerOrder = getPlayerOrder(game);
 
-    const playersArray = Object.values(game.players);
-    const stratCardOwners: string[] = [''];
-    playersArray.forEach(p => (p.strategyCard ? (stratCardOwners[p.strategyCard] = p.name) : null));
-
-    const onFlipCardClick = (e: MouseEvent<HTMLButtonElement>, strategyCard: StrategyCardIndex) => {
+    const onFlipCardClick = (e: MouseEvent<HTMLButtonElement>, playerId: string, flipped: boolean) => {
         e.stopPropagation();
-
-        // TODO: sendData to flip/unflip card
-    };
-
-    const onNextTurn = (i: StrategyCardIndex, done: boolean) => {
-        let newTurn: StrategyCardIndex = i;
-        if (done) {
-            newTurn += 1;
-            let name = stratCardOwners[newTurn];
-            while (!name && newTurn < StrategyCardIndex.END) {
-                newTurn += 1;
-                name = stratCardOwners[newTurn];
-            }
-
-            sendData({ type: MessageType.GAME_STATUS_SET, data: { gameId, turn: newTurn } });
-        } else {
-            newTurn = i;
-        }
-
-        sendData({ type: MessageType.GAME_STATUS_SET, data: { gameId, turn: newTurn } });
+        sendData({ type: MessageType.PLAYER_FLIP_STRATEGY_CARD, data: { gameId, playerId, flipped } });
     };
 
     const onPassClick = (playerId: string, passed: boolean) => {
-        sendData({ type: MessageType.PLAYER_PASS_TURN, data: { gameId, playerId, unpass: !passed } });
+        sendData({ type: MessageType.PLAYER_PASS_TURN, data: { gameId, playerId, passed } });
+    };
+
+    const onNextTurn = (currentPlayer: GamePlayer, done: boolean) => {
+        if (done) {
+            const nextPlayer = getNextPlayer(game, currentPlayer.id, playerOrder);
+            sendData({
+                type: MessageType.GAME_STATUS_SET,
+                data: { gameId, turn: nextPlayer ? nextPlayer.strategyCard : StrategyCardIndex.END },
+            });
+        } else {
+            sendData({
+                type: MessageType.GAME_STATUS_SET,
+                data: { gameId, turn: currentPlayer.strategyCard },
+            });
+        }
     };
 
     return (
         <Grid container direction="column">
-            {stratCardOwners.map((owner: string, i: StrategyCardIndex) => {
-                if (!owner) {
-                    return null;
-                }
+            {playerOrder.map((currentPlayer: GamePlayer, index: number) => {
+                const { id: playerId, strategyCard } = currentPlayer;
+                const card = strategyCards[strategyCard];
 
-                const card = strategyCards[i];
-                const { initiative, name } = card;
-                const currentPlayer = game.players[owner];
-
-                const buttonLabel = 'Flip';
+                const buttonLabel = currentPlayer.stragetyCardFlipped ? 'FLIPPED' : 'FLIP';
                 const ButtonProps = {
                     disabled: false,
-                    onClick: (e: MouseEvent<HTMLButtonElement>) => onFlipCardClick(e, initiative),
+                    onClick: (e: MouseEvent<HTMLButtonElement>) =>
+                        onFlipCardClick(e, playerId, !currentPlayer.stragetyCardFlipped),
                 };
 
                 const playerColor = currentPlayer.color || '#fff';
-                const playerPassed = passed.includes(owner);
-                const playerDone = playerPassed || turn > i;
+                const playerDone = currentPlayer.passed || turn > currentPlayer.strategyCard;
 
                 return (
-                    <Card key={name} variant="outlined" classes={{ root: classes.card }}>
+                    <Card key={playerId} variant="outlined" classes={{ root: classes.card }}>
                         <CardContent classes={{ root: classes.cardContent }}>
                             <Grid
                                 container
@@ -124,25 +112,26 @@ function ActionPhase(props: object) {
                                     backgroundColor: playerColor,
                                 }}
                             >
-                                <Typography>{owner}</Typography>
+                                <Typography>{playerId}</Typography>
                             </Grid>
                             <Toolbar classes={{ root: classNames({ [classes.doneBackground]: playerDone }) }}>
                                 <Grid container direction="row" justify="space-between" alignItems="center">
                                     <Button
                                         color="primary"
                                         variant="contained"
-                                        onClick={() => onPassClick(owner, !playerPassed)}
+                                        onClick={() => onPassClick(playerId, !currentPlayer.passed)}
+                                        disabled={!currentPlayer.stragetyCardFlipped}
                                     >
-                                        {playerPassed ? 'UNPASS' : 'PASS'}
+                                        {currentPlayer.passed ? 'PASSED' : 'PASS'}
                                     </Button>
-                                    <VictoryPoints playerId={owner} />
+                                    <VictoryPoints playerId={playerId} />
                                     <Button
                                         color="primary"
                                         variant="contained"
-                                        disabled={playerPassed}
-                                        onClick={() => onNextTurn(i, !playerDone)}
+                                        disabled={currentPlayer.passed}
+                                        onClick={() => onNextTurn(currentPlayer, !playerDone)}
                                     >
-                                        {playerDone ? 'UNDONE' : 'DONE'}
+                                        {playerDone ? 'DONE-D' : 'DONE'}
                                     </Button>
                                 </Grid>
                             </Toolbar>

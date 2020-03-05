@@ -2,7 +2,7 @@ import isNil from 'lodash/isNil';
 import uniq from 'lodash/uniq';
 
 import { ErrorType } from 'common/error';
-import { StrategyCardIndex } from 'common/Game';
+import { StrategyCardIndex, getNextPlayer } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import * as AccountDB from './database/account';
@@ -182,14 +182,14 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
         }
 
         case MessageType.GAME_STATUS_SET: {
-            const { round, phase, turn, passed, speaker, pickOrder, pickTurn } = data;
+            const { round, phase, turn, speaker, pickOrder, pickTurn } = data;
             const { status } = game;
 
             if (round > status.round) {
                 Object.values(game.players).forEach(p => {
                     p.strategyCard = StrategyCardIndex.NONE;
                     p.strategyCardTaken = false;
-                    p.stragetyCardUsed = false;
+                    p.stragetyCardFlipped = false;
                 });
 
                 markGameDirty(gameId, { players: true });
@@ -264,16 +264,11 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             break;
         }
 
-        case MessageType.PLAYER_USE_STRATEGY_CARD:
-            player.stragetyCardUsed = true;
-            markGameDirty(gameId, { players: true });
-            break;
-
         case MessageType.PLAYER_RETURN_STRATEGY_CARD: {
             // Reset card data for player
             const returnedCard = player.strategyCard;
             player.strategyCard = StrategyCardIndex.NONE;
-            player.stragetyCardUsed = false;
+            player.stragetyCardFlipped = false;
             markGameDirty(gameId, { players: true });
 
             // If player is returning card that is the first turn, clear out the game turn and set to next player.
@@ -290,14 +285,25 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             break;
         }
 
+        case MessageType.PLAYER_FLIP_STRATEGY_CARD:
+            player.stragetyCardFlipped = data.flipped;
+            if (!data.flipped) {
+                player.passed = false;
+            }
+            markGameDirty(gameId, { players: true });
+            break;
+
         case MessageType.PLAYER_PASS_TURN:
-            if (data.unpass) {
-                game.status.passed = game.status.passed.filter(p => p !== playerId);
-            } else {
-                game.status.passed = uniq([...game.status.passed, playerId]).sort();
+            player.passed = data.passed;
+            markGameDirty(gameId, { players: true });
+
+            // If current player passed, set turn to the next player.
+            if (game.status.turn === player.strategyCard) {
+                const nextPlayer = getNextPlayer(game, player.id);
+                game.status.turn = nextPlayer ? nextPlayer.strategyCard : StrategyCardIndex.END;
+                markGameDirty(gameId, { status: true });
             }
 
-            markGameDirty(gameId, { status: true });
             break;
 
         case MessageType.PLAYER_SET_VICTORY_POINTS:

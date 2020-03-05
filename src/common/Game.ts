@@ -61,10 +61,10 @@ export interface GameStatus {
     round: number;
     phase: Phase;
     turn: StrategyCardIndex;
+    // passed: StrategyCardIndex[]; // list of players that pased on the current round
     speaker: string;
     pickOrder: string[]; // starting with speaker, the order of players for picking strategy cards
     pickTurn: number;
-    passed: string[]; // list of players that pased on the current round
 }
 
 export interface GamePlanet {
@@ -87,7 +87,9 @@ export interface GamePlayer {
 
     strategyCard: StrategyCardIndex;
     strategyCardTaken: boolean;
-    stragetyCardUsed: boolean;
+    stragetyCardFlipped: boolean;
+
+    passed: boolean;
 
     planets: string[];
     victoryPoints: number;
@@ -124,4 +126,22 @@ export interface GameChangeData {
 
 export interface GameChangeDataMap {
     [id: string]: GameChangeData;
+}
+
+export function getPlayerOrder(game: Game) {
+    return Object.values(game.players).sort((p1: GamePlayer, p2: GamePlayer) => {
+        return p1.strategyCard < p2.strategyCard ? -1 : 1;
+    });
+}
+
+export function getNextPlayer(game: Game, currentPlayerId: string, playerOrder?: GamePlayer[]): GamePlayer | null {
+    const players = playerOrder || getPlayerOrder(game);
+    let nextIndex = players.findIndex(p => p.id === currentPlayerId) + 1;
+    let nextPlayer = players[nextIndex];
+    while (nextPlayer && nextPlayer.passed) {
+        nextIndex += 1;
+        nextPlayer = players[nextIndex];
+    }
+
+    return nextPlayer || null;
 }

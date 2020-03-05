@@ -120,7 +120,8 @@ export function addPlayer(gameId: string, playerId: string | string[]) {
                 joined: true,
                 strategyCard: StrategyCardIndex.NONE,
                 strategyCardTaken: false,
-                stragetyCardUsed: false,
+                stragetyCardFlipped: false,
+                passed: false,
                 planets: [],
                 victoryPoints: 0,
             };
