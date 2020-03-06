@@ -22,6 +22,10 @@ export interface Message {
 }
 
 export enum MessageType {
+    // Messages from the server
+    BROADCAST_INITIALIZE = '/broadcast/initialize',
+    BROADCAST_CHANGE = '/broadcast/change',
+
     // Account actions
     // data: { accountId }
     LIST_ACCOUNTS = '/account/list',
@@ -29,10 +33,6 @@ export enum MessageType {
     ACCOUNT_LOGOUT = '/account/logout',
     ACCOUNT_ADD = '/account/add',
     ACCOUNT_DELETE = '/account/delete',
-
-    //
-    STATE_ALL = '/state/all',
-    STATE_CHANGE = '/state/change',
 
     // Manage games actions
     LIST_GAMES = '/game/list',

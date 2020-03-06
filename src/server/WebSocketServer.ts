@@ -38,7 +38,7 @@ function onConnection({ wss, ws }: OnConnectionParam) {
         factionNames: FactionDB.listFactionNames(),
     };
 
-    sendData({ ws, type: MessageType.STATE_ALL, data: allData });
+    sendData({ ws, type: MessageType.BROADCAST_INITIALIZE, data: allData });
 }
 
 export default function initialize(app: express.Application) {
@@ -92,7 +92,7 @@ export default function initialize(app: express.Application) {
 
         setDirty(false);
 
-        broadcastChangeData({ wss, type: MessageType.STATE_CHANGE, data });
+        broadcastChangeData({ wss, type: MessageType.BROADCAST_CHANGE, data });
     }, 300);
 
     server.listen(8080, () => {

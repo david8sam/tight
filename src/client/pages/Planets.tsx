@@ -76,7 +76,7 @@ function Planets(props: object) {
         sendData,
     } = useAppContext();
 
-    const { game, gameId, playerId } = useAccountInfo();
+    const { game, gameId, player, playerId } = useAccountInfo();
 
     const [openAddDialog, setOpenAddDialog] = useState(false);
     const [planetState, setPlanetState] = useState({
@@ -89,7 +89,6 @@ function Planets(props: object) {
 
     // Get all planets owned by this player
     const gamePlanets = game ? game.planets : ({} as GamePlanetMap);
-    const player = playerId && game && game.players && game.players[playerId];
     const playerPlanetNames = (player && player.planets) || [];
 
     // Sync with store data

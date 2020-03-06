@@ -30,9 +30,9 @@ function onMessage(dispatch: React.Dispatch<Action>, e: MessageEvent) {
             });
             break;
 
-        case MessageType.STATE_ALL:
+        case MessageType.BROADCAST_INITIALIZE:
             dispatch({ type: ActionType.initializeState, payload: data as AllData });
-        case MessageType.STATE_CHANGE:
+        case MessageType.BROADCAST_CHANGE:
             dispatch({ type: ActionType.updateState, payload: data as ChangeData });
             break;
 

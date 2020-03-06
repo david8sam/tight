@@ -1,7 +1,7 @@
-import React, { MouseEvent } from 'react';
+import React from 'react';
 
-import { Button, Card, CardContent, Grid, Typography, Theme, Toolbar } from '@material-ui/core';
-import { makeStyles, useTheme } from '@material-ui/styles';
+import { Button, Card, CardContent, Grid, Theme, Toolbar } from '@material-ui/core';
+import { makeStyles } from '@material-ui/styles';
 
 import classNames from 'classnames';
 
@@ -9,9 +9,9 @@ import { GamePlayer, StrategyCardIndex, getPlayerOrder, getNextPlayer } from 'co
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
-import StrategyCard from '../components/StrategyCard';
-import VictoryPoints from '../components/VictoryPoints';
 import useAccountInfo from '../hooks/useAccountInfo';
+import PlayerHeader from './PlayerHeader';
+import VictoryPoints from './VictoryPoints';
 
 const useStyles = makeStyles((theme: Theme) => ({
     card: {
@@ -19,40 +19,30 @@ const useStyles = makeStyles((theme: Theme) => ({
         margin: `${theme.spacing(0.5)}px ${theme.spacing(1)}px`,
         position: 'relative',
     },
-    doneBackground: {
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    },
     cardContent: {
         padding: 0,
         '&:last-child': {
             paddingBottom: 0,
         },
     },
-    panel: {
-        boxShadow: 'none',
-        padding: `0px ${theme.spacing(2)}px`,
-        '&:before': {
-            height: 0,
-            top: 0,
-        },
+    doneBackground: {
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
-    summary: {
-        padding: 0,
+    toolbarGutters: {
+        paddingLeft: theme.spacing(1),
+        paddingRight: theme.spacing(1),
     },
-    details: {
-        padding: 0,
-        paddingBottom: theme.spacing(1),
+    button: {
+        padding: theme.spacing(0.5),
     },
 }));
 
 function ActionPhase(props: object) {
-    const theme: Theme = useTheme();
     const classes = useStyles(props);
-    const { state, sendData } = useAppContext();
-    const { strategyCards } = state;
+    const { sendData } = useAppContext();
 
-    const { game, gameId, player } = useAccountInfo();
-    if (!game || !player) {
+    const { game, gameId } = useAccountInfo();
+    if (!game) {
         return null;
     }
 
@@ -60,8 +50,7 @@ function ActionPhase(props: object) {
     const { turn } = status;
     const playerOrder = getPlayerOrder(game);
 
-    const onFlipCardClick = (e: MouseEvent<HTMLButtonElement>, playerId: string, flipped: boolean) => {
-        e.stopPropagation();
+    const onFlipCardClick = (playerId: string, flipped: boolean) => {
         sendData({ type: MessageType.PLAYER_FLIP_STRATEGY_CARD, data: { gameId, playerId, flipped } });
     };
 
@@ -69,9 +58,9 @@ function ActionPhase(props: object) {
         sendData({ type: MessageType.PLAYER_PASS_TURN, data: { gameId, playerId, passed } });
     };
 
-    const onNextTurn = (currentPlayer: GamePlayer, done: boolean) => {
+    const onNextTurn = (player: GamePlayer, done: boolean) => {
         if (done) {
-            const nextPlayer = getNextPlayer(game, currentPlayer.id, playerOrder);
+            const nextPlayer = getNextPlayer(game, player.id, playerOrder);
             sendData({
                 type: MessageType.GAME_STATUS_SET,
                 data: { gameId, turn: nextPlayer ? nextPlayer.strategyCard : StrategyCardIndex.END },
@@ -79,75 +68,59 @@ function ActionPhase(props: object) {
         } else {
             sendData({
                 type: MessageType.GAME_STATUS_SET,
-                data: { gameId, turn: currentPlayer.strategyCard },
+                data: { gameId, turn: player.strategyCard },
             });
         }
     };
 
     return (
         <Grid container direction="column">
-            {playerOrder.map((currentPlayer: GamePlayer, index: number) => {
-                const { id: playerId, strategyCard } = currentPlayer;
-                const card = strategyCards[strategyCard];
-
-                const buttonLabel = currentPlayer.stragetyCardFlipped ? 'FLIPPED' : 'FLIP';
-                const ButtonProps = {
-                    disabled: false,
-                    onClick: (e: MouseEvent<HTMLButtonElement>) =>
-                        onFlipCardClick(e, playerId, !currentPlayer.stragetyCardFlipped),
-                };
-
-                const playerColor = currentPlayer.color || '#fff';
-                const playerDone = currentPlayer.passed || turn > currentPlayer.strategyCard;
+            {playerOrder.map((player: GamePlayer) => {
+                const { id: playerId } = player;
+                const playerDone = player.passed || turn > player.strategyCard;
 
                 return (
                     <Card key={playerId} variant="outlined" classes={{ root: classes.card }}>
                         <CardContent classes={{ root: classes.cardContent }}>
-                            <Grid
-                                container
-                                justify="center"
-                                alignItems="center"
-                                style={{
-                                    color: theme.palette.getContrastText(playerColor),
-                                    backgroundColor: playerColor,
+                            <PlayerHeader player={player} />
+                        </CardContent>
+                        <CardContent classes={{ root: classes.cardContent }}>
+                            <Toolbar
+                                classes={{
+                                    root: classNames({ [classes.doneBackground]: playerDone }),
+                                    gutters: classes.toolbarGutters,
                                 }}
                             >
-                                <Typography>{playerId}</Typography>
-                            </Grid>
-                            <Toolbar classes={{ root: classNames({ [classes.doneBackground]: playerDone }) }}>
                                 <Grid container direction="row" justify="space-between" alignItems="center">
-                                    <Button
-                                        color="primary"
-                                        variant="contained"
-                                        onClick={() => onPassClick(playerId, !currentPlayer.passed)}
-                                        disabled={!currentPlayer.stragetyCardFlipped}
-                                    >
-                                        {currentPlayer.passed ? 'PASSED' : 'PASS'}
-                                    </Button>
                                     <VictoryPoints playerId={playerId} />
                                     <Button
+                                        classes={{ root: classes.button }}
                                         color="primary"
                                         variant="contained"
-                                        disabled={currentPlayer.passed}
-                                        onClick={() => onNextTurn(currentPlayer, !playerDone)}
+                                        onClick={() => onPassClick(playerId, !player.passed)}
+                                        disabled={!player.stragetyCardFlipped}
+                                    >
+                                        {player.passed ? 'PASSED' : 'PASS'}
+                                    </Button>
+                                    <Button
+                                        classes={{ root: classes.button }}
+                                        color="primary"
+                                        variant="contained"
+                                        onClick={() => onFlipCardClick(playerId, !player.stragetyCardFlipped)}
+                                    >
+                                        {player.stragetyCardFlipped ? 'FLIPPED' : 'FLIP'}
+                                    </Button>
+                                    <Button
+                                        classes={{ root: classes.button }}
+                                        color="primary"
+                                        variant="contained"
+                                        disabled={player.passed}
+                                        onClick={() => onNextTurn(player, !playerDone)}
                                     >
                                         {playerDone ? 'DONE-D' : 'DONE'}
                                     </Button>
                                 </Grid>
                             </Toolbar>
-                            <StrategyCard
-                                card={card}
-                                ButtonProps={ButtonProps}
-                                buttonLabel={buttonLabel}
-                                PanelProps={{
-                                    disableMargin: true,
-                                    classes: {
-                                        root: classNames(classes.panel, { [classes.doneBackground]: playerDone }),
-                                    },
-                                }}
-                                SummaryProps={{ disableMargin: true, classes: { root: classes.summary } }}
-                                DetailsProps={{ classes: { root: classes.details } }}
-                            />
                         </CardContent>
                     </Card>
                 );

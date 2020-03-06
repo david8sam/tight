@@ -13,6 +13,9 @@ const useStyles = makeStyles((theme: Theme) => ({
     grid: {
         width: 'auto',
     },
+    iconButton: {
+        padding: theme.spacing(0.5),
+    },
 }));
 
 interface VictoryPointsProps {
@@ -40,7 +43,11 @@ function VictoryPoints(props: VictoryPointsProps) {
         <Grid container justify="center" alignItems="center" classes={{ root: classes.grid }}>
             <Tooltip title="Minus VP">
                 <span>
-                    <IconButton disabled={victoryPoints < 1} onClick={() => onVictoryPointsChange(victoryPoints - 1)}>
+                    <IconButton
+                        classes={{ root: classes.iconButton }}
+                        disabled={victoryPoints < 1}
+                        onClick={() => onVictoryPointsChange(victoryPoints - 1)}
+                    >
                         <MinusIcon />
                     </IconButton>
                 </span>
@@ -49,7 +56,10 @@ function VictoryPoints(props: VictoryPointsProps) {
                 <Typography>{`${victoryPoints} VP`}</Typography>
             </Grid>
             <Tooltip title="Add VP">
-                <IconButton onClick={() => onVictoryPointsChange(victoryPoints + 1)}>
+                <IconButton
+                    classes={{ root: classes.iconButton }}
+                    onClick={() => onVictoryPointsChange(victoryPoints + 1)}
+                >
                     <AddIcon></AddIcon>
                 </IconButton>
             </Tooltip>

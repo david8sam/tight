@@ -31,13 +31,14 @@ import PlayerSetup from '../components/PlayerSetup';
 
 import StrategyPhase from '../components/StrategyPhase';
 import ActionPhase from '../components/ActionPhase';
+import StatusPhase from '../components/StatusPhase';
 
 import useAccountInfo from '../hooks/useAccountInfo';
 
 const PHASE_KEYS = Object.keys(Phase);
 const STEPS = PHASE_KEYS.slice(PHASE_KEYS.length / 2);
 
-const PHASE_COMPONENTS: React.ComponentType[] = [StrategyPhase, ActionPhase];
+const PHASE_COMPONENTS: React.ComponentType[] = [StrategyPhase, ActionPhase, StatusPhase];
 
 function getPhaseContents(phase: number) {
     const Component = PHASE_COMPONENTS[phase];
@@ -49,6 +50,9 @@ function getPhaseContents(phase: number) {
 }
 
 const useStyles = makeStyles((theme: Theme) => ({
+    statusSummary: {
+        padding: `0px ${theme.spacing(1)}`,
+    },
     phaseActionDetails: {
         padding: 0,
     },
@@ -158,7 +162,7 @@ function Game(props: object) {
     return (
         <Grid container direction="column">
             <ExpansionPanel expanded={actionExpanded} onChange={() => setActionExpaned(expanded => !expanded)}>
-                <ExpansionPanelSummary disableMargin>
+                <ExpansionPanelSummary disableMargin classes={{ root: classes.statusSummary }}>
                     <Grid container justify="space-between" alignItems="center">
                         <Typography>{`Turn: ${playerTurn || ''}`}</Typography>
                         <Grid container justify="center" alignItems="center" classes={{ root: classes.phaseActions }}>
