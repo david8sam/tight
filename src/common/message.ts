@@ -12,7 +12,6 @@ export interface AllData {
 
 export interface ChangeData {
     games?: GameChangeDataMap;
-    planets?: PlanetMap;
     accounts?: AccountMap;
 }
 
@@ -36,6 +35,7 @@ export enum MessageType {
 
     // Manage games actions
     LIST_GAMES = '/game/list',
+
     // data: { gameId }
     CREATE_GAME = '/game/create',
     DELETE_GAME = '/game/delete',

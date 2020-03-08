@@ -6,19 +6,10 @@ import { ChangeData } from 'common/message';
 
 export enum ActionType {
     useDarkTheme,
-
     setLoginStatus,
-
     initializeState,
     updateState,
-
-    addGame,
-    removeGame,
-
     setFactionInfo,
-    setGames,
-    setPlanets,
-    setAccounts,
 }
 
 export interface State {
@@ -67,11 +58,7 @@ function updateState(state: State, payload: ChangeData) {
     let newState = { ...state };
 
     // Update app level states
-    const { games, planets, accounts } = payload;
-    if (planets) {
-        newState.planets = planets;
-    }
-
+    const { games, accounts } = payload;
     if (accounts) {
         newState.accounts = accounts;
     }
@@ -136,26 +123,6 @@ export default function reducer(state: State, action: Action): State {
 
         case ActionType.setFactionInfo:
             return { ...state, factionInfo: payload };
-
-        // Game actions
-        case ActionType.setGames:
-            return { ...state, games: { ...state.games, ...payload } };
-        case ActionType.addGame:
-            return { ...state, games: { ...state.games, [payload.id]: payload } };
-        case ActionType.removeGame:
-            if (!state || !state.games) {
-                return state;
-            }
-            delete state.games[payload];
-            return { ...state, games: { ...state.games } };
-
-        // Planet actions
-        case ActionType.setPlanets:
-            return { ...state, planets: { ...state.planets, ...payload } };
-
-        // Account actions
-        case ActionType.setAccounts:
-            return { ...state, accounts: { ...state.accounts, ...payload } };
 
         default:
             return state;

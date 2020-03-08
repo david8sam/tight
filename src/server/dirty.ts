@@ -19,12 +19,10 @@ export interface DirtyGamePartsMap {
 // Keep track what data needs to be broadcasted to everyone.
 export const dirty = {
     games: {} as DirtyGamePartsMap,
-    planets: false,
     accounts: false,
 };
 
 export function setDirty(value: boolean = true) {
-    dirty.planets = value;
     dirty.accounts = value;
     dirty.games = {};
 
@@ -35,7 +33,7 @@ export function setDirty(value: boolean = true) {
 }
 
 export function isDirty(): boolean {
-    if (dirty.planets || dirty.accounts) {
+    if (dirty.accounts) {
         return true;
     }
 

@@ -78,10 +78,6 @@ export default function initialize(app: express.Application) {
         }
 
         const data: ChangeData = {};
-        if (dirty.planets) {
-            data.planets = PlanetDB.listPlanets();
-        }
-
         if (dirty.accounts) {
             data.accounts = AccountDB.listAccounts();
         }
