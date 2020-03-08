@@ -61,7 +61,6 @@ export interface GameStatus {
     round: number;
     phase: Phase;
     turn: StrategyCardIndex;
-    // passed: StrategyCardIndex[]; // list of players that pased on the current round
     speaker: string;
     pickOrder: string[]; // starting with speaker, the order of players for picking strategy cards
     pickTurn: number;
@@ -99,16 +98,28 @@ export interface GamePlayerMap {
     [id: string]: GamePlayer;
 }
 
+export interface GameMetadata {
+    readonly id: string;
+    readonly date: number;
+    readonly version: Version;
+    readonly creator: string;
+    readonly name: string;
+}
+
+export interface GameMetadataMap {
+    [id: string]: GameMetadata;
+}
+
 export interface Game {
     readonly id: string;
     readonly date: number;
     readonly version: Version;
+    readonly creator: string;
     name: string;
-    creator: string;
+
+    status: GameStatus;
     players: GamePlayerMap;
     planets: GamePlanetMap;
-    status: GameStatus;
-    lastSaved?: number;
 }
 
 export interface GameMap {

@@ -1,8 +1,7 @@
 import isNil from 'lodash/isNil';
-import uniq from 'lodash/uniq';
 
 import { ErrorType } from 'common/error';
-import { StrategyCardIndex, getNextPlayer } from 'common/Game';
+import { StrategyCardIndex, getNextPlayer, Phase } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import * as AccountDB from './database/account';
@@ -28,7 +27,7 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
     }
 
     const parsedMessage = JSON.parse(message);
-    log('Receiving:', parsedMessage);
+    log('Receiving:\n', parsedMessage);
 
     const { type = null, data = null } = message ? JSON.parse(message) : {};
     const { accountId = null, gameId = null, playerId = null } = data || {};
@@ -182,29 +181,33 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
         }
 
         case MessageType.GAME_STATUS_SET: {
-            const { round, phase, turn, speaker, pickOrder, pickTurn } = data;
+            const { phase, turn, pickOrder, pickTurn } = data;
             const { status } = game;
 
-            if (round > status.round) {
-                Object.values(game.players).forEach(p => {
-                    p.strategyCard = StrategyCardIndex.NONE;
-                    p.strategyCardTaken = false;
-                    p.stragetyCardFlipped = false;
-                });
-
-                markGameDirty(gameId, { players: true });
-            }
-
-            status.round = round || status.round;
             status.phase = !isNil(phase) ? phase : status.phase;
             status.turn = !isNil(turn) ? turn : status.turn;
-            status.speaker = speaker || status.speaker;
-            status.pickOrder = pickOrder || status.pickOrder;
+
             status.pickTurn = !isNil(pickTurn) ? pickTurn : status.pickTurn;
             if (status.pickTurn > status.pickOrder.length - 1) {
                 status.pickTurn = 0;
             }
 
+            if (pickOrder) {
+                status.pickOrder = pickOrder;
+                status.speaker = pickOrder[0];
+            }
+
+            markGameDirty(gameId, { status: true });
+
+            break;
+        }
+
+        case MessageType.GAME_SET_SPEAKER: {
+            const { status } = game;
+            status.speaker = data.speaker;
+            status.pickTurn = 0;
+
+            // Rotate pick order to start with speaker if necessary
             if (status.pickOrder[0] !== status.speaker) {
                 const speakerIndex = status.pickOrder.indexOf(status.speaker);
                 const preSpeaker = status.pickOrder.slice(0, speakerIndex);
@@ -214,6 +217,23 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
 
             markGameDirty(gameId, { status: true });
 
+            break;
+        }
+
+        case MessageType.GAME_NEXT_ROUND: {
+            if (game.status.round < 10) {
+                Object.values(game.players).forEach(p => {
+                    p.strategyCard = StrategyCardIndex.NONE;
+                    p.strategyCardTaken = false;
+                    p.stragetyCardFlipped = false;
+                    p.passed = false;
+                });
+
+                game.status.round += 1;
+                game.status.phase = Phase.STRATEGY;
+
+                markGameDirty(gameId, { players: true, status: true });
+            }
             break;
         }
 

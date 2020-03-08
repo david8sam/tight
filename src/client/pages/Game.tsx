@@ -22,12 +22,13 @@ import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import { makeStyles } from '@material-ui/styles';
 
-import { GameStatus, Phase, StrategyCardIndex } from 'common/Game';
+import { Game, GameStatus, Phase, StrategyCardIndex } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
 import { ExpansionPanel, ExpansionPanelSummary } from '../components/ExpansionPanel';
 import PlayerSetup from '../components/PlayerSetup';
+import SpeakerSelect from '../components/SpeakerSelect';
 
 import StrategyPhase from '../components/StrategyPhase';
 import ActionPhase from '../components/ActionPhase';
@@ -49,9 +50,43 @@ function getPhaseContents(phase: number) {
     return null;
 }
 
+function canNextPhase(game: Game): { canNext: boolean; message: string } {
+    const { status, players } = game;
+    const { phase, round } = status;
+    const playerArray = Object.values(players);
+
+    if (phase === Phase.STRATEGY) {
+        // Make sure everyone has picked a strategy card
+        const canNext = playerArray.every(
+            p => p.strategyCard > StrategyCardIndex.NONE && p.strategyCard < StrategyCardIndex.END,
+        );
+
+        return { canNext, message: canNext ? '' : 'Waiting for player to pick...' };
+    }
+
+    if (phase === Phase.ACTION) {
+        // Everyone's turn must be done
+        const canNext = playerArray.every(p => p.passed);
+        return { canNext, message: canNext ? '' : 'Waiting for all players to pass...' };
+    }
+
+    const canNext = phase < Phase.AGENDA;
+    const message = phase === Phase.AGENDA ? 'Waiting for players to vote...' : '';
+    return { canNext, message };
+}
+
 const useStyles = makeStyles((theme: Theme) => ({
+    speakerSelect: {
+        width: '70%',
+    },
+    speakerSelectInput: {
+        padding: theme.spacing(1),
+    },
     statusSummary: {
         padding: `0px ${theme.spacing(1)}`,
+    },
+    phaseToolbar: {
+        minHeight: 0,
     },
     phaseActionDetails: {
         padding: 0,
@@ -124,28 +159,30 @@ function Game(props: object) {
 
     const { round, phase, turn, pickOrder, pickTurn } = statusState;
     const canBack = round > 1 || (round === 1 && phase > Phase.STRATEGY);
-    const canNext = round < 10 || (round === 10 && phase < Phase.AGENDA);
+    const { canNext, message } = canNextPhase(game);
 
     const prevPhase = phase === Phase.STRATEGY ? Phase.AGENDA : phase - 1;
     const nextPhase = phase === Phase.AGENDA ? Phase.STRATEGY : phase + 1;
 
     const onPhaseClick = (e: MouseEvent<HTMLButtonElement>, next: boolean) => {
         e.stopPropagation();
-
         if (pending) {
             return;
         }
 
         const newPhase = next ? nextPhase : prevPhase;
 
-        let newRound = round;
-        if (next && phase === Phase.AGENDA) {
-            newRound += 1;
-        } else if (!next && phase === Phase.STRATEGY) {
-            newRound -= 1;
+        sendData({ type: MessageType.GAME_STATUS_SET, data: { gameId, phase: newPhase } });
+        setPending(true);
+    };
+
+    const onStartNextRound = (e: MouseEvent<HTMLButtonElement>) => {
+        e.stopPropagation();
+        if (pending) {
+            return;
         }
 
-        sendData({ type: MessageType.GAME_STATUS_SET, data: { gameId, round: newRound, phase: newPhase } });
+        sendData({ type: MessageType.GAME_NEXT_ROUND, data: { gameId } });
         setPending(true);
     };
 
@@ -157,6 +194,33 @@ function Game(props: object) {
     } else {
         const player = Object.values(game.players).find(p => p.strategyCard === turn);
         playerTurn = player ? player.name : null;
+    }
+
+    let phaseStatus = null;
+    if (phase === Phase.AGENDA && round < 10) {
+        phaseStatus = (
+            <Button
+                disabled={pending || round === 10 || phase !== Phase.AGENDA}
+                color="primary"
+                variant="contained"
+                onClick={e => onStartNextRound(e)}
+            >
+                {pending ? <CircularProgress size="24" /> : 'Start Next Round'}
+            </Button>
+        );
+    } else if (message) {
+        phaseStatus = <Typography>{message}</Typography>;
+    }
+
+    let stepperToolbar = null;
+    if (phaseStatus) {
+        stepperToolbar = (
+            <Toolbar classes={{ root: classes.phaseToolbar }}>
+                <Grid container justify="center" alignItems="center">
+                    {phaseStatus}
+                </Grid>
+            </Toolbar>
+        );
     }
 
     return (
@@ -193,18 +257,7 @@ function Game(props: object) {
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails classes={{ root: classes.phaseActionDetails }}>
                     <Grid container direction="column">
-                        <Toolbar>
-                            <Grid container justify="center" alignItems="center">
-                                <Button
-                                    disabled={pending || phase !== Phase.AGENDA}
-                                    color="primary"
-                                    variant="contained"
-                                    onClick={e => onPhaseClick(e, true)}
-                                >
-                                    {pending ? <CircularProgress size="24" /> : 'Start Next Round'}
-                                </Button>
-                            </Grid>
-                        </Toolbar>
+                        {stepperToolbar}
                         <Stepper classes={{ root: classes.stepper }} activeStep={phase} alternativeLabel>
                             {STEPS.map(label => (
                                 <Step classes={{ alternativeLabel: classes.stepLabelAlternativeLabel }} key={label}>
@@ -216,6 +269,15 @@ function Game(props: object) {
                 </ExpansionPanelDetails>
             </ExpansionPanel>
             <Divider classes={{ root: classes.divider }} />
+            <Toolbar>
+                <Grid container justify="space-between" alignItems="center">
+                    <Typography>Speaker:</Typography>
+                    <SpeakerSelect
+                        className={classes.speakerSelect}
+                        classes={{ outlined: classes.speakerSelectInput }}
+                    />
+                </Grid>
+            </Toolbar>
             {getPhaseContents(phase)}
         </Grid>
     );

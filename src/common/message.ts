@@ -43,6 +43,8 @@ export enum MessageType {
     STOP_GAME = '/game/stop',
 
     GAME_STATUS_SET = '/game/setStatus',
+    GAME_NEXT_ROUND = '/game/nextRound',
+    GAME_SET_SPEAKER = '/game/setSpeaker',
 
     // Faction actions
     FACTION_LIST_NAMES = '/faction/listNames',

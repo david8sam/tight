@@ -73,6 +73,7 @@ export default function initialize(app: express.Application) {
     // Broadcast game state on an interval
     setInterval(() => {
         if (!isDirty()) {
+            // Nothing changed, don't broadcast.
             return;
         }
 
@@ -90,8 +91,9 @@ export default function initialize(app: express.Application) {
             data.games = dirtyGames;
         }
 
-        setDirty(false);
+        // TODO: Save changes to disk
 
+        setDirty(false);
         broadcastChangeData({ wss, type: MessageType.BROADCAST_CHANGE, data });
     }, 300);
 

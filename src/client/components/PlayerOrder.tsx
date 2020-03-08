@@ -40,7 +40,7 @@ function PlayerOrder(props: object) {
                 {orderArray.map((o: undefined, i: number) => {
                     return (
                         <TableRow key={i}>
-                            <TableCell>{i + 1}</TableCell>
+                            <TableCell>{i === 0 ? 'Speaker' : i + 1}</TableCell>
                             <TableCell>
                                 <Select
                                     fullWidth

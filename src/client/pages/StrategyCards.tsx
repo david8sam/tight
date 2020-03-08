@@ -14,7 +14,7 @@ function StrategyCards(props: object) {
     return (
         <Grid container direction="column">
             {cards.map((card: StrategyCardType) => (
-                <StrategyCard card={card} hideButton />
+                <StrategyCard key={card.initiative} card={card} hideButton />
             ))}
         </Grid>
     );

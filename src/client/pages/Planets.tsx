@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Divider, IconButton, Toolbar, Tooltip, Typography } from '@material-ui/core';
 import EditIcon from '@material-ui/icons/Edit';
 import SyncIcon from '@material-ui/icons/Sync';
@@ -37,21 +37,16 @@ interface PlanetStateMap {
     [name: string]: string;
 }
 
-function syncPlanetsFunc({
-    sendData,
-    refreshed,
-    exhausted,
-    gameId,
-    playerId,
-    planets,
-}: {
+interface SyncPlanetsParms {
     sendData: SendDataFunction;
     refreshed: PlanetStateMap;
     exhausted: PlanetStateMap;
     gameId: string;
     playerId: string;
     planets: GamePlanetMap;
-}) {
+}
+
+function syncPlanetsFunc({ sendData, refreshed, exhausted, gameId, playerId, planets }: SyncPlanetsParms) {
     const refreshedArray = Object.keys(refreshed).filter(r => !planets[r].refreshed);
     if (refreshedArray.length) {
         sendData({
@@ -84,46 +79,67 @@ function Planets(props: object) {
         exhausted: {} as PlanetStateMap,
     });
 
+    const serverSyncRef = useRef(false);
+
     // Delay sending updates to the server until all changes are done.
-    const syncPlanets = useMemo(() => debounce(syncPlanetsFunc, 2000), []);
+    const syncPlanets = useMemo(
+        () =>
+            debounce((args: SyncPlanetsParms) => {
+                // Don't send updates to server if currently syncing from server.
+                if (!serverSyncRef.current) {
+                    syncPlanetsFunc(args);
+                }
+            }, 2000),
+        [],
+    );
 
     // Get all planets owned by this player
     const gamePlanets = game ? game.planets : ({} as GamePlanetMap);
     const playerPlanetNames = (player && player.planets) || [];
 
     // Sync with store data
-    useEffect(() => {
-        if (!gamePlanets) {
-            if (!isEmpty(planetState.refreshed) && !isEmpty(planetState.exhausted)) {
-                setPlanetState({ refreshed: {}, exhausted: {} });
+    useEffect(
+        () => {
+            serverSyncRef.current = true;
+
+            if (!gamePlanets) {
+                if (!isEmpty(planetState.refreshed) && !isEmpty(planetState.exhausted)) {
+                    setPlanetState({ refreshed: {}, exhausted: {} });
+                }
+
+                serverSyncRef.current = false;
+                return;
             }
 
-            return;
-        }
+            let hasChange: boolean = false;
 
-        let hasChange: boolean = false;
+            const refreshed: PlanetStateMap = {};
+            const exhausted: PlanetStateMap = {};
+            playerPlanetNames.forEach(p => {
+                if (gamePlanets[p].refreshed) {
+                    refreshed[p] = p;
+                    hasChange = hasChange || Boolean(planetState.refreshed[p]) === false;
+                } else {
+                    exhausted[p] = p;
+                    hasChange = hasChange || Boolean(planetState.exhausted[p]) === false;
+                }
+            });
 
-        const refreshed: PlanetStateMap = {};
-        const exhausted: PlanetStateMap = {};
-        playerPlanetNames.forEach(p => {
-            if (gamePlanets[p].refreshed) {
-                refreshed[p] = p;
-                hasChange = Boolean(planetState.refreshed[p]) === false;
-            } else {
-                exhausted[p] = p;
-                hasChange = Boolean(planetState.exhausted[p]) === false;
+            if (!hasChange) {
+                const totalPlanets =
+                    Object.keys(planetState.refreshed).length + Object.keys(planetState.exhausted).length;
+                hasChange = hasChange || totalPlanets !== playerPlanetNames.length;
             }
-        });
 
-        if (!hasChange) {
-            const totalPlanets = Object.keys(planetState.refreshed).length + Object.keys(planetState.exhausted).length;
-            hasChange = hasChange || totalPlanets !== playerPlanetNames.length;
-        }
+            if (hasChange) {
+                setPlanetState({ refreshed, exhausted });
+            }
 
-        if (hasChange) {
-            setPlanetState({ refreshed, exhausted });
-        }
-    }, [playerPlanetNames]);
+            serverSyncRef.current = false;
+        },
+        // Update on any planet change from the server
+        [gamePlanets],
+    );
 
     // Compute totals
     const refreshedPlanets = Object.keys(planetState.refreshed);
@@ -147,10 +163,12 @@ function Planets(props: object) {
 
         totals.resources += refreshed ? planet.resources : 0;
         totals.influence += refreshed ? planet.influence : 0;
-        totals.biotic += planet.biotic || 0;
-        totals.warfare += planet.warfare || 0;
-        totals.propulsion += planet.propulsion || 0;
-        totals.cybernetic += planet.cybernetic || 0;
+
+        // Must exhaust planet to use tech bonus (New in TI4)
+        totals.biotic += refreshed && planet.biotic ? planet.biotic : 0;
+        totals.warfare += refreshed && planet.warfare ? planet.warfare : 0;
+        totals.propulsion += refreshed && planet.propulsion ? planet.propulsion : 0;
+        totals.cybernetic += refreshed && planet.cybernetic ? planet.cybernetic : 0;
     });
 
     // Handle click events to refresh or exhaust planets

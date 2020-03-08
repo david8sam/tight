@@ -20,7 +20,7 @@ export interface SendDataParams {
 /**
  * Send data to one client
  */
-export function sendData({ ws, type, data, error }: { ws: WebSocket; type: MessageType; data?: any; error?: any }) {
+export function sendData({ ws, type, data, error }: SendDataParams) {
     // log(`Sending to "${ws.accountId || 'unknown'}:"\n`, data);
     ws.send(JSON.stringify({ type, data, error }));
 }

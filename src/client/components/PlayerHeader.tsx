@@ -49,7 +49,11 @@ function PlayerHeader(props: PlayerHeaderProps) {
 
     const { id: playerId, strategyCard } = player;
     const card = strategyCards[strategyCard];
+    if (!card) {
+        return null;
+    }
 
+    const { initiative, name, primary, secondary } = card;
     const playerColor = player.color || '#fff';
     const color = theme.palette.getContrastText(playerColor);
     const backgroundColor = playerColor;
@@ -73,14 +77,14 @@ function PlayerHeader(props: PlayerHeaderProps) {
             style={{ color, backgroundColor }}
         >
             <Grid classes={{ root: classes.infoIconGrid }} container justify="flex-start" alignItems="center">
-                <Typography>{`${card.initiative}. ${card.name}`}</Typography>
+                <Typography>{`${initiative}. ${name}`}</Typography>
                 <Tooltip title="Strategy Card Details">
                     <IconButton classes={{ root: classes.infoIcon }} onClick={e => onCardInfoClick(e, card)}>
                         <InfoIcon style={{ color }} />
                     </IconButton>
                 </Tooltip>
                 <Popover
-                    open={card.initiative === openedCard}
+                    open={initiative === openedCard}
                     onClose={onCardInfoClose}
                     anchorEl={cardPopoverAnchor}
                     anchorOrigin={{
@@ -94,7 +98,7 @@ function PlayerHeader(props: PlayerHeaderProps) {
                 >
                     <Card variant="outlined">
                         <CardContent>
-                            <StrategyCardDetails primary={card.primary} secondary={card.secondary} />
+                            <StrategyCardDetails primary={primary} secondary={secondary} />
                         </CardContent>
                     </Card>
                 </Popover>

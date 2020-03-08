@@ -11,18 +11,16 @@ import {
     TableCell,
     TableHead,
     TableRow,
-    Toolbar,
     Tooltip,
     Typography,
 } from '@material-ui/core';
-import AddIcon from '@material-ui/icons/Add';
 import { makeStyles } from '@material-ui/styles';
 import DeleteIcon from '@material-ui/icons/Delete';
 
+import { GameMap } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
-import NewGameDialog from './NewGameDialog';
 
 interface PendingState {
     gameId?: string;
@@ -31,9 +29,6 @@ interface PendingState {
 }
 
 const useStyle = makeStyles(theme => ({
-    title: {
-        flex: '1 1 100%',
-    },
     button: {
         width: 70,
     },
@@ -45,17 +40,22 @@ const useStyle = makeStyles(theme => ({
     },
 }));
 
-function GamesTable(props: object) {
+export interface GamesTableProps {
+    games: GameMap;
+}
+
+function GamesTable(props: GamesTableProps) {
     const classes = useStyle(props);
     const {
-        state: { games, accountId: playerId, accounts },
+        state: { accountId: playerId, accounts },
         sendData,
     } = useAppContext();
 
-    const [openCreateDialog, setOpenCreateDialog] = useState(false);
     const [pending, setPending] = useState<null | PendingState>(null);
 
     const history = useHistory();
+
+    const { games } = props;
 
     const ids = games ? Object.keys(games) : [];
     ids.sort((id1: string, id2: string) => {
@@ -113,85 +113,70 @@ function GamesTable(props: object) {
     const isPending = Boolean(pending);
 
     return (
-        <>
-            {openCreateDialog ? (
-                <NewGameDialog open={openCreateDialog} onClose={() => setOpenCreateDialog(false)} />
-            ) : null}
-            <Toolbar>
-                <Typography classes={{ root: classes.title }} variant="subtitle1">
-                    GAMES
-                </Typography>
-                <Tooltip title="Create">
-                    <IconButton onClick={() => setOpenCreateDialog(true)}>
-                        <AddIcon />
-                    </IconButton>
-                </Tooltip>
-            </Toolbar>
-            <Table>
-                <TableHead>
-                    <TableRow>
-                        <TableCell key="name">
-                            <Typography>NAME</Typography>
-                        </TableCell>
-                        <TableCell key="creator">
-                            <Typography>CREATOR</Typography>
-                        </TableCell>
-                        <TableCell key="start" />
-                        <TableCell key="delete" />
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {ids.map(id => {
-                        const game = games && games[id];
-                        const { status, name = '', creator = '', players = {} } = game || {};
+        <Table>
+            <TableHead>
+                <TableRow>
+                    <TableCell key="name">
+                        <Typography>NAME</Typography>
+                    </TableCell>
+                    <TableCell key="creator">
+                        <Typography>CREATOR</Typography>
+                    </TableCell>
+                    <TableCell key="start" />
+                    <TableCell key="delete" />
+                </TableRow>
+            </TableHead>
+            <TableBody>
+                {ids.map(id => {
+                    const game = games && games[id];
+                    const { status, name = '', creator = '', players = {} } = game || {};
 
-                        let button = null;
-                        let deleteButton = null;
-                        const buttonProps: ButtonProps = { color: 'primary', variant: 'contained', size: 'small' };
-                        if (playerId) {
-                            const player = players[playerId];
-                            const join = !player || !player.joined;
-                            const startedCannotJoin = join && status.started && !Boolean(game.players[playerId]);
-                            const label = join ? 'Join' : 'Leave';
+                    let button = null;
+                    let deleteButton = null;
+                    const buttonProps: ButtonProps = { color: 'primary', variant: 'contained', size: 'small' };
+                    if (playerId) {
+                        const player = players[playerId];
+                        const join = !player || !player.joined;
+                        const startedCannotJoin = join && status.started && !Boolean(game.players[playerId]);
+                        const label = join ? 'Join' : 'Leave';
 
-                            button = (
-                                <Button
-                                    {...buttonProps}
-                                    classes={{ root: classes.button }}
-                                    disabled={
-                                        isPending || startedCannotJoin || (Boolean(joinedGameId) && joinedGameId !== id)
-                                    }
-                                    onClick={() => onJoinLeaveClick(id, join)}
-                                >
-                                    {isPending ? <CircularProgress size={24} /> : label}
-                                </Button>
-                            );
-                        }
-
-                        if (creator === playerId) {
-                            deleteButton = (
-                                <Tooltip title="Delete Game">
-                                    <span>
-                                        <IconButton onClick={e => onDeleteGame(id, playerId)}>
-                                            <DeleteIcon />
-                                        </IconButton>
-                                    </span>
-                                </Tooltip>
-                            );
-                        }
-
-                        return (
-                            <TableRow classes={{ root: classes.tableRow }} key={id}>
-                                <TableCell align="left">{name}</TableCell>
-                                <TableCell align="left">{creator}</TableCell>
-                                <TableCell>{button}</TableCell>
-                                <TableCell>{deleteButton}</TableCell>
-                            </TableRow>
+                        button = (
+                            <Button
+                                {...buttonProps}
+                                classes={{ root: classes.button }}
+                                disabled={
+                                    isPending || startedCannotJoin || (Boolean(joinedGameId) && joinedGameId !== id)
+                                }
+                                onClick={() => onJoinLeaveClick(id, join)}
+                            >
+                                {isPending ? <CircularProgress size={24} /> : label}
+                            </Button>
                         );
-                    })}
-                </TableBody>
-            </Table>
-        </>
+                    }
+
+                    if (creator === playerId) {
+                        deleteButton = (
+                            <Tooltip title="Delete Game">
+                                <span>
+                                    <IconButton onClick={e => onDeleteGame(id, playerId)}>
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </span>
+                            </Tooltip>
+                        );
+                    }
+
+                    return (
+                        <TableRow classes={{ root: classes.tableRow }} key={id}>
+                            <TableCell align="left">{name}</TableCell>
+                            <TableCell align="left">{creator}</TableCell>
+                            <TableCell>{button}</TableCell>
+                            <TableCell>{deleteButton}</TableCell>
+                        </TableRow>
+                    );
+                })}
+            </TableBody>
+        </Table>
     );
 }
 

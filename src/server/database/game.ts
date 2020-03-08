@@ -69,8 +69,6 @@ export function createGame({ creator, version = Version.TI4, name }: CreateGameP
             round: 1,
             phase: Phase.STRATEGY,
             turn: StrategyCardIndex.NONE,
-            passed: [],
-
             speaker: creator,
             pickOrder: [creator],
             pickTurn: 0,
