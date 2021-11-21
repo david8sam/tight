@@ -6,6 +6,8 @@ export interface FactionInfoProps {
 }
 
 function FactionInfo(props: FactionInfoProps) {
+    // TODO: Design and implement layout
+
     return props.data ? <div>{props.data.name}</div> : null;
 }
 

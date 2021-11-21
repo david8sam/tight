@@ -39,14 +39,6 @@ function StatusPhase(props: object) {
 
     const playerOrder = getPlayerOrder(game);
 
-    const onRefreshAll = () => {
-        const players = Object.values(game.players);
-        players.forEach(p => {
-            const { id: playerId, planets } = p;
-            sendData({ type: MessageType.PLAYER_REFRESH_PLANET, data: { gameId, playerId, planets } });
-        });
-    };
-
     return (
         <Grid container direction="column">
             {playerOrder.map((player: GamePlayer) => (
@@ -64,11 +56,6 @@ function StatusPhase(props: object) {
                 </Card>
             ))}
             <Toolbar />
-            <Toolbar>
-                <Button color="primary" variant="contained" fullWidth onClick={() => onRefreshAll()}>
-                    Refresh Everyone's Planets
-                </Button>
-            </Toolbar>
         </Grid>
     );
 }

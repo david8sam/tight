@@ -41,7 +41,7 @@ function AccountWrapper(props: AccountWrapperProps) {
     }, [initialized, name]);
 
     // Wait for player to log in
-    if (!initialized || loginStatus === LoginStatus.LOGIN_PENDING) {
+    if (!initialized || loginStatus === LoginStatus.LOGIN_PENDING || loginStatus === LoginStatus.LOGOUT_PENDING) {
         return <Skeleton variant="rect" height="100%" />;
     }
 

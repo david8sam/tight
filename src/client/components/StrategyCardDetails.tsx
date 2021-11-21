@@ -1,13 +1,13 @@
 import React from 'react';
 
-import { Grid, TextField, Theme } from '@material-ui/core';
+import { Grid, TextField, Theme, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
+import { Version, ExpansionVersionNames } from 'common/Game';
 
 const useStyles = makeStyles((theme: Theme) => ({
-    primary: {
-        marginBottom: theme.spacing(2),
-    },
-    secondary: {},
+    primary: {},
+    secondary: { marginTop: theme.spacing(2) },
+    notes: { marginTop: theme.spacing(2) },
     disabledText: {
         color: theme.palette.text.primary,
     },
@@ -16,11 +16,14 @@ const useStyles = makeStyles((theme: Theme) => ({
 interface StrategyCardDetailsProps {
     primary: string[];
     secondary: String[];
+    notes?: string[];
+    version: Version;
 }
 
 function StrategyCardDetails(props: StrategyCardDetailsProps) {
     const classes = useStyles(props);
-    const { primary, secondary } = props;
+    const { primary, secondary, version, notes } = props;
+    const versionName = ExpansionVersionNames[version];
 
     return (
         <Grid container direction="column">
@@ -44,6 +47,19 @@ function StrategyCardDetails(props: StrategyCardDetailsProps) {
                 label="Secondary"
                 value={`\u2022 ${secondary.join('\n\u2022 ')}`}
             />
+            {notes && (
+                <TextField
+                    classes={{ root: classes.secondary }}
+                    InputProps={{ classes: { disabled: classes.disabledText } }}
+                    disabled
+                    fullWidth
+                    multiline
+                    variant="outlined"
+                    label="Notes"
+                    value={`\u2022 ${notes.join('\n\u2022 ')}`}
+                />
+            )}
+            {versionName && <Typography variant="caption">{versionName}</Typography>}
         </Grid>
     );
 }

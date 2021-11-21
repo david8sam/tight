@@ -13,6 +13,7 @@ import {
     Cultural,
     Hazardous,
     Industrial,
+    Legendary,
 } from './PlanetIcons';
 
 const ICONS: { Component: React.ElementType; label: string }[] = [
@@ -55,6 +56,10 @@ const ICONS: { Component: React.ElementType; label: string }[] = [
     {
         Component: Industrial,
         label: 'Industrial Planet Trait',
+    },
+    {
+        Component: Legendary,
+        label: 'Legendary Planet',
     },
 ];
 

@@ -32,6 +32,7 @@ import {
     Cultural,
     Hazardous,
     Industrial,
+    Legendary,
 } from './PlanetIcons';
 import { GamePlanet } from 'common/Game';
 import { Planet, Traits } from 'common/Planet';
@@ -89,7 +90,7 @@ const useStyle = makeStyles((theme: Theme) => ({
 const DEFAULT_COLUMNS: ColumnType[] = ['name', 'owner', 'resources', 'influence'];
 
 function formatName(planet: PlanetData, classes: PlanetsTableStyle) {
-    const { name, home, biotic = 0, warfare = 0, propulsion = 0, cybernetic = 0, trait } = planet;
+    const { name, home, biotic = 0, warfare = 0, propulsion = 0, cybernetic = 0, trait, legendary } = planet;
 
     // Add icons below the name
     const icons = [];
@@ -126,6 +127,10 @@ function formatName(planet: PlanetData, classes: PlanetsTableStyle) {
             break;
         default:
             break;
+    }
+
+    if (legendary) {
+        icons.push(<Legendary key="legendary" {...iconProps} />);
     }
 
     return (

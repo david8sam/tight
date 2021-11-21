@@ -47,13 +47,13 @@ function PlayerHeader(props: PlayerHeaderProps) {
 
     const { player } = props;
 
-    const { id: playerId, strategyCard } = player;
-    const card = strategyCards[strategyCard];
+    const { id: playerId, faction, strategyCard } = player;
+    const card = strategyCards.find(s => s.initiative === strategyCard);
     if (!card) {
         return null;
     }
 
-    const { initiative, name, primary, secondary } = card;
+    const { initiative, name, primary, secondary, version, notes } = card;
     const playerColor = player.color || '#fff';
     const color = theme.palette.getContrastText(playerColor);
     const backgroundColor = playerColor;
@@ -77,7 +77,7 @@ function PlayerHeader(props: PlayerHeaderProps) {
             style={{ color, backgroundColor }}
         >
             <Grid classes={{ root: classes.infoIconGrid }} container justify="flex-start" alignItems="center">
-                <Typography>{`${initiative}. ${name}`}</Typography>
+                <Typography>{`${initiative} - ${name}`}</Typography>
                 <Tooltip title="Strategy Card Details">
                     <IconButton classes={{ root: classes.infoIcon }} onClick={e => onCardInfoClick(e, card)}>
                         <InfoIcon style={{ color }} />
@@ -98,12 +98,17 @@ function PlayerHeader(props: PlayerHeaderProps) {
                 >
                     <Card variant="outlined">
                         <CardContent>
-                            <StrategyCardDetails primary={primary} secondary={secondary} />
+                            <StrategyCardDetails
+                                primary={primary}
+                                secondary={secondary}
+                                version={version}
+                                notes={notes}
+                            />
                         </CardContent>
                     </Card>
                 </Popover>
             </Grid>
-            <Typography>{playerId}</Typography>
+            <Typography>{`${playerId} (${faction})`}</Typography>
         </Grid>
     );
 }

@@ -1,6 +1,6 @@
 import { Faction } from 'common/Faction';
 
-const _factions: Readonly<Faction[]> = [
+const Factions: Readonly<Faction[]> = [
     {
         name: 'The Arborec',
         abilities: [
@@ -49,7 +49,8 @@ const _factions: Readonly<Faction[]> = [
     },
 
     //
-    // TODO: Fill in faction details
+    // TODO:
+    // - Fill in faction details
     //
     {
         name: 'The Barony of Letnev',
@@ -108,17 +109,4 @@ const _factions: Readonly<Faction[]> = [
     },
 ];
 
-const _factionNames: Readonly<string[]> = _factions.map(f => f.name);
-
-export function listFactions() {
-    return _factions;
-}
-
-export function listFactionNames() {
-    return _factionNames;
-}
-
-export function getFaction(name: string) {
-    const faction = _factions.find(f => f.name === name);
-    return faction || null;
-}
+export default Factions;

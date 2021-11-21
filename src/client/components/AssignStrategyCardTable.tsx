@@ -1,25 +1,23 @@
 import React from 'react';
 import { Table, TableHead, TableRow, TableCell, TableBody, Select, MenuItem } from '@material-ui/core';
 
-import { GamePlayer, StrategyCardIndex } from 'common/Game';
+import { GamePlayer, StrategyCard } from 'common/Game';
 
 import { useAppContext } from '../Context';
 import useAccountInfo from '../hooks/useAccountInfo';
 import { MessageType } from 'common/message';
 
 export default function AssignStrategyCardTable(props: object) {
-    const { sendData } = useAppContext();
+    const { state, sendData } = useAppContext();
+    const { strategyCards } = state;
     const { game, gameId } = useAccountInfo();
     if (!game) {
         return null;
     }
 
     const playersArray = Object.values(game.players);
-    const allValues = Object.values(StrategyCardIndex);
-    const strategyCards = allValues.slice(0, allValues.length / 2 - 1) as StrategyCardIndex[];
 
-    const onTakeCardClick = (playerId: string, cardName: StrategyCardIndex) => {
-        const strategyCard = StrategyCardIndex[cardName as StrategyCardIndex];
+    const onTakeCardClick = (playerId: string, strategyCard: number) => {
         sendData({ type: MessageType.PLAYER_TAKE_STRATEGY_CARD, data: { gameId, playerId, strategyCard } });
     };
 
@@ -39,13 +37,16 @@ export default function AssignStrategyCardTable(props: object) {
                             <TableCell>
                                 <Select
                                     fullWidth
-                                    value={StrategyCardIndex[player.strategyCard]}
+                                    value={player.strategyCard}
                                     variant="outlined"
-                                    onChange={e => onTakeCardClick(player.id, e.target.value as StrategyCardIndex)}
+                                    onChange={e => onTakeCardClick(player.id, Number(e.target.value))}
                                 >
-                                    {strategyCards.map((s: StrategyCardIndex) => (
-                                        <MenuItem button key={s} value={s}>
-                                            {s}
+                                    <MenuItem button key={0} value={0}>
+                                        {'NONE'}
+                                    </MenuItem>
+                                    {strategyCards.map((s: StrategyCard) => (
+                                        <MenuItem button key={s.initiative} value={s.initiative}>
+                                            {s.name}
                                         </MenuItem>
                                     ))}
                                 </Select>

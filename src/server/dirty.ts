@@ -12,9 +12,7 @@ export interface DirtyGameParts {
     players?: boolean;
 }
 
-export interface DirtyGamePartsMap {
-    [id: string]: DirtyGameParts;
-}
+export type DirtyGamePartsMap = Record<string, DirtyGameParts>;
 
 // Keep track what data needs to be broadcasted to everyone.
 export const dirty = {

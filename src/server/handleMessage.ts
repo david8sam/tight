@@ -1,7 +1,7 @@
 import isNil from 'lodash/isNil';
 
 import { ErrorType } from 'common/error';
-import { StrategyCardIndex, getNextPlayer, Phase } from 'common/Game';
+import { buildStrategyCardOwners, getNextPlayer, Phase, strategyCardHasOwner, StrategyCardIndex } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import * as AccountDB from './database/account';
@@ -67,12 +67,13 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             AccountDB.deleteAccount(accountId);
             dirty.accounts = true;
             break;
-        case MessageType.ACCOUNT_LOGIN:
+        case MessageType.ACCOUNT_LOGIN: {
             AccountDB.login(accountId);
             ws.accountId = accountId;
             sendData({ ws, type: MessageType.ACCOUNT_LOGIN, data: accountId });
             dirty.accounts = true;
             break;
+        }
         case MessageType.ACCOUNT_LOGOUT:
             const account = AccountDB.getAccount(accountId);
             if (account && account.joinedGame) {
@@ -220,6 +221,23 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             break;
         }
 
+        case MessageType.GAME_SET_CUSTODIANS_REMOVED: {
+            const { status } = game;
+            status.custodiansRemoved = data.custodiansRemoved;
+            status.agenda1Voted = data.agenda1Voted ?? status.agenda1Voted;
+            status.agenda2Voted = data.agenda2Voted ?? status.agenda2Voted;
+            markGameDirty(gameId, { status: true });
+            break;
+        }
+
+        case MessageType.GAME_SET_AGENDA_VOTED: {
+            const { status } = game;
+            status.agenda1Voted = data.agenda1Voted ?? status.agenda1Voted;
+            status.agenda2Voted = data.agenda2Voted ?? status.agenda2Voted;
+            markGameDirty(gameId, { status: true });
+            break;
+        }
+
         case MessageType.GAME_NEXT_ROUND: {
             if (game.status.round < 10) {
                 Object.values(game.players).forEach(p => {
@@ -231,6 +249,8 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
 
                 game.status.round += 1;
                 game.status.phase = Phase.STRATEGY;
+                game.status.agenda1Voted = false;
+                game.status.agenda2Voted = false;
 
                 markGameDirty(gameId, { players: true, status: true });
             }
@@ -261,9 +281,8 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
 
         // Strategy Card actions
         case MessageType.PLAYER_TAKE_STRATEGY_CARD: {
-            const playersArray = Object.values(players);
-            const owner = playersArray.find(p => p.strategyCard === data.strategyCard);
-            if (owner && owner !== playerId) {
+            const owners = buildStrategyCardOwners(players);
+            if (owners[data.strategyCard] === player.name || strategyCardHasOwner(owners, data.strategyCard)) {
                 return;
             }
 
@@ -277,7 +296,14 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             }
 
             if (status.turn === StrategyCardIndex.NONE || data.strategyCard < status.turn) {
+                // Taken strategy card is the new lowest initiative.
                 status.turn = data.strategyCard;
+            } else if (data.strategyCard === StrategyCardIndex.NONE && player.strategyCard === status.turn) {
+                // Player's previous card was the lowest initiative, find the next lowest.
+                status.turn = Object.values(players)
+                    .filter(p => p.strategyCard > StrategyCardIndex.NONE)
+                    .map(p => p.strategyCard)
+                    .sort()[0];
             }
 
             markGameDirty(gameId, { players: true, status: true });

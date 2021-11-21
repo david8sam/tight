@@ -3,7 +3,12 @@ import React, { MouseEvent, useState } from 'react';
 import { ExpansionPanelDetails, Grid, Toolbar, Typography } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
-import { StrategyCard as StrategyCardType, StrategyCardIndex } from 'common/Game';
+import {
+    buildStrategyCardOwners,
+    StrategyCard as StrategyCardType,
+    StrategyCardIndex,
+    strategyCardHasOwner,
+} from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
@@ -11,6 +16,11 @@ import AssignStrategyCardTable from '../components/AssignStrategyCardTable';
 import { ExpansionPanel, ExpansionPanelSummary } from '../components/ExpansionPanel';
 import StrategyCard from '../components/StrategyCard';
 import useAccountInfo from '../hooks/useAccountInfo';
+
+const CardsWithVersions = {
+    [StrategyCardIndex.DIPLOMACY]: [StrategyCardIndex.DIPLOMACY_2],
+    [StrategyCardIndex.CONSTRUCTION]: [StrategyCardIndex.CONSTRUCTION_2],
+};
 
 function StrategyPhase(props: object) {
     const { state, sendData } = useAppContext();
@@ -21,9 +31,7 @@ function StrategyPhase(props: object) {
         return null;
     }
 
-    const playersArray = Object.values(game.players);
-    const stratCardOwners: string[] = [''];
-    playersArray.forEach(p => (p.strategyCard ? (stratCardOwners[p.strategyCard] = p.name) : null));
+    const stratCardOwners = buildStrategyCardOwners(game.players);
 
     const onTakeCardClick = (e: MouseEvent<HTMLButtonElement>, strategyCard: StrategyCardIndex) => {
         e.stopPropagation();
@@ -43,12 +51,18 @@ function StrategyPhase(props: object) {
 
                 const { initiative, name } = card;
                 const cardOwner = stratCardOwners[initiative];
+                let buttonLabel = cardOwner === playerId ? 'Return' : cardOwner || 'Take';
+                let disabled =
+                    (Boolean(player.strategyCard) && cardOwner !== playerId) ||
+                    (Boolean(cardOwner) && cardOwner !== playerId);
 
-                const buttonLabel = cardOwner === playerId ? 'Return' : cardOwner || 'Take';
+                if (!cardOwner && strategyCardHasOwner(stratCardOwners, initiative)) {
+                    buttonLabel = 'Nope';
+                    disabled = true;
+                }
+
                 const ButtonProps = {
-                    disabled:
-                        (Boolean(player.strategyCard) && cardOwner !== playerId) ||
-                        (Boolean(cardOwner) && cardOwner !== playerId),
+                    disabled,
                     onClick: (e: MouseEvent<HTMLButtonElement>) => onTakeCardClick(e, initiative),
                 };
 

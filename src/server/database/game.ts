@@ -72,7 +72,10 @@ export function createGame({ creator, version = Version.TI4, name }: CreateGameP
             speaker: creator,
             pickOrder: [creator],
             pickTurn: 0,
-        } as GameStatus,
+            custodiansRemoved: false,
+            agenda1Voted: false,
+            agenda2Voted: false,
+        },
         started: false,
     };
 

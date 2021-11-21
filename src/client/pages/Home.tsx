@@ -8,6 +8,8 @@ import { makeStyles } from '@material-ui/styles';
 import { LoginStatus } from 'common/Account';
 import { MessageType } from 'common/message';
 
+import useAccountInfo from '../hooks/useAccountInfo';
+
 import { useAppContext } from '../Context';
 import { ActionType } from '../reducer';
 
@@ -32,32 +34,29 @@ const useStyles = makeStyles((theme: Theme) => ({
 function Home(props: object) {
     const classes = useStyles(props);
     const {
-        state: { loginStatus },
+        state: { loginStatus, accounts },
         dispatch,
         sendData,
     } = useAppContext();
     const [name, setName] = useState('');
-    const [loginClicked, setLoginClicked] = useState(false);
     const history = useHistory();
+    const { game, loggedIn, playerId } = useAccountInfo();
 
     const onLoginClick = (e: React.SyntheticEvent) => {
         e.preventDefault();
         e.stopPropagation();
 
-        setLoginClicked(true);
         dispatch({ type: ActionType.setLoginStatus, payload: { status: LoginStatus.LOGIN_PENDING, accountId: name } });
         sendData({ type: MessageType.ACCOUNT_LOGIN, data: { accountId: name } });
     };
 
     useEffect(() => {
-        if (!name || !loginClicked) {
-            return;
+        if (loggedIn) {
+            history.push(game ? `/player/${playerId}/game` : `/player/${playerId}/manage-games`);
         }
+    }, [loggedIn]);
 
-        if (loginStatus === LoginStatus.LOGGED_IN) {
-            history.push(`/player/${name}/game`);
-        }
-    });
+    const accountInUse = Boolean(playerId !== name && accounts[name] && accounts[name].loggedIn);
 
     return (
         <Container classes={{ root: classes.root }}>
@@ -67,18 +66,20 @@ function Home(props: object) {
             <Typography variant="h3" align="center" gutterBottom>
                 (TIGHT)
             </Typography>
-            <form className={classes.loginContainer} onSubmit={onLoginClick}>
+            <form className={classes.loginContainer} onSubmit={accountInUse ? e => e.preventDefault() : onLoginClick}>
                 <FormControl>
                     <TextField
                         color="primary"
                         variant="outlined"
                         label="Enter Name"
+                        error={accountInUse}
+                        helperText={accountInUse ? 'Name is in use' : ''}
                         onChange={e => setName(e.target.value)}
                     />
                 </FormControl>
                 <FormControl>
                     <Button
-                        disabled={!Boolean(name) || loginStatus === LoginStatus.LOGIN_PENDING}
+                        disabled={accountInUse || !Boolean(name) || loginStatus === LoginStatus.LOGIN_PENDING}
                         classes={{ root: classes.loginButton }}
                         color="primary"
                         variant="contained"

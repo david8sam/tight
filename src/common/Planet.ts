@@ -10,6 +10,7 @@ export interface Planet {
     readonly resources: number;
     readonly influence: number;
     readonly home?: string; // faction name
+    readonly legendary?: string; // ability
 
     // Tech bonuses
     readonly biotic?: number; // green

@@ -1,6 +1,6 @@
-import { Planet, PlanetMap, Traits } from 'common/Planet';
+import { Planet, Traits } from 'common/Planet';
 
-export const Planets: readonly Planet[] = [
+const Planets: readonly Planet[] = [
     //
     // Home planets
     //
@@ -369,30 +369,6 @@ export const Planets: readonly Planet[] = [
         influence: 2,
         cybernetic: 1,
     },
-].sort((aa, bb) => {
-    // Sort alphabetically
-    const a = aa.name.toLowerCase();
-    const b = bb.name.toLowerCase();
-    if (a === b) {
-        return 0;
-    }
+];
 
-    return a < b ? -1 : 1;
-});
-
-export const PlanetsMap: Readonly<PlanetMap> = Planets.reduce((m: PlanetMap, p: Planet): PlanetMap => {
-    m[p.name] = p;
-    return m;
-}, {});
-
-export function listPlanets(): Readonly<PlanetMap> {
-    return PlanetsMap;
-}
-
-export function getFactionPlanets(name: string) {
-    if (!name) {
-        return [];
-    }
-
-    return Planets.filter(p => p.home === name);
-}
+export default Planets;

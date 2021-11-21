@@ -58,14 +58,6 @@ function Drawer(props: DrawerProps) {
         <SwipeableDrawer open={open} onOpen={onOpen} onClose={onClose} {...drawerProps}>
             <div className={classes.drawer}>
                 <List>
-                    <ListItem key="home" button onClick={e => onOptionClick(e, 'home')}>
-                        <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary="Home" />
-                    </ListItem>
-
-                    <ListItem>
-                        <Divider classes={{ root: classes.divider }} />
-                    </ListItem>
-
                     <ListItem key="game" button disabled={!playerInGame} onClick={e => onOptionClick(e, 'game')}>
                         <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary="Game Status" />
                     </ListItem>

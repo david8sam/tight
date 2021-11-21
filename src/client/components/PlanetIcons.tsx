@@ -14,9 +14,7 @@ const useStyle = makeStyles((theme: Theme) => ({
 
 function useIcon(name: string) {
     const [icon, setIcon] = useState('');
-    import(`../assets/ti4/${name}.png`)
-        .then(i => setIcon(i.default))
-        .catch(e => setIcon(''));
+    import(`../assets/ti4/${name}.png`).then(i => setIcon(i.default)).catch(e => setIcon(''));
 
     return icon;
 }
@@ -107,6 +105,18 @@ export function Cybernetic(props: PlanetIconProps) {
     );
 }
 
+export function Legendary(props: PlanetIconProps) {
+    const src = useIcon('legendary');
+    const theme: Theme = useTheme();
+    const backgroundColor = colors.red[300];
+    const color = theme.palette.getContrastText(backgroundColor);
+    return (
+        <PlanetIcon color={color} backgroundColor={backgroundColor} {...props} src={src}>
+            L
+        </PlanetIcon>
+    );
+}
+
 export function HomePlanet(props: object) {
     const theme: Theme = useTheme();
     const color = colors.yellow[500];
@@ -122,7 +132,7 @@ export function Cultural(props: object) {
     const color = theme.palette.getContrastText(backgroundColor);
     return (
         <PlanetIcon color={color} backgroundColor={backgroundColor} {...props} src={src}>
-            T
+            U
         </PlanetIcon>
     );
 }

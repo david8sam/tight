@@ -40,7 +40,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 function StrategyCard(props: StrategyCardProps) {
     const classes = useStyles(props);
     const { card, hideButton, ButtonProps, buttonLabel, PanelProps, SummaryProps, DetailsProps } = props;
-    const { name, initiative, primary, secondary } = card;
+    const { name, initiative, primary, secondary, notes, version } = card;
 
     let button = null;
     if (!hideButton) {
@@ -56,11 +56,11 @@ function StrategyCard(props: StrategyCardProps) {
             <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} {...SummaryProps}>
                 <Grid container direction="row" alignItems="center">
                     {button}
-                    <Typography>{`${initiative}. ${name.toUpperCase()}`}</Typography>
+                    <Typography>{`${initiative} - ${name.toUpperCase()}`}</Typography>
                 </Grid>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails {...DetailsProps}>
-                <StrategyCardDetails primary={primary} secondary={secondary} />
+                <StrategyCardDetails primary={primary} secondary={secondary} notes={notes} version={version} />
             </ExpansionPanelDetails>
         </ExpansionPanel>
     );

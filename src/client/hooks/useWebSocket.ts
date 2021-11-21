@@ -10,7 +10,7 @@ export interface SendDataFunction {
     ({ type, data }: { type: MessageType; data?: any }): void;
 }
 
-const webSocketMap: { [url: string]: WebSocket } = {};
+const webSocketMap: Record<string, WebSocket> = {};
 
 function onMessage(dispatch: React.Dispatch<Action>, e: MessageEvent) {
     const msg = JSON.parse(e.data);
@@ -20,7 +20,7 @@ function onMessage(dispatch: React.Dispatch<Action>, e: MessageEvent) {
         case MessageType.ACCOUNT_LOGIN:
             dispatch({
                 type: ActionType.setLoginStatus,
-                payload: { status: LoginStatus.LOGGED_IN, accountId: data as string },
+                payload: { status: LoginStatus.LOGGED_IN, accountId: data as string, loginError: null },
             });
             break;
         case MessageType.ACCOUNT_LOGOUT:

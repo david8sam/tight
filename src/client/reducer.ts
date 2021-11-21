@@ -1,5 +1,5 @@
 import { Faction } from 'common/Faction';
-import { GameMap, Game, StrategyCard } from 'common/Game';
+import { GameMap, Game, StrategyCard, GameMetadataMap } from 'common/Game';
 import { PlanetMap } from 'common/Planet';
 import { AccountMap, LoginStatus } from 'common/Account';
 import { ChangeData } from 'common/message';
@@ -22,7 +22,11 @@ export interface State {
     // Server Data (Client does NOT modify)
     factionNames: string[];
     factionInfo: Faction | null;
+
     games: GameMap;
+    // gamesMetadata: GameMetadataMap;
+    // game: Game;
+
     accounts: AccountMap;
     planets: PlanetMap;
     strategyCards: StrategyCard[];
@@ -114,7 +118,11 @@ export default function reducer(state: State, action: Action): State {
             return { ...state, useDarkTheme: Boolean(payload) };
 
         case ActionType.setLoginStatus:
-            return { ...state, loginStatus: payload.status, accountId: payload.accountId };
+            return {
+                ...state,
+                loginStatus: payload.status,
+                accountId: payload.accountId,
+            };
 
         case ActionType.initializeState:
             return { ...state, ...payload, initialized: true };

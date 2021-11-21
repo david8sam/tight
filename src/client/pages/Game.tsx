@@ -33,45 +33,51 @@ import SpeakerSelect from '../components/SpeakerSelect';
 import StrategyPhase from '../components/StrategyPhase';
 import ActionPhase from '../components/ActionPhase';
 import StatusPhase from '../components/StatusPhase';
+import AgendaPhase from '../components/AgendaPhase';
 
 import useAccountInfo from '../hooks/useAccountInfo';
 
 const PHASE_KEYS = Object.keys(Phase);
 const STEPS = PHASE_KEYS.slice(PHASE_KEYS.length / 2);
 
-const PHASE_COMPONENTS: React.ComponentType[] = [StrategyPhase, ActionPhase, StatusPhase];
+const PHASE_COMPONENTS: React.ComponentType[] = [StrategyPhase, ActionPhase, StatusPhase, AgendaPhase];
 
 function getPhaseContents(phase: number) {
     const Component = PHASE_COMPONENTS[phase];
-    if (Component) {
-        return <Component />;
-    }
-
-    return null;
+    return Component ? <Component /> : null;
 }
 
 function canNextPhase(game: Game): { canNext: boolean; message: string } {
     const { status, players } = game;
-    const { phase, round } = status;
+    const { phase, custodiansRemoved, agenda1Voted, agenda2Voted } = status;
     const playerArray = Object.values(players);
 
+    let canNext = phase < Phase.AGENDA;
+    let message = '';
     if (phase === Phase.STRATEGY) {
         // Make sure everyone has picked a strategy card
-        const canNext = playerArray.every(
+        canNext = playerArray.every(
             p => p.strategyCard > StrategyCardIndex.NONE && p.strategyCard < StrategyCardIndex.END,
         );
 
-        return { canNext, message: canNext ? '' : 'Waiting for player to pick...' };
+        message = canNext ? '' : 'Waiting for player to pick...';
     }
 
     if (phase === Phase.ACTION) {
         // Everyone's turn must be done
-        const canNext = playerArray.every(p => p.passed);
-        return { canNext, message: canNext ? '' : 'Waiting for all players to pass...' };
+        canNext = playerArray.every(p => p.passed);
+        message = canNext ? '' : 'Waiting for all players to pass...';
     }
 
-    const canNext = phase < Phase.AGENDA;
-    const message = phase === Phase.AGENDA ? 'Waiting for players to vote...' : '';
+    if (phase === Phase.AGENDA) {
+        if (custodiansRemoved) {
+            canNext = agenda2Voted;
+            message = agenda1Voted ? 'Waiting for second agenda...' : 'Waiting for first agenda...';
+        } else {
+            canNext = true;
+        }
+    }
+
     return { canNext, message };
 }
 
@@ -124,6 +130,9 @@ function Game(props: object) {
         speaker: game ? game.creator : playerId || '',
         pickOrder: [game ? game.creator : playerId || ''],
         pickTurn: 0,
+        custodiansRemoved: false,
+        agenda1Voted: false,
+        agenda2Voted: false,
     });
     const [pending, setPending] = useState(false);
     const [actionExpanded, setActionExpaned] = useState(false);
@@ -197,7 +206,7 @@ function Game(props: object) {
     }
 
     let phaseStatus = null;
-    if (phase === Phase.AGENDA && round < 10) {
+    if (phase === Phase.AGENDA && round < 10 && canNext) {
         phaseStatus = (
             <Button
                 disabled={pending || round === 10 || phase !== Phase.AGENDA}
