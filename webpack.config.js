@@ -21,8 +21,8 @@ let config = {
         rules: [
             {
                 test: /\.tsx?$/,
-                loader: 'awesome-typescript-loader',
-                query: { configFileName: tsconfigFile },
+                loader: 'ts-loader',
+                options: { configFile: tsconfigFile },
             },
             {
                 enforce: 'pre',
@@ -58,13 +58,6 @@ if (web) {
             publicPath: '/',
             path: path.resolve(cwd, 'dist'),
         },
-        optimization: {
-            splitChunks: {
-                chunks: 'all',
-                name: true,
-            },
-            // minimize: false,
-        },
         plugins: [
             new HtmlWebPackPlugin({
                 template: path.resolve(clientDir, 'index.html'),
@@ -93,7 +86,7 @@ if (web) {
 if (dev) {
     config = {
         ...config,
-        devtool: 'cheap-module-eval-source-map',
+        devtool: 'cheap-module-source-map',
     };
 
     config.output = {
@@ -106,7 +99,9 @@ if (dev) {
 
     if (web) {
         config.devServer = {
-            contentBase: path.resolve(cwd, 'dist'),
+            static: {
+                directory: path.resolve(cwd, 'dist'),
+            },
             hot: true,
             proxy: {
                 '*': 'http://localhost',

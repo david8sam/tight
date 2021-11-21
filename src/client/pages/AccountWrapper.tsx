@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { RouteComponentProps, useHistory } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 
 import { Skeleton } from '@material-ui/lab';
 
@@ -13,7 +13,7 @@ interface MatchParams {
     id: string;
 }
 
-interface AccountWrapperProps extends RouteComponentProps<MatchParams> {
+export interface AccountWrapperProps {
     Page: React.ElementType;
 }
 
@@ -21,14 +21,21 @@ function AccountWrapper(props: AccountWrapperProps) {
     const { state, dispatch, sendData } = useAppContext();
     const { initialized, accounts, loginStatus } = state;
 
-    const history = useHistory();
+    const navigate = useNavigate();
+    const params = useParams();
 
-    const { Page, ...pageProps } = props;
-    const name = pageProps.match.params.id;
+    const { Page } = props;
+    const name = params.id;
+
+    const isValidPlayer = Boolean(name && accounts[name]);
 
     useEffect(() => {
         if (!initialized) {
             return;
+        }
+
+        if (!name || !accounts[name]) {
+            navigate('/');
         }
 
         if (name && loginStatus === LoginStatus.LOGGED_OUT) {
@@ -41,15 +48,16 @@ function AccountWrapper(props: AccountWrapperProps) {
     }, [initialized, name]);
 
     // Wait for player to log in
-    if (!initialized || loginStatus === LoginStatus.LOGIN_PENDING || loginStatus === LoginStatus.LOGOUT_PENDING) {
+    if (
+        !initialized ||
+        !isValidPlayer ||
+        loginStatus === LoginStatus.LOGIN_PENDING ||
+        loginStatus === LoginStatus.LOGOUT_PENDING
+    ) {
         return <Skeleton variant="rect" height="100%" />;
     }
 
-    if (!accounts[name]) {
-        history.push('/');
-    }
-
-    return <Page {...pageProps} />;
+    return <Page />;
 }
 
 export default AccountWrapper;

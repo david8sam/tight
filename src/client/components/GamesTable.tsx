@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import {
     Button,
@@ -53,7 +53,7 @@ function GamesTable(props: GamesTableProps) {
 
     const [pending, setPending] = useState<null | PendingState>(null);
 
-    const history = useHistory();
+    const navigate = useNavigate();
 
     const { games } = props;
 
@@ -82,7 +82,7 @@ function GamesTable(props: GamesTableProps) {
         if (join && playerInGame) {
             // Joined game, redirect to game status page
             setPending(null);
-            history.push(`/player/${playerId}/game`);
+            navigate(`/player/${playerId}/game`);
         } else if (leave && !playerInGame) {
             setPending(null);
         }

@@ -94,7 +94,7 @@ function NewGameDialog(props: NewGameDialogProps) {
                 </Button>
             </AppBar>
             <DialogContent dividers>
-                <Grid container justify="center" alignItems="center">
+                <Grid container justifyContent="center" alignItems="center">
                     <Grid item xs>
                         <FormControl fullWidth>
                             <TextField

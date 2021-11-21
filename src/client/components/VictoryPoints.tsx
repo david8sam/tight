@@ -40,7 +40,7 @@ function VictoryPoints(props: VictoryPointsProps) {
     };
 
     return (
-        <Grid container justify="center" alignItems="center" classes={{ root: classes.grid }}>
+        <Grid container justifyContent="center" alignItems="center" classes={{ root: classes.grid }}>
             <Tooltip title="Minus VP">
                 <span>
                     <IconButton
@@ -52,7 +52,13 @@ function VictoryPoints(props: VictoryPointsProps) {
                     </IconButton>
                 </span>
             </Tooltip>
-            <Grid container direction="column" justify="center" alignItems="center" classes={{ root: classes.grid }}>
+            <Grid
+                container
+                direction="column"
+                justifyContent="center"
+                alignItems="center"
+                classes={{ root: classes.grid }}
+            >
                 <Typography>{`${victoryPoints} VP`}</Typography>
             </Grid>
             <Tooltip title="Add VP">

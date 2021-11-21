@@ -1,14 +1,14 @@
-import { colors } from '@material-ui/core';
+import { blue, deepPurple, green, orange, red, yellow } from '@material-ui/core/colors';
 
 export const PlayerColor = {
-    RED: colors.red.A700,
-    YELLOW: colors.yellow[500],
-    GREEN: colors.green[500],
-    BLUE: colors.blue.A700,
-    PURPLE: colors.deepPurple[500],
+    RED: red.A700,
+    YELLOW: yellow[500],
+    GREEN: green[500],
+    BLUE: blue.A700,
+    PURPLE: deepPurple[500],
     BLACK: '#000',
     // Prophecy of Kings
-    ORANGE: colors.orange[500],
+    ORANGE: orange[500],
     MAGENTA: '#D80073',
 };
 

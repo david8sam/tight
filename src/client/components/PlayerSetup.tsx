@@ -73,18 +73,18 @@ function PlayerSetup(props: object) {
     return (
         <>
             <Toolbar>
-                <Grid container justify="center">
+                <Grid container justifyContent="center">
                     <Typography align="center" variant="h5">{`${game.name} (${game.creator})`}</Typography>
                 </Grid>
             </Toolbar>
             <Toolbar>
-                <Grid container justify="space-between" alignItems="center" wrap="nowrap">
+                <Grid container justifyContent="space-between" alignItems="center" wrap="nowrap">
                     <Grid container wrap="nowrap">
                         <Button disabled={step === 0} color="primary" variant="contained" onClick={() => setStep(0)}>
                             {`< Back`}
                         </Button>
                     </Grid>
-                    <Grid container justify="flex-end" alignItems="center" spacing={1}>
+                    <Grid container justifyContent="flex-end" alignItems="center" spacing={1}>
                         {starting ? (
                             <Grid item>
                                 <CircularProgress size={24} />

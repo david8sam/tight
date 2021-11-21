@@ -1,17 +1,11 @@
-import React, { useEffect } from 'react';
-import { RouteComponentProps } from 'react-router-dom';
+import React from 'react';
+import { useParams } from 'react-router-dom';
 
-import { useAppContext } from '../Context';
-import { ActionType } from '../reducer';
+function Player() {
+    const params = useParams();
+    const name = params.id;
 
-interface MatchParams {
-    id: string;
-}
-
-interface PlayerProps extends RouteComponentProps<MatchParams> {}
-
-function Player(props: PlayerProps) {
-    const name = props.match.params.id;
+    // TODO: More stuff
 
     return <div>{`Player: ${name}`}</div>;
 }

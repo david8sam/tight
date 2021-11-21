@@ -3,8 +3,8 @@ import React from 'react';
 import {
     Button,
     ButtonProps,
-    ExpansionPanelDetails,
-    ExpansionPanelDetailsProps,
+    AccordionDetails,
+    AccordionDetailsProps,
     Grid,
     Typography,
     Theme,
@@ -13,19 +13,14 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { makeStyles } from '@material-ui/styles';
 
 import { StrategyCard } from 'common/Game';
-import {
-    ExpansionPanel,
-    ExpansionPanelProps,
-    ExpansionPanelSummary,
-    ExpansionPanelSummaryProps,
-} from '../components/ExpansionPanel';
+import { Accordion, AccordionProps, AccordionSummary, AccordionSummaryProps } from '../components/Accordion';
 import StrategyCardDetails from './StrategyCardDetails';
 
 export interface StrategyCardProps {
     card: StrategyCard;
-    PanelProps?: ExpansionPanelProps;
-    SummaryProps?: ExpansionPanelSummaryProps;
-    DetailsProps?: ExpansionPanelDetailsProps;
+    PanelProps?: AccordionProps;
+    SummaryProps?: AccordionSummaryProps;
+    DetailsProps?: AccordionDetailsProps;
     hideButton?: boolean;
     ButtonProps?: ButtonProps;
     buttonLabel?: React.ReactNode;
@@ -52,17 +47,17 @@ function StrategyCard(props: StrategyCardProps) {
     }
 
     return (
-        <ExpansionPanel key={name} {...PanelProps}>
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} {...SummaryProps}>
+        <Accordion key={name} {...PanelProps}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} {...SummaryProps}>
                 <Grid container direction="row" alignItems="center">
                     {button}
                     <Typography>{`${initiative} - ${name.toUpperCase()}`}</Typography>
                 </Grid>
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails {...DetailsProps}>
+            </AccordionSummary>
+            <AccordionDetails {...DetailsProps}>
                 <StrategyCardDetails primary={primary} secondary={secondary} notes={notes} version={version} />
-            </ExpansionPanelDetails>
-        </ExpansionPanel>
+            </AccordionDetails>
+        </Accordion>
     );
 }
 

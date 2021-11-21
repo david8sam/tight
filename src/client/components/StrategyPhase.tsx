@@ -1,6 +1,6 @@
 import React, { MouseEvent, useState } from 'react';
 
-import { ExpansionPanelDetails, Grid, Toolbar, Typography } from '@material-ui/core';
+import { AccordionDetails, Grid, Toolbar, Typography } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 import {
@@ -13,7 +13,7 @@ import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
 import AssignStrategyCardTable from '../components/AssignStrategyCardTable';
-import { ExpansionPanel, ExpansionPanelSummary } from '../components/ExpansionPanel';
+import { Accordion, AccordionSummary } from '../components/Accordion';
 import StrategyCard from '../components/StrategyCard';
 import useAccountInfo from '../hooks/useAccountInfo';
 
@@ -69,14 +69,14 @@ function StrategyPhase(props: object) {
                 return <StrategyCard key={name} card={card} ButtonProps={ButtonProps} buttonLabel={buttonLabel} />;
             })}
             <Toolbar />
-            <ExpansionPanel disableMargin>
-                <ExpansionPanelSummary disableMargin expandIcon={<ExpandMoreIcon />}>
+            <Accordion disableMargin>
+                <AccordionSummary disableMargin expandIcon={<ExpandMoreIcon />}>
                     <Typography>Re-assign Cards</Typography>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails>
+                </AccordionSummary>
+                <AccordionDetails>
                     <AssignStrategyCardTable />
-                </ExpansionPanelDetails>
-            </ExpansionPanel>
+                </AccordionDetails>
+            </Accordion>
         </Grid>
     );
 }

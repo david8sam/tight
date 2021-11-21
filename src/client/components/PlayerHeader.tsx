@@ -71,12 +71,12 @@ function PlayerHeader(props: PlayerHeaderProps) {
     return (
         <Grid
             container
-            justify="space-between"
+            justifyContent="space-between"
             alignItems="center"
             classes={{ root: classes.playerInfo }}
             style={{ color, backgroundColor }}
         >
-            <Grid classes={{ root: classes.infoIconGrid }} container justify="flex-start" alignItems="center">
+            <Grid classes={{ root: classes.infoIconGrid }} container justifyContent="flex-start" alignItems="center">
                 <Typography>{`${initiative} - ${name}`}</Typography>
                 <Tooltip title="Strategy Card Details">
                     <IconButton classes={{ root: classes.infoIcon }} onClick={e => onCardInfoClick(e, card)}>

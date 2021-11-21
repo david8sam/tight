@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { Button, CircularProgress, Container, FormControl, TextField, Typography } from '@material-ui/core';
-import { Theme } from '@material-ui/core/styles/createMuiTheme';
+import { Theme } from '@material-ui/core/styles/createTheme';
 import { makeStyles } from '@material-ui/styles';
 
 import { LoginStatus } from 'common/Account';
@@ -39,7 +39,7 @@ function Home(props: object) {
         sendData,
     } = useAppContext();
     const [name, setName] = useState('');
-    const history = useHistory();
+    const navigate = useNavigate();
     const { game, loggedIn, playerId } = useAccountInfo();
 
     const onLoginClick = (e: React.SyntheticEvent) => {
@@ -52,7 +52,7 @@ function Home(props: object) {
 
     useEffect(() => {
         if (loggedIn) {
-            history.push(game ? `/player/${playerId}/game` : `/player/${playerId}/manage-games`);
+            navigate(game ? `/player/${playerId}/game` : `/player/${playerId}/manage-games`);
         }
     }, [loggedIn]);
 

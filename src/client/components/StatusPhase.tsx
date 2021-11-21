@@ -48,7 +48,7 @@ function StatusPhase(props: object) {
                     </CardContent>
                     <CardContent classes={{ root: classes.cardContent }}>
                         <Toolbar classes={{ gutters: classes.toolbarGutters }}>
-                            <Grid container direction="row" justify="center" alignItems="center">
+                            <Grid container direction="row" justifyContent="center" alignItems="center">
                                 <VictoryPoints playerId={player.id} />
                             </Grid>
                         </Toolbar>

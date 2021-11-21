@@ -1,20 +1,20 @@
 import React, { useReducer, useState } from 'react';
 
 import { CssBaseline } from '@material-ui/core';
-import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
+import { createTheme, ThemeProvider } from '@material-ui/core/styles';
 
 import Context from './Context';
 import AppContent from './AppContent';
 import reducer, { initialState } from './reducer';
 import useWebSocket from './hooks/useWebSocket';
 
-const LIGHT_THEME = createMuiTheme({
+const LIGHT_THEME = createTheme({
     palette: {
         type: 'light',
     },
 });
 
-const DARK_THEME = createMuiTheme({
+const DARK_THEME = createTheme({
     palette: {
         type: 'dark',
     },

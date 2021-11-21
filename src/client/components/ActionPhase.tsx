@@ -91,7 +91,7 @@ function ActionPhase(props: object) {
                                     gutters: classes.toolbarGutters,
                                 }}
                             >
-                                <Grid container direction="row" justify="space-between" alignItems="center">
+                                <Grid container direction="row" justifyContent="space-between" alignItems="center">
                                     <VictoryPoints playerId={playerId} />
                                     <Button
                                         classes={{ root: classes.button }}

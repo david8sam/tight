@@ -1,5 +1,5 @@
 import React, { MouseEvent, useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import isEqual from 'lodash/isEqual';
 
@@ -7,7 +7,7 @@ import {
     Button,
     CircularProgress,
     Divider,
-    ExpansionPanelDetails,
+    AccordionDetails,
     Grid,
     IconButton,
     Stepper,
@@ -26,7 +26,7 @@ import { Game, GameStatus, Phase, StrategyCardIndex } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
-import { ExpansionPanel, ExpansionPanelSummary } from '../components/ExpansionPanel';
+import { Accordion, AccordionSummary } from '../components/Accordion';
 import PlayerSetup from '../components/PlayerSetup';
 import SpeakerSelect from '../components/SpeakerSelect';
 
@@ -120,7 +120,7 @@ function Game(props: object) {
     const classes = useStyles(props);
     const { sendData } = useAppContext();
     const { gameId, game, playerId } = useAccountInfo();
-    const history = useHistory();
+    const navigate = useNavigate();
 
     const [statusState, setStatusState] = useState<GameStatus>({
         started: true,
@@ -154,7 +154,7 @@ function Game(props: object) {
     }
 
     if (!game) {
-        history.push(`/player/${playerId}/manage-games`);
+        navigate(`/player/${playerId}/manage-games`);
         return null;
     }
 
@@ -225,7 +225,7 @@ function Game(props: object) {
     if (phaseStatus) {
         stepperToolbar = (
             <Toolbar classes={{ root: classes.phaseToolbar }}>
-                <Grid container justify="center" alignItems="center">
+                <Grid container justifyContent="center" alignItems="center">
                     {phaseStatus}
                 </Grid>
             </Toolbar>
@@ -234,11 +234,16 @@ function Game(props: object) {
 
     return (
         <Grid container direction="column">
-            <ExpansionPanel expanded={actionExpanded} onChange={() => setActionExpaned(expanded => !expanded)}>
-                <ExpansionPanelSummary disableMargin classes={{ root: classes.statusSummary }}>
-                    <Grid container justify="space-between" alignItems="center">
+            <Accordion expanded={actionExpanded} onChange={() => setActionExpaned(expanded => !expanded)}>
+                <AccordionSummary disableMargin classes={{ root: classes.statusSummary }}>
+                    <Grid container justifyContent="space-between" alignItems="center">
                         <Typography>{`Turn: ${playerTurn || ''}`}</Typography>
-                        <Grid container justify="center" alignItems="center" classes={{ root: classes.phaseActions }}>
+                        <Grid
+                            container
+                            justifyContent="center"
+                            alignItems="center"
+                            classes={{ root: classes.phaseActions }}
+                        >
                             <Tooltip title={Phase[prevPhase]}>
                                 <span>
                                     <IconButton
@@ -263,8 +268,8 @@ function Game(props: object) {
                         </Grid>
                         <Typography>{`Round: ${round}`}</Typography>
                     </Grid>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails classes={{ root: classes.phaseActionDetails }}>
+                </AccordionSummary>
+                <AccordionDetails classes={{ root: classes.phaseActionDetails }}>
                     <Grid container direction="column">
                         {stepperToolbar}
                         <Stepper classes={{ root: classes.stepper }} activeStep={phase} alternativeLabel>
@@ -275,11 +280,11 @@ function Game(props: object) {
                             ))}
                         </Stepper>
                     </Grid>
-                </ExpansionPanelDetails>
-            </ExpansionPanel>
+                </AccordionDetails>
+            </Accordion>
             <Divider classes={{ root: classes.divider }} />
             <Toolbar>
-                <Grid container justify="space-between" alignItems="center">
+                <Grid container justifyContent="space-between" alignItems="center">
                     <Typography>Speaker:</Typography>
                     <SpeakerSelect
                         className={classes.speakerSelect}

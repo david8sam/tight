@@ -1,5 +1,5 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { Divider, List, ListItem, ListItemText, SwipeableDrawer, SwipeableDrawerProps } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
@@ -28,16 +28,16 @@ function Drawer(props: DrawerProps) {
     const { sendData, dispatch } = useAppContext();
     const { open, onOpen, onClose, ...drawerProps } = props;
 
-    const history = useHistory();
+    const navigate = useNavigate();
     const { loggedIn, game, playerId } = useAccountInfo();
 
     const onOptionClick = (e: React.SyntheticEvent<{}, Event>, id: string) => {
         onClose(e);
 
         if (id === 'home') {
-            history.push('/');
+            navigate('/');
         } else if (playerId) {
-            history.push(`/player/${playerId}/${id}`);
+            navigate(`/player/${playerId}/${id}`);
         }
     };
 
@@ -49,7 +49,7 @@ function Drawer(props: DrawerProps) {
         sendData({ type: MessageType.ACCOUNT_LOGOUT, data: { accountId: playerId } });
         onClose(e);
 
-        history.push('/');
+        navigate('/');
     };
 
     const playerInGame = Boolean(playerId && game && game.players[playerId]);

@@ -93,7 +93,7 @@ function PlayerFactionForm(props: PlayerSetupFormProps) {
     return (
         <Grid container direction="column">
             <Grid container>{name}</Grid>
-            <Grid container direction="row" justify="flex-start" spacing={1}>
+            <Grid container direction="row" justifyContent="flex-start" spacing={1}>
                 <Grid item xs={4}>
                     <Select
                         disabled={disabled}

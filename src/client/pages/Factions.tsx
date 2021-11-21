@@ -1,5 +1,4 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
 
 import { Grid, IconButton, Toolbar, Tooltip, Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
@@ -24,7 +23,6 @@ const useStyles = makeStyles((theme: Theme) => ({
 function Factions(props: object) {
     const classes = useStyles(props);
     const { gameId, game, playerId } = useAccountInfo();
-    const history = useHistory();
 
     // TODO: also use this page to allow player to select a faction during player setup.
 
@@ -77,7 +75,7 @@ function Factions(props: object) {
     const nextFaction = index === lastIndex ? factionNames[0] : factionNames[index + 1];
 
     return (
-        <Grid container alignItems="center" justify="space-between">
+        <Grid container alignItems="center" justifyContent="space-between">
             <Toolbar classes={{ root: classes.toolbar }} disableGutters>
                 <Tooltip title={prevFaction}>
                     <IconButton onClick={() => onFactionChange(prevFaction)}>
