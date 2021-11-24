@@ -429,17 +429,47 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             break;
         }
         case MessageType.PLAYER_EXHAUST_PLANET: {
-            const { planetId } = data || {};
+            const { planetId, ability } = data || {};
             const planets = GameDB.getPlanetsArray(gameId, planetId).filter(p => p.owner === playerId);
-            planets.forEach(p => (p.refreshed = false));
+            planets.forEach(p => {
+                p.refreshed = false;
+                if (ability && p.refreshedAbility !== undefined) {
+                    p.refreshedAbility = false;
+                }
+            });
 
             markGameDirty(gameId, { planets: true });
             break;
         }
         case MessageType.PLAYER_REFRESH_PLANET: {
-            const { planetId } = data || {};
+            const { planetId, ability } = data || {};
             const planets = GameDB.getPlanetsArray(gameId, planetId).filter(p => p.owner === playerId);
-            planets.forEach(p => (p.refreshed = true));
+            planets.forEach(p => {
+                p.refreshed = true;
+                if (ability && p.refreshedAbility !== undefined) {
+                    p.refreshedAbility = true;
+                }
+            });
+
+            markGameDirty(gameId, { planets: true });
+            break;
+        }
+        case MessageType.PLAYER_EXHAUST_PLANET_ABILITY: {
+            const { planetId } = data || {};
+            const planets = GameDB.getPlanetsArray(gameId, planetId).filter(
+                p => p.owner === playerId && p.refreshedAbility !== undefined,
+            );
+            planets.forEach(p => (p.refreshedAbility = false));
+
+            markGameDirty(gameId, { planets: true });
+            break;
+        }
+        case MessageType.PLAYER_REFRESH_PLANET_ABILITY: {
+            const { planetId } = data || {};
+            const planets = GameDB.getPlanetsArray(gameId, planetId).filter(
+                p => p.owner === playerId && p.refreshedAbility !== undefined,
+            );
+            planets.forEach(p => (p.refreshedAbility = true));
 
             markGameDirty(gameId, { planets: true });
             break;

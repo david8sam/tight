@@ -1,0 +1,121 @@
+import React, { ChangeEvent } from 'react';
+
+import { FormControlLabel, Grid, Switch, Theme, Typography } from '@material-ui/core';
+import { makeStyles } from '@material-ui/styles';
+
+import { MessageType } from 'common/message';
+import { Traits } from 'common/Planet';
+
+import { useAppContext } from '../Context';
+import { PlanetData } from '../types';
+import useAccountInfo from '../hooks/useAccountInfo';
+import {
+    HomePlanet,
+    Biotic,
+    Warfare,
+    Propulsion,
+    Cybernetic,
+    Cultural,
+    Hazardous,
+    Industrial,
+    Legendary,
+} from './PlanetIcons';
+
+const useStyle = makeStyles((theme: Theme) => ({
+    icon: {
+        marginRight: theme.spacing(1),
+    },
+    grid: {
+        width: 'auto',
+    },
+}));
+
+export interface PlanetNameCellProps {
+    planet: PlanetData;
+    hideAbility?: boolean;
+}
+
+export default function PlanetNameCell(props: PlanetNameCellProps) {
+    const classes = useStyle(props);
+    const { sendData } = useAppContext();
+    const { gameId, playerId } = useAccountInfo();
+    const { planet, hideAbility } = props;
+    const { name, home, biotic = 0, warfare = 0, propulsion = 0, cybernetic = 0, trait, legendary } = planet;
+
+    // Add icons below the name
+    const icons = [];
+    const iconProps = { classes: { root: classes.icon } };
+    if (home) {
+        icons.push(<HomePlanet key="home" {...iconProps} />);
+    }
+
+    for (let b = 0; b < biotic; b++) {
+        icons.push(<Biotic key={`biotic${b}`} {...iconProps} />);
+    }
+
+    for (let w = 0; w < warfare; w++) {
+        icons.push(<Warfare key={`warfare${w}`} {...iconProps} />);
+    }
+
+    for (let p = 0; p < propulsion; p++) {
+        icons.push(<Propulsion key={`propulsion${p}`} {...iconProps} />);
+    }
+
+    for (let c = 0; c < cybernetic; c++) {
+        icons.push(<Cybernetic key={`cybernetic${c}`} {...iconProps} />);
+    }
+
+    switch (trait) {
+        case Traits.CULTURAL:
+            icons.push(<Cultural key="cultural" {...iconProps} />);
+            break;
+        case Traits.HAZARDOUS:
+            icons.push(<Hazardous key="hazardous" {...iconProps} />);
+            break;
+        case Traits.INDUSTRIAL:
+            icons.push(<Industrial key="industrial" {...iconProps} />);
+            break;
+        default:
+            break;
+    }
+
+    if (legendary) {
+        icons.push(<Legendary key="legendary" {...iconProps} title={planet.legendary} />);
+    }
+
+    const onExhaustChange = (e: ChangeEvent<HTMLDivElement>, exhaust: boolean) => {
+        e.stopPropagation();
+        sendData({
+            type: exhaust ? MessageType.PLAYER_EXHAUST_PLANET_ABILITY : MessageType.PLAYER_REFRESH_PLANET_ABILITY,
+            data: { gameId, playerId, planetId: planet.name },
+        });
+    };
+
+    const isLegendary = Boolean(planet.legendary);
+    return (
+        <Grid container direction="row" spacing={2}>
+            <Grid item>
+                <Grid container direction="column" className={classes.grid}>
+                    <Grid item>{name}</Grid>
+                    <Grid container>{icons}</Grid>
+                </Grid>
+            </Grid>
+            {isLegendary && !hideAbility && (
+                <Grid item>
+                    <Grid container justifyContent="center" alignItems="center" className={classes.grid}>
+                        <FormControlLabel
+                            control={<Switch checked={planet.refreshedAbility} onChange={onExhaustChange} />}
+                            label={
+                                <Grid container direction="column" justifyContent="center" alignItems="center">
+                                    <Typography variant="subtitle2">Exhaust</Typography>
+                                    <Typography variant="subtitle2">Ability</Typography>
+                                </Grid>
+                            }
+                            onClick={e => e.stopPropagation()}
+                        />
+                    </Grid>
+                </Grid>
+            )}
+        </Grid>
+    );
+}

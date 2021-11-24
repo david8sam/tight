@@ -90,6 +90,8 @@ export enum MessageType {
     PLAYER_LOST_PLANET = '/player/lostPlanet', // Player has lost planet(s)
     PLAYER_EXHAUST_PLANET = '/player/exhaustPlanet',
     PLAYER_REFRESH_PLANET = '/player/refreshPlanet',
+    PLAYER_EXHAUST_PLANET_ABILITY = '/player/exhaustPlanetAbility',
+    PLAYER_REFRESH_PLANET_ABILITY = '/player/refreshPlanetAbility',
 
     //
     LIST_PLANETS = '/planet/list',

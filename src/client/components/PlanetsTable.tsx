@@ -1,7 +1,6 @@
 import React, { useState, ReactNode } from 'react';
 import {
     Checkbox,
-    Grid,
     IconButton,
     Table,
     TableBody,
@@ -21,30 +20,9 @@ import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import CloseIcon from '@material-ui/icons/Close';
 
 import { useAppContext } from '../Context';
-import {
-    Resources,
-    Influence,
-    Biotic,
-    Warfare,
-    Propulsion,
-    Cybernetic,
-    HomePlanet,
-    Cultural,
-    Hazardous,
-    Industrial,
-    Legendary,
-} from './PlanetIcons';
-import { GamePlanet } from 'common/Game';
-import { Planet, Traits } from 'common/Planet';
-
-interface PlanetsTableStyle {
-    [style: string]: string;
-}
-
-// Combination of Planet and GamePlanet
-interface PlanetData extends Planet, GamePlanet {
-    name: string;
-}
+import { PlanetData } from '../types';
+import { Resources, Influence } from './PlanetIcons';
+import PlanetNameCell, { PlanetNameCellProps } from './PlanetNameCell';
 
 export type ColumnType = keyof PlanetData;
 
@@ -60,8 +38,9 @@ export interface PlanetsTableProps {
     showCheckbox?: boolean;
     selection?: string[];
     onSelectionChange?: (selection: string[]) => void;
-
     onPlanetClick?: (id: string) => void | null;
+
+    PlanetNameCellProps?: Omit<PlanetNameCellProps, 'planet'>;
 }
 
 const useStyle = makeStyles((theme: Theme) => ({
@@ -73,7 +52,7 @@ const useStyle = makeStyles((theme: Theme) => ({
     },
     tableBody: {},
     tableHeaderSmall: {
-        maxWidth: 45,
+        maxWidth: 80,
     },
     tableRow: {
         height: 80,
@@ -82,70 +61,19 @@ const useStyle = makeStyles((theme: Theme) => ({
             userSelect: 'none',
         },
     },
-    icon: {
-        marginRight: theme.spacing(1),
-    },
 }));
 
 const DEFAULT_COLUMNS: ColumnType[] = ['name', 'owner', 'resources', 'influence'];
 
-function formatName(planet: PlanetData, classes: PlanetsTableStyle) {
-    const { name, home, biotic = 0, warfare = 0, propulsion = 0, cybernetic = 0, trait, legendary } = planet;
-
-    // Add icons below the name
-    const icons = [];
-    const iconProps = { classes: { root: classes.icon } };
-    if (home) {
-        icons.push(<HomePlanet key="home" {...iconProps} />);
-    }
-
-    for (let b = 0; b < biotic; b++) {
-        icons.push(<Biotic key={`biotic${b}`} {...iconProps} />);
-    }
-
-    for (let w = 0; w < warfare; w++) {
-        icons.push(<Warfare key={`warfare${w}`} {...iconProps} />);
-    }
-
-    for (let p = 0; p < propulsion; p++) {
-        icons.push(<Propulsion key={`propulsion${p}`} {...iconProps} />);
-    }
-
-    for (let c = 0; c < cybernetic; c++) {
-        icons.push(<Cybernetic key={`cybernetic${c}`} {...iconProps} />);
-    }
-
-    switch (trait) {
-        case Traits.CULTURAL:
-            icons.push(<Cultural key="cultural" {...iconProps} />);
-            break;
-        case Traits.HAZARDOUS:
-            icons.push(<Hazardous key="hazardous" {...iconProps} />);
-            break;
-        case Traits.INDUSTRIAL:
-            icons.push(<Industrial key="industrial" {...iconProps} />);
-            break;
-        default:
-            break;
-    }
-
-    if (legendary) {
-        icons.push(<Legendary key="legendary" {...iconProps} />);
-    }
-
-    return (
-        <Grid container direction="column">
-            <Grid container>{name}</Grid>
-            <Grid container>{icons}</Grid>
-        </Grid>
-    );
-}
-
-function renderCells(planet: PlanetData, columns: ColumnType[], classes: PlanetsTableStyle) {
+function renderCells(
+    planet: PlanetData,
+    columns: ColumnType[],
+    PlanetNameCellProps: PlanetsTableProps['PlanetNameCellProps'],
+) {
     return columns.map(column => {
         let value: ReactNode = planet[column];
         if (column === 'name') {
-            value = formatName(planet, classes);
+            value = <PlanetNameCell {...PlanetNameCellProps} planet={planet} />;
         } else if (column === 'owner') {
             value = value || '-';
         }
@@ -174,6 +102,7 @@ function PlanetsTable(props: PlanetsTableProps) {
         selection = [],
         onSelectionChange = () => {},
         onPlanetClick = () => {},
+        PlanetNameCellProps,
     } = props;
 
     const [nameFilter, setNameFilter] = useState('');
@@ -366,10 +295,10 @@ function PlanetsTable(props: PlanetsTableProps) {
                             let label = null;
                             let extraProps: TableCellProps = {};
                             if (column === 'resources') {
-                                label = <Resources />;
+                                label = <Resources hideTitle />;
                                 extraProps.classes = { root: classes.tableHeaderSmall };
                             } else if (column === 'influence') {
-                                label = <Influence />;
+                                label = <Influence hideTitle />;
                                 extraProps.classes = { root: classes.tableHeaderSmall };
                             } else {
                                 label = column.toUpperCase();
@@ -410,7 +339,7 @@ function PlanetsTable(props: PlanetsTableProps) {
                                 onClick={e => onRowClick(name)}
                             >
                                 {rowCheckbox}
-                                {renderCells(planet, columns, classes)}
+                                {renderCells(planet, columns, PlanetNameCellProps)}
                             </TableRow>
                         );
                     })}

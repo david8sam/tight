@@ -86,6 +86,7 @@ export interface GamePlanet {
     name: string;
     owner: string | null;
     refreshed: boolean;
+    refreshedAbility?: boolean; // undefined if no ability
 }
 
 export type GamePlanetMap = Record<string, GamePlanet>;

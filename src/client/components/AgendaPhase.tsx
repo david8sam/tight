@@ -29,7 +29,10 @@ export default function AgendaPhase() {
         const players = Object.values(game.players);
         players.forEach(p => {
             const { id: playerId, planets } = p;
-            sendData({ type: MessageType.PLAYER_REFRESH_PLANET, data: { gameId, playerId, planets } });
+            sendData({
+                type: MessageType.PLAYER_REFRESH_PLANET,
+                data: { gameId, playerId, planetId: planets, ability: true },
+            });
         });
     };
 
@@ -61,7 +64,7 @@ export default function AgendaPhase() {
     };
 
     const {
-        status: { custodiansRemoved, agenda1Voted, agenda2Voted, ended },
+        status: { custodiansRemoved, agenda1Voted, agenda2Voted },
     } = game;
 
     return (

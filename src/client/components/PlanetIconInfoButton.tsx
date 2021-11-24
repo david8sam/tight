@@ -100,7 +100,7 @@ function PlanetIconInfoButton() {
                     {ICONS.map(({ Component, label }) => (
                         <ListItem key={label}>
                             <ListItemAvatar>
-                                <Component />
+                                <Component hideTitle />
                             </ListItemAvatar>
                             <ListItemText>{label}</ListItemText>
                         </ListItem>

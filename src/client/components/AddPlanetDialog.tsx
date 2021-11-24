@@ -101,6 +101,7 @@ function AddPlanetDialog(props: AddPlanetDialogProps) {
                     showCheckbox
                     selection={selection}
                     onSelectionChange={setSelection}
+                    PlanetNameCellProps={{ hideAbility: true }}
                 />
             </DialogContent>
         </Dialog>

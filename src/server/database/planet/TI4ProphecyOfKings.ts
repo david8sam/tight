@@ -113,14 +113,16 @@ const Planets: readonly Planet[] = [
         trait: Traits.CULTURAL,
         resources: 2,
         influence: 1,
-        legendary: 'The Atrament',
+        legendary:
+            'The Atrament: You may exhaust this card at the end of your turn to place up to 2 infantry from your reinforcements on any planet you control.',
     },
     {
         name: "Hope's End",
         trait: Traits.HAZARDOUS,
         resources: 3,
         influence: 0,
-        legendary: 'Imperial Arms Vault',
+        legendary:
+            'Imperial Arms Vault: You may exhaust this card at the end of your turn to place 1 mech from your reinforcements on any planet you control, or draw 1 action card',
     },
     {
         name: 'Cormund',
@@ -251,14 +253,16 @@ const Planets: readonly Planet[] = [
         trait: Traits.CULTURAL,
         resources: 0,
         influence: 3,
-        legendary: 'Exterrix Headquarters',
+        legendary:
+            'Exterrix Headquarters: You may exhaust this card at the end of your turn to gain 2 trade goods or convert all of your commodities into trade goods.',
     },
     {
         name: 'Mirage',
         trait: Traits.CULTURAL,
         resources: 1,
         influence: 2,
-        legendary: 'Mirage Flight Academy',
+        legendary:
+            'Mirage Flight Academy: Mirage Flight Academy - You may exhaust this card at the end of your turn to place up to 2 fighters from your reinforcements in any system that contains 1 or more of your ships.',
     },
 ];
 
