@@ -36,9 +36,7 @@ function AccountWrapper(props: AccountWrapperProps) {
 
         if (!name || !accounts[name]) {
             navigate('/');
-        }
-
-        if (name && loginStatus === LoginStatus.LOGGED_OUT) {
+        } else if (name && loginStatus === LoginStatus.LOGGED_OUT) {
             dispatch({
                 type: ActionType.setLoginStatus,
                 payload: { status: LoginStatus.LOGIN_PENDING, accountId: name },

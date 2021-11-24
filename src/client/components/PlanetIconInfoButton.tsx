@@ -63,7 +63,7 @@ const ICONS: { Component: React.ElementType; label: string }[] = [
     },
 ];
 
-function PlanetIconInfoButton(props: object) {
+function PlanetIconInfoButton() {
     const [popoverAnchor, setPopoverAnchor] = useState<HTMLButtonElement | null>(null);
 
     const onButtonClick = (e: MouseEvent<HTMLButtonElement>) => {

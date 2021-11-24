@@ -32,6 +32,7 @@ export enum MessageType {
     ACCOUNT_LOGOUT = '/account/logout',
     ACCOUNT_ADD = '/account/add',
     ACCOUNT_DELETE = '/account/delete',
+    ACCOUNT_SET_SETTINGS = '/account/setSettings',
 
     // Manage games actions
     LIST_GAMES = '/game/list',
@@ -41,7 +42,9 @@ export enum MessageType {
     DELETE_GAME = '/game/delete',
     START_GAME = '/game/start',
     STOP_GAME = '/game/stop',
+    END_GAME = '/game/end',
 
+    GAME_SET_PUBLIC_OBJECTIVES = '/game/setPublicObjectives',
     GAME_STATUS_SET = '/game/setStatus',
     GAME_NEXT_ROUND = '/game/nextRound',
     GAME_SET_SPEAKER = '/game/setSpeaker',
@@ -68,7 +71,17 @@ export enum MessageType {
     PLAYER_FLIP_STRATEGY_CARD = '/player/filpStrategyCard',
     PLAYER_RESET_STRATEGY_CARDS = '/player/resetStrategyCards',
 
+    // data: { passed: boolean }
     PLAYER_PASS_TURN = '/player/passTurn',
+
+    // data: { publicObjectives: boolean[] }
+    PLAYER_SET_PUBLIC_OBJECTIVES = '/player/setPublicObjective',
+
+    // data: { secretObjective: { cleared: boolean; objective: Objective } }
+    PLAYER_SET_SECRET_OBJECTIVE = './player/setSecretObjective',
+
+    // Fluid victory points that can be gained/lost between game rounds. (i.e markers, agenda, etc...)
+    // data: { victoryPoints }
     PLAYER_SET_VICTORY_POINTS = '/player/setVictoryPoints',
 
     // Planet actions

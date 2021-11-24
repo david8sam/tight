@@ -31,8 +31,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
 }));
 
-function Home(props: object) {
-    const classes = useStyles(props);
+function Home() {
+    const classes = useStyles();
     const {
         state: { loginStatus, accounts },
         dispatch,

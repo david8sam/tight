@@ -6,9 +6,9 @@ export default function useAccountInfo() {
         state: { accounts, games, accountId, loginStatus },
     } = useAppContext();
 
-    const account = accountId && accounts && accounts[accountId];
+    const account = accountId && accounts ? accounts[accountId] : null;
     const gameId = account && account.joinedGame;
-    const game = gameId && games[gameId];
+    const game = gameId ? games[gameId] : null;
     const player = accountId && game && game.players && game.players[accountId];
 
     return { loggedIn: loginStatus === LoginStatus.LOGGED_IN, account, gameId, game, playerId: accountId, player };

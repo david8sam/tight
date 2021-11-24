@@ -5,17 +5,26 @@ import Brightness6 from '@material-ui/icons/Brightness6';
 import Brightness6Outlined from '@material-ui/icons/Brightness6Outlined';
 import MenuIcon from '@material-ui/icons/Menu';
 
+import { AppTheme } from 'common/Account';
+import { MessageType } from 'common/message';
+
 import { useAppContext } from '../Context';
 import Drawer from './Drawer';
-import { ActionType } from '../reducer';
 
-function Header(props: object) {
+function Header() {
     const [drawerOpen, setDrawerOpen] = useState(false);
 
     const {
-        state: { accountId, useDarkTheme },
-        dispatch,
+        sendData,
+        state: { accountId, accounts },
     } = useAppContext();
+
+    const account = accountId ? accounts[accountId] : null;
+    const theme = account?.settings?.theme ?? 'light';
+
+    const onThemeChange = (theme: AppTheme) => {
+        sendData({ type: MessageType.ACCOUNT_SET_SETTINGS, data: { accountId, settings: { theme } } });
+    };
 
     return (
         <>
@@ -29,9 +38,9 @@ function Header(props: object) {
                         </Tooltip>
                         <Typography variant="h6">{accountId || ''}</Typography>
                     </Grid>
-                    <Tooltip title={useDarkTheme ? 'Switch to Light Theme' : 'Switch to Dark Theme'}>
-                        <IconButton onClick={() => dispatch({ type: ActionType.useDarkTheme, payload: !useDarkTheme })}>
-                            {useDarkTheme ? <Brightness6Outlined /> : <Brightness6 />}
+                    <Tooltip title={theme === 'light' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}>
+                        <IconButton onClick={() => onThemeChange(theme === 'dark' ? 'light' : 'dark')}>
+                            {theme === 'dark' ? <Brightness6Outlined /> : <Brightness6 />}
                         </IconButton>
                     </Tooltip>
                 </Toolbar>

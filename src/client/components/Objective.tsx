@@ -1,0 +1,160 @@
+import React, { MouseEvent, useState } from 'react';
+
+import { Grid, IconButton, TextField, Theme, Toolbar, Tooltip, Typography } from '@material-ui/core';
+import DeleteIcon from '@material-ui/icons/Delete';
+import EditIcon from '@material-ui/icons/Edit';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import { makeStyles, useTheme } from '@material-ui/styles';
+
+import { GamePlayer, Objective, SECRET_OBJECTIVE_ID } from 'common/Game';
+
+import useAccountInfo from '../hooks/useAccountInfo';
+
+import { Accordion, AccordionDetails, AccordionProps, AccordionSummary } from './Accordion';
+import EditObjectiveDialog from './EditObjectiveDialog';
+import ObjectivePlayerAvatar from './ObjectivePlayerAvatar';
+
+const AVATAR_SIZE = 30;
+
+const useStyles = makeStyles((theme: Theme) => ({
+    disabledText: {
+        color: theme.palette.text.primary,
+    },
+    summaryContent: {
+        alignItems: 'center',
+    },
+    toolbar: {
+        minHeight: 0,
+    },
+    avatarContainer: {
+        paddingRight: theme.spacing(),
+        paddingBottom: theme.spacing(),
+    },
+    avatar: {
+        width: AVATAR_SIZE,
+        height: AVATAR_SIZE,
+        textTransform: 'uppercase',
+        fontSize: 12,
+    },
+}));
+
+export interface ObjectiveProps {
+    objective: Objective;
+    editable?: boolean;
+    onChange?: (objective: Objective) => void;
+    deletable?: boolean;
+    onDelete?: (objective: Objective) => void;
+    showPlayers?: boolean;
+    AccordionProps?: Omit<AccordionProps, 'children'>;
+}
+
+export default function Objective(props: ObjectiveProps) {
+    const classes = useStyles(props);
+    const {
+        deletable = false,
+        editable = false,
+        objective,
+        onChange,
+        onDelete,
+        showPlayers = false,
+        AccordionProps,
+    } = props;
+    const { name, description, id, vp } = objective;
+    const [editOpen, setEditOpen] = useState(false);
+
+    const { game } = useAccountInfo();
+    const players: GamePlayer[] = [];
+    if (showPlayers && game && id !== SECRET_OBJECTIVE_ID) {
+        Object.values(game.players).forEach(p => {
+            if (p.publicObjectives[id - 1] === true) {
+                players.push(p);
+            }
+        });
+    }
+
+    const onDeleteClick = (e: MouseEvent<HTMLButtonElement>) => {
+        e.stopPropagation();
+        if (onDelete) {
+            onDelete(objective);
+        }
+    };
+
+    const onEditOpenClick = (e: MouseEvent<HTMLButtonElement>) => {
+        e.stopPropagation();
+        setEditOpen(true);
+    };
+
+    const onSaveObjective = (o: Objective) => {
+        if (onChange) {
+            onChange(o);
+        }
+
+        setEditOpen(false);
+    };
+
+    return (
+        <>
+            <Accordion disableMargin {...AccordionProps}>
+                <AccordionSummary
+                    classes={{ content: classes.summaryContent }}
+                    disableMargin
+                    expandIcon={<ExpandMoreIcon />}
+                >
+                    <Grid container direction="column">
+                        <Toolbar className={classes.toolbar} disableGutters>
+                            <Typography>{`${id === SECRET_OBJECTIVE_ID ? 'S' : id} - ${name} (${vp} VP)`}</Typography>
+                            {deletable && (
+                                <Tooltip title="Delete">
+                                    <IconButton onClick={onDeleteClick}>
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
+                            {editable && (
+                                <Tooltip title="Edit">
+                                    <IconButton onClick={onEditOpenClick}>
+                                        <EditIcon />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
+                        </Toolbar>
+                        <Toolbar className={classes.toolbar} disableGutters>
+                            {players.map(player => (
+                                <div key={player.id} className={classes.avatarContainer}>
+                                    {/* Prevent click from expanding accordion */}
+                                    <ObjectivePlayerAvatar
+                                        game={game}
+                                        player={player}
+                                        onOpen={e => e.stopPropagation()}
+                                    />
+                                </div>
+                            ))}
+                        </Toolbar>
+                    </Grid>
+                </AccordionSummary>
+                <AccordionDetails>
+                    <TextField
+                        InputProps={{ classes: { disabled: classes.disabledText } }}
+                        disabled
+                        fullWidth
+                        multiline
+                        variant="outlined"
+                        label="Description"
+                        value={description}
+                        // Workaround for known MUI TextField label overlap limitation:
+                        // https://mui.com/components/text-fields/#limitations
+                        InputLabelProps={{ shrink: Boolean(description) }}
+                    />
+                </AccordionDetails>
+            </Accordion>
+            {editOpen && (
+                <EditObjectiveDialog
+                    open={editOpen}
+                    onClose={() => setEditOpen(false)}
+                    onSave={onSaveObjective}
+                    defaultObjective={objective}
+                />
+            )}
+        </>
+    );
+}

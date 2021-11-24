@@ -62,6 +62,14 @@ function Drawer(props: DrawerProps) {
                         <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary="Game Status" />
                     </ListItem>
                     <ListItem
+                        key="objectives"
+                        button
+                        disabled={!playerInGame}
+                        onClick={e => onOptionClick(e, 'objectives')}
+                    >
+                        <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary="Objectives" />
+                    </ListItem>
+                    <ListItem
                         key="planets"
                         button
                         disabled={!game || !game.status.started}

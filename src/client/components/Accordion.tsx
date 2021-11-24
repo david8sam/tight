@@ -3,10 +3,22 @@ import React from 'react';
 import {
     Accordion as MuiAccordion,
     AccordionProps as MuiAccordionProps,
+    AccordionActions as MuiAccordionActions,
+    AccordionActionsProps as MuiAccordionActionsProps,
+    AccordionDetails as MuiAccordionDetails,
+    AccordionDetailsProps as MuiAccordionDetailsProps,
     AccordionSummary as MuiAccordionSummary,
     AccordionSummaryProps as MuiAccordionSummaryProps,
 } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
+
+// Re-export all other unmodified accordion related components
+export {
+    MuiAccordionActions as AccordionActions,
+    MuiAccordionActionsProps as AccordionActionsProps,
+    MuiAccordionDetails as AccordionDetails,
+    MuiAccordionDetailsProps as AccordionDetailsProps,
+};
 
 const AccordionNoMargin = withStyles({
     root: {

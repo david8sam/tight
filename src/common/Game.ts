@@ -62,6 +62,7 @@ export enum StrategyCardIndex {
     END,
 }
 
+// Base name to array of all other versions
 export const StrategyCardsWithVersions = Object.freeze({
     [StrategyCardIndex.DIPLOMACY]: [StrategyCardIndex.DIPLOMACY_2],
     [StrategyCardIndex.CONSTRUCTION]: [StrategyCardIndex.CONSTRUCTION_2],
@@ -69,6 +70,7 @@ export const StrategyCardsWithVersions = Object.freeze({
 
 export interface GameStatus {
     started: boolean;
+    ended: boolean;
     round: number;
     phase: Phase;
     turn: StrategyCardIndex;
@@ -99,24 +101,28 @@ export interface GamePlayer {
     strategyCard: StrategyCardIndex;
     strategyCardTaken: boolean;
     stragetyCardFlipped: boolean;
-
     passed: boolean;
 
     planets: string[];
+    secretObjective: { cleared: boolean; objective: Objective };
+    publicObjectives: boolean[]; // index === Objective.id
     victoryPoints: number;
 }
 
 export type GamePlayerMap = Record<string, GamePlayer>;
 
-export interface GameMetadata {
-    readonly id: string;
-    readonly date: number;
-    readonly version: Version;
-    readonly creator: string;
-    readonly name: string;
-}
+// id > 0
+export type Objective = { id: number; name: string; description?: string; vp: number };
 
-export type GameMetadataMap = Record<string, GameMetadata>;
+export const SECRET_OBJECTIVE_ID = -999;
+
+export const PUBLIC_OBJECTIVES_PLACEHOLDER: Objective[] = Array(10)
+    .fill('')
+    .map((_dummy, index) => ({
+        id: index + 1,
+        name: `Objective ${index + 1}`,
+        vp: 1,
+    }));
 
 export interface Game {
     readonly id: string;
@@ -126,8 +132,9 @@ export interface Game {
     name: string;
 
     status: GameStatus;
-    players: GamePlayerMap;
     planets: GamePlanetMap;
+    players: GamePlayerMap;
+    publicObjectives: Objective[];
 }
 
 export type GameMap = Record<string, Game>;
@@ -136,9 +143,11 @@ export interface GameChangeData {
     id: string;
     created?: Game;
     deleted?: boolean;
+
     status?: GameStatus;
     planets?: GamePlanetMap;
     players?: GamePlayerMap;
+    publicObjectives?: Objective[];
 }
 
 export type GameChangeDataMap = Record<string, GameChangeData>;
@@ -187,4 +196,16 @@ export function strategyCardHasOwner(stratCardOwners: string[], initiative: numb
     }
 
     return hasOwner;
+}
+
+export function calculateVictoryPoints(game: Game, playerId: string) {
+    const player = game.players[playerId];
+    const { publicObjectives: gamePOs } = game;
+    const { publicObjectives, secretObjective, victoryPoints } = player;
+
+    const povp = publicObjectives.reduce((total, po, i) => total + (po === true ? gamePOs[i].vp : 0), 0);
+    const sovp = secretObjective.cleared === true ? secretObjective.objective.vp : 0;
+    const totalvp = povp + sovp + victoryPoints;
+
+    return totalvp;
 }

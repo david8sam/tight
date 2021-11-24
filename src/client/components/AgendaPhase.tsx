@@ -1,6 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-import { Button, Checkbox, FormControlLabel, FormGroup, Grid, Switch, Toolbar } from '@material-ui/core';
+import {
+    Button,
+    Checkbox,
+    Divider,
+    FormControlLabel,
+    FormGroup,
+    Grid,
+    Switch,
+    Toolbar,
+    Typography,
+} from '@material-ui/core';
 
 import { useAppContext } from '../Context';
 import useAccountInfo from '../hooks/useAccountInfo';
@@ -8,8 +18,10 @@ import { MessageType } from 'common/message';
 
 export default function AgendaPhase() {
     const { sendData } = useAppContext();
-    const { game, gameId } = useAccountInfo();
-    if (!game) {
+    const { game, gameId, playerId } = useAccountInfo();
+    const [endGameEarly, setEndGameEarly] = useState(false);
+
+    if (!game || !playerId) {
         return null;
     }
 
@@ -44,8 +56,12 @@ export default function AgendaPhase() {
         sendData({ type: MessageType.GAME_SET_AGENDA_VOTED, data });
     };
 
+    const onEndGame = () => {
+        sendData({ type: MessageType.END_GAME, data: { gameId } });
+    };
+
     const {
-        status: { custodiansRemoved, agenda1Voted, agenda2Voted },
+        status: { custodiansRemoved, agenda1Voted, agenda2Voted, ended },
     } = game;
 
     return (
@@ -53,7 +69,7 @@ export default function AgendaPhase() {
             <Toolbar>
                 <FormControlLabel
                     control={<Switch checked={custodiansRemoved} onChange={onCustodiansRemoved} color="primary" />}
-                    label={custodiansRemoved ? 'Mecatol Rex Custodians Removed' : 'Mecatol Rex Custodians Remain'}
+                    label="Mecatol Rex Custodians Removed?"
                 />
             </Toolbar>
             <Toolbar>
@@ -77,9 +93,43 @@ export default function AgendaPhase() {
             <Toolbar />
             <Toolbar>
                 <Button color="primary" variant="contained" fullWidth onClick={() => onRefreshAll()}>
-                    Refresh Everyone's Planets
+                    <Typography>Refresh Everyone's Planets</Typography>
                 </Button>
             </Toolbar>
+            {game.status.round < 10 && (
+                <>
+                    <Toolbar />
+                    <Divider orientation="horizontal" />
+                    <Toolbar />
+                    <Toolbar>
+                        <Grid container direction="column" spacing={2}>
+                            <Grid item>
+                                <FormControlLabel
+                                    control={
+                                        <Switch
+                                            checked={endGameEarly}
+                                            onChange={e => setEndGameEarly(e.target.checked)}
+                                            color="primary"
+                                        />
+                                    }
+                                    label="End Game Early?"
+                                />
+                            </Grid>
+                            <Grid item>
+                                <Button
+                                    disabled={!endGameEarly}
+                                    color="primary"
+                                    variant="contained"
+                                    fullWidth
+                                    onClick={onEndGame}
+                                >
+                                    <Typography>End Game</Typography>
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </Toolbar>
+                </>
+            )}
         </Grid>
     );
 }

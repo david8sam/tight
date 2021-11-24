@@ -20,8 +20,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
 }));
 
-function Factions(props: object) {
-    const classes = useStyles(props);
+function Factions() {
+    const classes = useStyles();
     const { gameId, game, playerId } = useAccountInfo();
 
     // TODO: also use this page to allow player to select a faction during player setup.

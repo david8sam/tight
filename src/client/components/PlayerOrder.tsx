@@ -7,7 +7,7 @@ import { MessageType } from 'common/message';
 
 const DEFAULT_PLAYER = 'PLAYER';
 
-function PlayerOrder(props: object) {
+function PlayerOrder() {
     const { sendData } = useAppContext();
     const { game, gameId } = useAccountInfo();
     if (!game) {

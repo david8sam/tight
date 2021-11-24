@@ -7,7 +7,6 @@ import {
     Button,
     CircularProgress,
     Divider,
-    AccordionDetails,
     Grid,
     IconButton,
     Stepper,
@@ -26,7 +25,7 @@ import { Game, GameStatus, Phase, StrategyCardIndex } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
-import { Accordion, AccordionSummary } from '../components/Accordion';
+import { Accordion, AccordionDetails, AccordionSummary } from '../components/Accordion';
 import PlayerSetup from '../components/PlayerSetup';
 import SpeakerSelect from '../components/SpeakerSelect';
 
@@ -72,7 +71,9 @@ function canNextPhase(game: Game): { canNext: boolean; message: string } {
     if (phase === Phase.AGENDA) {
         if (custodiansRemoved) {
             canNext = agenda2Voted;
-            message = agenda1Voted ? 'Waiting for second agenda...' : 'Waiting for first agenda...';
+            if (!agenda2Voted) {
+                message = agenda1Voted ? 'Waiting for second agenda...' : 'Waiting for first agenda...';
+            }
         } else {
             canNext = true;
         }
@@ -116,14 +117,15 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
 }));
 
-function Game(props: object) {
-    const classes = useStyles(props);
+function Game() {
+    const classes = useStyles();
     const { sendData } = useAppContext();
     const { gameId, game, playerId } = useAccountInfo();
     const navigate = useNavigate();
 
     const [statusState, setStatusState] = useState<GameStatus>({
         started: true,
+        ended: false,
         round: 1,
         phase: Phase.STRATEGY,
         turn: StrategyCardIndex.NONE,
@@ -138,6 +140,14 @@ function Game(props: object) {
     const [actionExpanded, setActionExpaned] = useState(false);
 
     useEffect(() => {
+        if (!game) {
+            navigate(`/player/${playerId}/manage-games`);
+        } else if (game.status.ended) {
+            navigate(`/player/${playerId}/game-results`);
+        }
+    });
+
+    useEffect(() => {
         const { status } = game || {};
         if (!status) {
             return;
@@ -149,12 +159,7 @@ function Game(props: object) {
         }
     });
 
-    if (!playerId) {
-        return null;
-    }
-
-    if (!game) {
-        navigate(`/player/${playerId}/manage-games`);
+    if (!game || game.status.ended || !playerId) {
         return null;
     }
 
@@ -195,6 +200,16 @@ function Game(props: object) {
         setPending(true);
     };
 
+    const onEndGame = (e: MouseEvent<HTMLButtonElement>) => {
+        e.stopPropagation();
+        if (pending) {
+            return;
+        }
+
+        sendData({ type: MessageType.END_GAME, data: { gameId } });
+        setPending(true);
+    };
+
     let playerTurn = null;
     if (phase === Phase.STRATEGY) {
         playerTurn = pickOrder[pickTurn];
@@ -206,19 +221,27 @@ function Game(props: object) {
     }
 
     let phaseStatus = null;
-    if (phase === Phase.AGENDA && round < 10 && canNext) {
-        phaseStatus = (
-            <Button
-                disabled={pending || round === 10 || phase !== Phase.AGENDA}
-                color="primary"
-                variant="contained"
-                onClick={e => onStartNextRound(e)}
-            >
-                {pending ? <CircularProgress size="24" /> : 'Start Next Round'}
-            </Button>
-        );
-    } else if (message) {
+    if (message) {
         phaseStatus = <Typography>{message}</Typography>;
+    } else if (phase === Phase.AGENDA) {
+        if (round === 10) {
+            phaseStatus = (
+                <Button color="primary" variant="contained" onClick={onEndGame}>
+                    {pending ? <CircularProgress size="24" /> : 'End Game'}
+                </Button>
+            );
+        } else if (canNext) {
+            phaseStatus = (
+                <Button
+                    disabled={pending || phase !== Phase.AGENDA}
+                    color="primary"
+                    variant="contained"
+                    onClick={e => onStartNextRound(e)}
+                >
+                    {pending ? <CircularProgress size="24" /> : 'Start Next Round'}
+                </Button>
+            );
+        }
     }
 
     let stepperToolbar = null;

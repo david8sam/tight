@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import { Account, AccountMap } from 'common/Account';
+import { Account, AccountMap, DEFAULT_SETTINGS } from 'common/Account';
 
 import { getHomeDir } from '../appData';
 
@@ -37,7 +37,7 @@ export function addAccount(id: string): boolean {
     }
 
     if (!_accounts[id]) {
-        _accounts[id] = { id, name: id, loggedIn: true };
+        _accounts[id] = { id, name: id, loggedIn: true, settings: { ...DEFAULT_SETTINGS } };
     }
 
     return true;

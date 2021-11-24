@@ -7,7 +7,7 @@ import { useAppContext } from '../Context';
 import useAccountInfo from '../hooks/useAccountInfo';
 import { MessageType } from 'common/message';
 
-export default function AssignStrategyCardTable(props: object) {
+export default function AssignStrategyCardTable() {
     const { state, sendData } = useAppContext();
     const { strategyCards } = state;
     const { game, gameId } = useAccountInfo();

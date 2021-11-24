@@ -11,7 +11,7 @@ import { MessageType } from 'common/message';
 import { useAppContext } from '../Context';
 import useAccountInfo from '../hooks/useAccountInfo';
 import PlayerHeader from './PlayerHeader';
-import VictoryPoints from './VictoryPoints';
+import VictoryPointsExtra from './VictoryPointsExtra';
 
 const useStyles = makeStyles((theme: Theme) => ({
     card: {
@@ -37,8 +37,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
 }));
 
-function ActionPhase(props: object) {
-    const classes = useStyles(props);
+function ActionPhase() {
+    const classes = useStyles();
     const { sendData } = useAppContext();
 
     const { game, gameId } = useAccountInfo();
@@ -92,7 +92,7 @@ function ActionPhase(props: object) {
                                 }}
                             >
                                 <Grid container direction="row" justifyContent="space-between" alignItems="center">
-                                    <VictoryPoints playerId={playerId} />
+                                    <VictoryPointsExtra playerId={playerId} />
                                     <Button
                                         classes={{ root: classes.button }}
                                         color="primary"

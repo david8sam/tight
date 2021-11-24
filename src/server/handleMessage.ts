@@ -74,7 +74,7 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             dirty.accounts = true;
             break;
         }
-        case MessageType.ACCOUNT_LOGOUT:
+        case MessageType.ACCOUNT_LOGOUT: {
             const account = AccountDB.getAccount(accountId);
             if (account && account.joinedGame) {
                 const game = GameDB.getGame(account.joinedGame);
@@ -89,15 +89,28 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             sendData({ ws, type: MessageType.ACCOUNT_LOGOUT, data: accountId });
             dirty.accounts = true;
             break;
+        }
+        case MessageType.ACCOUNT_SET_SETTINGS: {
+            const account = AccountDB.getAccount(accountId);
+            if (account) {
+                account.settings = {
+                    ...account.settings,
+                    ...data.settings,
+                };
+
+                dirty.accounts = true;
+            }
+            break;
+        }
         default:
             break;
     }
 
     switch (type) {
         case MessageType.CREATE_GAME: {
-            const { version, name } = data || {};
+            const { version, name, publicObjectives } = data || {};
             if (playerId) {
-                const game = GameDB.createGame({ creator: playerId, version, name });
+                const game = GameDB.createGame({ creator: playerId, version, name, publicObjectives });
                 markGameDirty(game.id, { created: true });
             }
             break;
@@ -148,6 +161,10 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             game.status.started = false;
             markGameDirty(gameId, { status: true });
             break;
+        case MessageType.END_GAME:
+            game.status.ended = data.ended ?? true;
+            markGameDirty(gameId, { status: true });
+            break;
 
         case MessageType.PLAYER_JOIN_GAME: {
             const { players, status } = game;
@@ -180,6 +197,11 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             }
             break;
         }
+
+        case MessageType.GAME_SET_PUBLIC_OBJECTIVES:
+            game.publicObjectives = data.publicObjectives;
+            markGameDirty(gameId, { publicObjectives: true });
+            break;
 
         case MessageType.GAME_STATUS_SET: {
             const { phase, turn, pickOrder, pickTurn } = data;
@@ -350,6 +372,16 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
                 markGameDirty(gameId, { status: true });
             }
 
+            break;
+
+        case MessageType.PLAYER_SET_PUBLIC_OBJECTIVES:
+            player.publicObjectives = data.publicObjectives;
+            markGameDirty(gameId, { players: true });
+            break;
+
+        case MessageType.PLAYER_SET_SECRET_OBJECTIVE:
+            player.secretObjective = data.secretObjective;
+            markGameDirty(gameId, { players: true });
             break;
 
         case MessageType.PLAYER_SET_VICTORY_POINTS:

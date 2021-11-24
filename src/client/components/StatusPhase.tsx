@@ -1,15 +1,13 @@
 import React from 'react';
 
-import { Button, Card, CardContent, Grid, Theme, Toolbar, Tooltip } from '@material-ui/core';
+import { Card, CardContent, Grid, Theme, Toolbar } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 
 import { GamePlayer, getPlayerOrder } from 'common/Game';
 
-import { useAppContext } from '../Context';
 import useAccountInfo from '../hooks/useAccountInfo';
 import PlayerHeader from './PlayerHeader';
 import VictoryPoints from './VictoryPoints';
-import { MessageType } from 'common/message';
 
 const useStyles = makeStyles((theme: Theme) => ({
     card: {
@@ -23,16 +21,11 @@ const useStyles = makeStyles((theme: Theme) => ({
             paddingBottom: 0,
         },
     },
-    toolbarGutters: {
-        paddingLeft: theme.spacing(1),
-        paddingRight: theme.spacing(1),
-    },
 }));
 
-function StatusPhase(props: object) {
-    const classes = useStyles(props);
-    const { sendData } = useAppContext();
-    const { game, gameId } = useAccountInfo();
+function StatusPhase() {
+    const classes = useStyles();
+    const { game } = useAccountInfo();
     if (!game) {
         return null;
     }
@@ -47,7 +40,7 @@ function StatusPhase(props: object) {
                         <PlayerHeader player={player} />
                     </CardContent>
                     <CardContent classes={{ root: classes.cardContent }}>
-                        <Toolbar classes={{ gutters: classes.toolbarGutters }}>
+                        <Toolbar disableGutters>
                             <Grid container direction="row" justifyContent="center" alignItems="center">
                                 <VictoryPoints playerId={player.id} />
                             </Grid>

@@ -64,8 +64,8 @@ function syncPlanetsFunc({ sendData, refreshed, exhausted, gameId, playerId, pla
     }
 }
 
-function Planets(props: object) {
-    const classes = useStyle(props);
+function Planets() {
+    const classes = useStyle();
     const {
         state: { planets: planetDB = {} },
         sendData,

@@ -6,7 +6,7 @@ import { StrategyCard as StrategyCardType } from 'common/Game';
 import { useAppContext } from '../Context';
 import StrategyCard from '../components/StrategyCard';
 
-function StrategyCards(props: object) {
+function StrategyCards() {
     const { state } = useAppContext();
     const { strategyCards } = state;
     const cards = strategyCards.filter(c => Boolean(c));

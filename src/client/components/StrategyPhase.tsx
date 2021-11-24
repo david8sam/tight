@@ -1,6 +1,6 @@
 import React, { MouseEvent, useState } from 'react';
 
-import { AccordionDetails, Grid, Toolbar, Typography } from '@material-ui/core';
+import { Grid, Toolbar, Typography } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 import {
@@ -13,16 +13,11 @@ import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
 import AssignStrategyCardTable from '../components/AssignStrategyCardTable';
-import { Accordion, AccordionSummary } from '../components/Accordion';
+import { Accordion, AccordionDetails, AccordionSummary } from '../components/Accordion';
 import StrategyCard from '../components/StrategyCard';
 import useAccountInfo from '../hooks/useAccountInfo';
 
-const CardsWithVersions = {
-    [StrategyCardIndex.DIPLOMACY]: [StrategyCardIndex.DIPLOMACY_2],
-    [StrategyCardIndex.CONSTRUCTION]: [StrategyCardIndex.CONSTRUCTION_2],
-};
-
-function StrategyPhase(props: object) {
+function StrategyPhase() {
     const { state, sendData } = useAppContext();
     const { strategyCards } = state;
 

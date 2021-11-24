@@ -14,8 +14,8 @@ const useStyle = makeStyles(theme => ({
     },
 }));
 
-export default function ManageGames(props: object) {
-    const classes = useStyle(props);
+export default function ManageGames() {
+    const classes = useStyle();
     const { state } = useAppContext();
     const { games } = state;
 

@@ -1,11 +1,10 @@
 import { Faction } from 'common/Faction';
-import { GameMap, Game, StrategyCard, GameMetadataMap } from 'common/Game';
+import { GameMap, Game, StrategyCard } from 'common/Game';
 import { PlanetMap } from 'common/Planet';
-import { AccountMap, LoginStatus } from 'common/Account';
+import { AccountMap, AppTheme, LoginStatus } from 'common/Account';
 import { ChangeData } from 'common/message';
 
 export enum ActionType {
-    useDarkTheme,
     setLoginStatus,
     initializeState,
     updateState,
@@ -15,7 +14,7 @@ export enum ActionType {
 export interface State {
     // Client Data
     initialized: boolean;
-    useDarkTheme: boolean;
+    theme: AppTheme;
     loginStatus: LoginStatus;
     accountId?: string | null;
 
@@ -24,8 +23,6 @@ export interface State {
     factionInfo: Faction | null;
 
     games: GameMap;
-    // gamesMetadata: GameMetadataMap;
-    // game: Game;
 
     accounts: AccountMap;
     planets: PlanetMap;
@@ -37,10 +34,10 @@ export interface Action {
     payload: any;
 }
 
-export const initialState = {
+export const initialState: State = {
     // Client data
     initialized: false,
-    useDarkTheme: false,
+    theme: 'light',
     loginStatus: LoginStatus.LOGGED_OUT,
 
     // Server data
@@ -65,6 +62,9 @@ function updateState(state: State, payload: ChangeData) {
     const { games, accounts } = payload;
     if (accounts) {
         newState.accounts = accounts;
+        if (state.accountId) {
+            newState.theme = accounts[state.accountId].settings.theme;
+        }
     }
 
     // Update changes to games
@@ -74,7 +74,7 @@ function updateState(state: State, payload: ChangeData) {
         const deletedGames: string[] = [];
 
         gamesArray.forEach(g => {
-            const { id, created, deleted, status, planets, players } = g;
+            const { id, created, deleted, status, planets, players, publicObjectives } = g;
             if (deleted) {
                 deletedGames.push(id);
                 return;
@@ -92,6 +92,10 @@ function updateState(state: State, payload: ChangeData) {
 
             if (players) {
                 updatedGame.players = { ...updatedGame.players, ...players };
+            }
+
+            if (publicObjectives) {
+                updatedGame.publicObjectives = [...publicObjectives];
             }
 
             updatedGameMap[id] = updatedGame;
@@ -114,9 +118,6 @@ function updateState(state: State, payload: ChangeData) {
 export default function reducer(state: State, action: Action): State {
     const { type, payload } = action;
     switch (type) {
-        case ActionType.useDarkTheme:
-            return { ...state, useDarkTheme: Boolean(payload) };
-
         case ActionType.setLoginStatus:
             return {
                 ...state,

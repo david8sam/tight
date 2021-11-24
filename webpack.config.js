@@ -91,11 +91,9 @@ if (dev) {
 
     config.output = {
         ...config.output,
-        hotUpdateChunkFilename: 'hot/[id].[hash].hot-update.js',
-        hotUpdateMainFilename: 'hot/[hash].hot-update.json',
+        hotUpdateChunkFilename: 'hot/[id].[fullhash].hot-update.js',
+        hotUpdateMainFilename: 'hot/[runtime].[fullhash].hot-update.json',
     };
-
-    config.plugins.push(new webpack.HotModuleReplacementPlugin());
 
     if (web) {
         config.devServer = {

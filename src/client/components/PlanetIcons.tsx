@@ -117,15 +117,15 @@ export function Legendary(props: PlanetIconProps) {
     );
 }
 
-export function HomePlanet(props: object) {
+export function HomePlanet() {
     const theme: Theme = useTheme();
     const color = colors.yellow[500];
     const backgroundColor = theme.palette.getContrastText(color);
-    const classes = useStyle({ color, backgroundColor, ...props });
+    const classes = useStyle({ color, backgroundColor });
     return <LanguageIcon classes={{ root: classes.root }} />;
 }
 
-export function Cultural(props: object) {
+export function Cultural(props: PlanetIconProps) {
     const src = useIcon('cultural');
     const theme: Theme = useTheme();
     const backgroundColor = colors.cyan[500];
@@ -137,7 +137,7 @@ export function Cultural(props: object) {
     );
 }
 
-export function Hazardous(props: object) {
+export function Hazardous(props: PlanetIconProps) {
     const src = useIcon('hazardous');
     const theme: Theme = useTheme();
     const backgroundColor = colors.red.A700;
@@ -149,7 +149,7 @@ export function Hazardous(props: object) {
     );
 }
 
-export function Industrial(props: object) {
+export function Industrial(props: PlanetIconProps) {
     const src = useIcon('industrial');
     const theme: Theme = useTheme();
     const backgroundColor = colors.teal[500];

@@ -10,8 +10,9 @@ import {
     GamePlanet,
     GamePlanetMap,
     GamePlayerMap,
-    GameStatus,
+    Objective,
     Phase,
+    SECRET_OBJECTIVE_ID,
     StrategyCardIndex,
     Version,
 } from 'common/Game';
@@ -53,9 +54,10 @@ export interface CreateGameParams {
     creator: string;
     version: Version;
     name?: string;
+    publicObjectives: Objective[];
 }
 
-export function createGame({ creator, version = Version.TI4, name }: CreateGameParams): Game {
+export function createGame({ creator, version = Version.TI4, name, publicObjectives }: CreateGameParams): Game {
     const game = {
         id: `game:${uuidv4()}`,
         date: Date.now(),
@@ -64,8 +66,10 @@ export function createGame({ creator, version = Version.TI4, name }: CreateGameP
         creator,
         players: {} as GamePlayerMap,
         planets: cloneDeep(DEFAULT_GAME_PLANETS) as GamePlanetMap,
+        publicObjectives,
         status: {
             started: false,
+            ended: false,
             round: 1,
             phase: Phase.STRATEGY,
             turn: StrategyCardIndex.NONE,
@@ -124,6 +128,8 @@ export function addPlayer(gameId: string, playerId: string | string[]) {
                 stragetyCardFlipped: false,
                 passed: false,
                 planets: [],
+                publicObjectives: [],
+                secretObjective: { cleared: false, objective: { id: SECRET_OBJECTIVE_ID, name: 'Secret', vp: 1 } },
                 victoryPoints: 0,
             };
         } else {

@@ -10,6 +10,7 @@ export interface DirtyGameParts {
     status?: boolean;
     planets?: boolean;
     players?: boolean;
+    publicObjectives?: boolean;
 }
 
 export type DirtyGamePartsMap = Record<string, DirtyGameParts>;
@@ -53,7 +54,7 @@ export function getDirtyGameData(): GameChangeDataMap | null {
     dirtyArray.forEach(([gameId, dirtyParts]) => {
         // Build data for each dirty game
         const gameData: GameChangeData = { id: gameId };
-        const { created, deleted, status, planets, players } = dirtyParts;
+        const { created, deleted, status, planets, players, publicObjectives } = dirtyParts;
         if (deleted) {
             gameData.deleted = true;
             gameDataMap[gameId] = gameData;
@@ -82,6 +83,10 @@ export function getDirtyGameData(): GameChangeDataMap | null {
 
         if (players) {
             gameData.players = game.players;
+        }
+
+        if (publicObjectives) {
+            gameData.publicObjectives = game.publicObjectives;
         }
 
         gameDataMap[gameId] = gameData;

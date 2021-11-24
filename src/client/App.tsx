@@ -20,7 +20,7 @@ const DARK_THEME = createTheme({
     },
 });
 
-function App(props: Object) {
+function App() {
     const [state, dispatch] = useReducer(reducer, initialState);
     const [webSocketOpen, setWebSocketOpen] = useState(false);
 
@@ -31,7 +31,7 @@ function App(props: Object) {
     });
 
     return (
-        <ThemeProvider theme={state.useDarkTheme ? DARK_THEME : LIGHT_THEME}>
+        <ThemeProvider theme={state.theme === 'dark' ? DARK_THEME : LIGHT_THEME}>
             <CssBaseline />
             <Context.Provider value={{ state, dispatch, sendData }}>
                 <AppContent loading={!webSocketOpen} />

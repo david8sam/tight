@@ -1,13 +1,12 @@
-import React, { MouseEvent, useState } from 'react';
+import React from 'react';
 
-import { Card, CardContent, Grid, Typography, Theme, Tooltip, IconButton, Popover } from '@material-ui/core';
-import InfoIcon from '@material-ui/icons/Info';
+import { Grid, Typography, Theme } from '@material-ui/core';
 import { makeStyles, useTheme } from '@material-ui/styles';
 
-import { GamePlayer, StrategyCard, StrategyCardIndex } from 'common/Game';
+import { GamePlayer } from 'common/Game';
 
 import { useAppContext } from '../Context';
-import StrategyCardDetails from '../components/StrategyCardDetails';
+import InitiativeLabel from './InitiativeLabel';
 
 const useStyles = makeStyles((theme: Theme) => ({
     card: {
@@ -24,49 +23,26 @@ const useStyles = makeStyles((theme: Theme) => ({
     playerInfo: {
         padding: `0px ${theme.spacing(1)}px`,
     },
-    infoIconGrid: {
-        width: 'auto',
-    },
-    infoIcon: {
-        padding: theme.spacing(0.5),
-    },
 }));
 
 export interface PlayerHeaderProps {
     player: GamePlayer;
+    hideInitiative?: boolean;
 }
 
 function PlayerHeader(props: PlayerHeaderProps) {
     const theme: Theme = useTheme();
     const classes = useStyles(props);
     const { state } = useAppContext();
+
     const { strategyCards } = state;
-
-    const [openedCard, setOpenedCard] = useState(StrategyCardIndex.NONE);
-    const [cardPopoverAnchor, setCardPopoverAnchor] = useState<HTMLButtonElement | null>(null);
-
-    const { player } = props;
-
+    const { player, hideInitiative = false } = props;
     const { id: playerId, faction, strategyCard } = player;
-    const card = strategyCards.find(s => s.initiative === strategyCard);
-    if (!card) {
-        return null;
-    }
 
-    const { initiative, name, primary, secondary, version, notes } = card;
+    const card = hideInitiative ? null : strategyCards.find(s => s.initiative === strategyCard);
     const playerColor = player.color || '#fff';
     const color = theme.palette.getContrastText(playerColor);
     const backgroundColor = playerColor;
-
-    const onCardInfoClick = (e: MouseEvent<HTMLButtonElement>, card: StrategyCard) => {
-        setOpenedCard(card.initiative);
-        setCardPopoverAnchor(e.currentTarget);
-    };
-
-    const onCardInfoClose = (e: MouseEvent<HTMLButtonElement>) => {
-        setOpenedCard(StrategyCardIndex.NONE);
-        setCardPopoverAnchor(null);
-    };
 
     return (
         <Grid
@@ -76,38 +52,7 @@ function PlayerHeader(props: PlayerHeaderProps) {
             classes={{ root: classes.playerInfo }}
             style={{ color, backgroundColor }}
         >
-            <Grid classes={{ root: classes.infoIconGrid }} container justifyContent="flex-start" alignItems="center">
-                <Typography>{`${initiative} - ${name}`}</Typography>
-                <Tooltip title="Strategy Card Details">
-                    <IconButton classes={{ root: classes.infoIcon }} onClick={e => onCardInfoClick(e, card)}>
-                        <InfoIcon style={{ color }} />
-                    </IconButton>
-                </Tooltip>
-                <Popover
-                    open={initiative === openedCard}
-                    onClose={onCardInfoClose}
-                    anchorEl={cardPopoverAnchor}
-                    anchorOrigin={{
-                        vertical: 'bottom',
-                        horizontal: 'center',
-                    }}
-                    transformOrigin={{
-                        vertical: 'top',
-                        horizontal: 'center',
-                    }}
-                >
-                    <Card variant="outlined">
-                        <CardContent>
-                            <StrategyCardDetails
-                                primary={primary}
-                                secondary={secondary}
-                                version={version}
-                                notes={notes}
-                            />
-                        </CardContent>
-                    </Card>
-                </Popover>
-            </Grid>
+            {card ? <InitiativeLabel card={card} infoIconColor={color} /> : null}
             <Typography>{`${playerId} (${faction})`}</Typography>
         </Grid>
     );

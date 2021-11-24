@@ -13,14 +13,21 @@ import {
     Tooltip,
     Typography,
     Theme,
+    Divider,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import CloseIcon from '@material-ui/icons/Close';
 
-import { Game } from 'common/Game';
+import { Game, Objective, PUBLIC_OBJECTIVES_PLACEHOLDER } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
+import PublicObjectives from './PublicObjectives';
+
+type GameOptions = {
+    name: string;
+    publicObjectives?: Objective[];
+};
 
 export interface NewGameDialogProps {
     open: boolean;
@@ -48,6 +55,9 @@ const useStyles = makeStyles((theme: Theme) => ({
         marginLeft: theme.spacing(2),
         flex: 1,
     },
+    divider: {
+        margin: `${theme.spacing(2)}px 0px`,
+    },
 }));
 
 function NewGameDialog(props: NewGameDialogProps) {
@@ -60,21 +70,25 @@ function NewGameDialog(props: NewGameDialogProps) {
 
     const playerGames = Object.values(games).filter(g => g.creator === accountId);
 
-    const [formValues, setFormValues] = useState(() => ({ name: generateNextName(playerGames) }));
+    const [gameOptions, setGameOptions] = useState<GameOptions>(() => ({
+        name: generateNextName(playerGames),
+        publicObjectives: PUBLIC_OBJECTIVES_PLACEHOLDER,
+    }));
 
     const onCancel = () => {
         onClose();
     };
 
     const onSave = () => {
-        sendData({ type: MessageType.CREATE_GAME, data: { playerId: accountId, ...formValues } });
+        sendData({ type: MessageType.CREATE_GAME, data: { playerId: accountId, ...gameOptions } });
         onClose();
     };
 
-    const onNameChange = (name: string) => setFormValues(v => ({ ...v, name }));
+    const onNameChange = (name: string) => setGameOptions(v => ({ ...v, name }));
 
-    const gameExists = Boolean(playerGames.find(g => g.name === formValues.name));
-    const error = !formValues.name || gameExists;
+    const hasPOs = Boolean(gameOptions.publicObjectives?.length);
+    const gameExists = Boolean(playerGames.find(g => g.name === gameOptions.name));
+    const nameError = !gameOptions.name || gameExists;
 
     return (
         <Dialog open={open} fullScreen>
@@ -89,7 +103,7 @@ function NewGameDialog(props: NewGameDialogProps) {
                 <Typography variant="h6" className={classes.title}>
                     Create New Game
                 </Typography>
-                <Button disabled={error} autoFocus color="inherit" onClick={onSave}>
+                <Button disabled={nameError || !hasPOs} autoFocus color="inherit" onClick={onSave}>
                     Save
                 </Button>
             </AppBar>
@@ -100,14 +114,22 @@ function NewGameDialog(props: NewGameDialogProps) {
                             <TextField
                                 variant="outlined"
                                 fullWidth
-                                value={formValues.name}
+                                value={gameOptions.name}
                                 onChange={e => onNameChange(e && e.target && e.target.value)}
                                 required
-                                error={error}
+                                error={nameError}
                                 helperText={gameExists ? 'Name already exists' : ''}
                                 label="Name"
                             />
                         </FormControl>
+                        <Divider variant="fullWidth" orientation="horizontal" className={classes.divider} />
+                        <PublicObjectives
+                            creatable
+                            deletable
+                            editable
+                            publicObjectives={gameOptions.publicObjectives}
+                            onChange={publicObjectives => setGameOptions({ ...gameOptions, publicObjectives })}
+                        />
                     </Grid>
                 </Grid>
             </DialogContent>

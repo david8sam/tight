@@ -8,7 +8,7 @@
         "clean:client": "rimraf ./dist",
         "clean": "npm run clean:server && npm run clean:client",
         "build:server": "npm run clean:server && cross-env TARGET=node NODE_ENV=production webpack --config webpack.config.js",
-        "build:server:dev": "cross-env TARGET=node NODE_ENV=development webpack --config webpack.config.js --watch",
+        "build:server:dev": "cross-env TARGET=node NODE_ENV=development webpack --config webpack.config.js",
         "build:client": "npm run clean:client && cross-env TARGET=web NODE_ENV=production webpack --config webpack.config.js",
         "build": "npm run build:server && npm run build:client",
         "server": "nodemon --exec node ./build/server.js",

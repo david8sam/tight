@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import uniq from 'lodash/uniq';
 import { Button, CircularProgress, Grid, Toolbar, Typography } from '@material-ui/core';
 
-import { GamePlayer, Game } from 'common/Game';
+import { Game } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
@@ -39,7 +39,7 @@ function canStart(game: Game): boolean {
     return Boolean(speaker) && po.length === Object.keys(players).length && po.every(p => Boolean(p));
 }
 
-function PlayerSetup(props: object) {
+function PlayerSetup() {
     const { sendData } = useAppContext();
     const { gameId, game, playerId, player } = useAccountInfo();
 
@@ -74,7 +74,7 @@ function PlayerSetup(props: object) {
         <>
             <Toolbar>
                 <Grid container justifyContent="center">
-                    <Typography align="center" variant="h5">{`${game.name} (${game.creator})`}</Typography>
+                    <Typography align="center" variant="h6">{`${game.name} (${game.creator})`}</Typography>
                 </Grid>
             </Toolbar>
             <Toolbar>

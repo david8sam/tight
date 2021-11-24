@@ -1,12 +1,11 @@
 import React from 'react';
 
 import { Skeleton } from '@material-ui/lab';
-import { Theme } from '@material-ui/core/styles/createTheme';
 import { makeStyles } from '@material-ui/styles';
 
 import Router from './Router';
 
-const useStyle = makeStyles((theme: Theme) => ({
+const useStyle = makeStyles(() => ({
     content: {
         display: 'flex',
         flexDirection: 'column',

@@ -1,13 +1,18 @@
 import React from 'react';
 
-import { Grid, Tooltip, IconButton, Theme, Typography } from '@material-ui/core';
-import AddIcon from '@material-ui/icons/Add';
-import MinusIcon from '@material-ui/icons/Remove';
-import { makeStyles } from '@material-ui/styles';
+import { Container, Grid, Theme, Typography } from '@material-ui/core';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import { makeStyles, useTheme } from '@material-ui/styles';
 
-import { useAppContext } from '../Context';
-import useAccountInfo from '../hooks/useAccountInfo';
+import { calculateVictoryPoints, Objective } from 'common/Game';
 import { MessageType } from 'common/message';
+
+import useAccountInfo from '../hooks/useAccountInfo';
+import { useAppContext } from '../Context';
+
+import { Accordion, AccordionDetails, AccordionSummary } from './Accordion';
+import ObjectiveCheckbox from './ObjectiveCheckbox';
+import VictoryPointsExtra from './VictoryPointsExtra';
 
 const useStyles = makeStyles((theme: Theme) => ({
     grid: {
@@ -16,60 +21,109 @@ const useStyles = makeStyles((theme: Theme) => ({
     iconButton: {
         padding: theme.spacing(0.5),
     },
+    details: {
+        padding: `0px ${theme.spacing()}px`,
+    },
 }));
 
 interface VictoryPointsProps {
     playerId: string;
+    allowShowSecret?: boolean;
 }
 
 function VictoryPoints(props: VictoryPointsProps) {
+    const theme = useTheme<Theme>();
     const classes = useStyles(props);
-    const { playerId } = props;
+    const { playerId, allowShowSecret = false } = props;
     const { sendData } = useAppContext();
-    const { game, gameId } = useAccountInfo();
+    const { game, gameId, playerId: currentPlayerId } = useAccountInfo();
 
     if (!game) {
         return null;
     }
 
     const player = game.players[playerId];
-    const { victoryPoints } = player;
+    const { publicObjectives: gamePOs } = game;
+    const { color: playerColor, publicObjectives, secretObjective } = player;
 
-    const onVictoryPointsChange = (victoryPoints: number) => {
-        sendData({ type: MessageType.PLAYER_SET_VICTORY_POINTS, data: { gameId, playerId, victoryPoints } });
+    const pc = playerColor || '#fff';
+    const color = theme.palette.getContrastText(pc);
+    const backgroundColor = pc;
+
+    const onPublicObjectiveCheck = (id: number, cleared: boolean) => {
+        const newPublicObjectives = [...publicObjectives];
+        newPublicObjectives[id - 1] = cleared;
+        sendData({
+            type: MessageType.PLAYER_SET_PUBLIC_OBJECTIVES,
+            data: { gameId, playerId, publicObjectives: newPublicObjectives },
+        });
     };
 
+    const onPublicObjectiveSave = (objective: Objective) => {
+        const index = gamePOs.findIndex(po => po.id === objective.id);
+        const newPublicObjectives = [...gamePOs];
+        newPublicObjectives[index] = { ...newPublicObjectives[index], ...objective };
+        sendData({
+            type: MessageType.GAME_SET_PUBLIC_OBJECTIVES,
+            data: { gameId, publicObjectives: newPublicObjectives },
+        });
+    };
+
+    const onSecretObjectiveCheck = (id: number, cleared: boolean) => {
+        sendData({
+            type: MessageType.PLAYER_SET_SECRET_OBJECTIVE,
+            data: { gameId, playerId, secretObjective: { ...secretObjective, cleared } },
+        });
+    };
+
+    const onSecretObjectiveSave = (objective: Objective) => {
+        const originalObjective = secretObjective.objective;
+        sendData({
+            type: MessageType.PLAYER_SET_SECRET_OBJECTIVE,
+            data: {
+                gameId,
+                playerId,
+                secretObjective: { ...secretObjective, objective: { ...originalObjective, ...objective } },
+            },
+        });
+    };
+
+    const isCurrentPlayer = Boolean(playerId && currentPlayerId && playerId === currentPlayerId);
+    const totalvp = calculateVictoryPoints(game, playerId);
+
     return (
-        <Grid container justifyContent="center" alignItems="center" classes={{ root: classes.grid }}>
-            <Tooltip title="Minus VP">
-                <span>
-                    <IconButton
-                        classes={{ root: classes.iconButton }}
-                        disabled={victoryPoints < 1}
-                        onClick={() => onVictoryPointsChange(victoryPoints - 1)}
-                    >
-                        <MinusIcon />
-                    </IconButton>
-                </span>
-            </Tooltip>
-            <Grid
-                container
-                direction="column"
-                justifyContent="center"
-                alignItems="center"
-                classes={{ root: classes.grid }}
-            >
-                <Typography>{`${victoryPoints} VP`}</Typography>
-            </Grid>
-            <Tooltip title="Add VP">
-                <IconButton
-                    classes={{ root: classes.iconButton }}
-                    onClick={() => onVictoryPointsChange(victoryPoints + 1)}
-                >
-                    <AddIcon></AddIcon>
-                </IconButton>
-            </Tooltip>
-        </Grid>
+        <Accordion disableMargin>
+            <AccordionSummary disableMargin expandIcon={<ExpandMoreIcon />}>
+                <Typography>{`${totalvp} Victory Points`}</Typography>
+            </AccordionSummary>
+            <AccordionDetails className={classes.details}>
+                <Grid container justifyContent="flex-start" alignItems="center" classes={{ root: classes.grid }}>
+                    {gamePOs.map(po => (
+                        <ObjectiveCheckbox
+                            key={po.id}
+                            color={color}
+                            backgroundColor={backgroundColor}
+                            checked={publicObjectives[po.id - 1] ?? false}
+                            editable
+                            objective={po}
+                            onChange={onPublicObjectiveCheck}
+                            onSave={onPublicObjectiveSave}
+                        />
+                    ))}
+                    <ObjectiveCheckbox
+                        color={color}
+                        backgroundColor={backgroundColor}
+                        editable
+                        allowShowSecret={allowShowSecret || isCurrentPlayer}
+                        objective={secretObjective.objective}
+                        checked={secretObjective.cleared}
+                        onChange={onSecretObjectiveCheck}
+                        onSave={onSecretObjectiveSave}
+                    />
+                    <VictoryPointsExtra playerId={playerId} />
+                </Grid>
+            </AccordionDetails>
+        </Accordion>
     );
 }
 
