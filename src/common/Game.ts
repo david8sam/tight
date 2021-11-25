@@ -91,10 +91,17 @@ export interface GamePlanet {
 
 export type GamePlanetMap = Record<string, GamePlanet>;
 
+export enum GameJoinStatus {
+    PLAYER,
+    ADMIN,
+    SPECTATOR,
+}
+
 export interface GamePlayer {
     id: string;
     name: string;
     joined: boolean;
+    joinStatus: GameJoinStatus;
 
     color?: PlayerColorValue | null;
     faction?: string | null;
@@ -130,7 +137,11 @@ export interface Game {
     readonly date: number;
     readonly version: Version;
     readonly creator: string;
+
     name: string;
+    numPlayers: number;
+    numRounds: number;
+    numVictoryPoints: number;
 
     status: GameStatus;
     planets: GamePlanetMap;
@@ -153,8 +164,12 @@ export interface GameChangeData {
 
 export type GameChangeDataMap = Record<string, GameChangeData>;
 
+export function getPlayersInGame(game: Game) {
+    return Object.values(game.players).filter(p => p.joinStatus === GameJoinStatus.PLAYER);
+}
+
 export function getPlayerOrder(game: Game) {
-    return Object.values(game.players).sort((p1: GamePlayer, p2: GamePlayer) => {
+    return getPlayersInGame(game).sort((p1: GamePlayer, p2: GamePlayer) => {
         return p1.strategyCard < p2.strategyCard ? -1 : 1;
     });
 }
@@ -171,8 +186,8 @@ export function getNextPlayer(game: Game, currentPlayerId: string, playerOrder?:
     return nextPlayer || null;
 }
 
-export function buildStrategyCardOwners(players: GamePlayerMap): string[] {
-    const playersArray = Object.values(players);
+export function buildStrategyCardOwners(game: Game): string[] {
+    const playersArray = getPlayersInGame(game);
     const stratCardOwners: string[] = [''];
     playersArray.forEach(p => (p.strategyCard ? (stratCardOwners[p.strategyCard] = p.name) : null));
 

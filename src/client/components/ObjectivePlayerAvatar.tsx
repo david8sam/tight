@@ -29,7 +29,7 @@ export default function ObjectivePlayerAvatar(props: ObjectivePlayerAvatarProps)
     const [open, setOpen] = useState(false);
     const { game, player, onOpen } = props;
 
-    const { color: pc, id } = player;
+    const { color: pc, id, name } = player;
     const backgroundColor = pc || '#fff';
     const color = theme.palette.getContrastText(backgroundColor);
 
@@ -40,12 +40,12 @@ export default function ObjectivePlayerAvatar(props: ObjectivePlayerAvatarProps)
         }
     };
 
-    const title = game ? `${id} - ${calculateVictoryPoints(game, id)} VPs` : id;
+    const title = game ? `${name} - ${calculateVictoryPoints(game, id)} VPs` : name;
 
     return (
         <Tooltip title={title} open={open} onClose={() => setOpen(false)}>
             <Avatar className={classes.avatar} style={{ color, backgroundColor }} onClick={onTooltipOpen}>
-                <Typography>{String(id[0])}</Typography>
+                <Typography>{String(name[0])}</Typography>
             </Avatar>
         </Tooltip>
     );

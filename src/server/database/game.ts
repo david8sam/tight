@@ -6,6 +6,7 @@ import uniqueId from 'lodash/uniqueId';
 
 import {
     Game,
+    GameJoinStatus,
     GameMap,
     GamePlanet,
     GamePlanetMap,
@@ -54,14 +55,28 @@ export interface CreateGameParams {
     creator: string;
     version: Version;
     name?: string;
+    numPlayers?: number;
+    numRounds?: number;
+    numVictoryPoints?: number;
     publicObjectives: Objective[];
 }
 
-export function createGame({ creator, version = Version.TI4, name, publicObjectives }: CreateGameParams): Game {
+export function createGame({
+    creator,
+    version = Version.TI4,
+    name,
+    numPlayers = 8,
+    numRounds = 10,
+    numVictoryPoints = 10,
+    publicObjectives,
+}: CreateGameParams): Game {
     const game = {
         id: `game:${uuidv4()}`,
         date: Date.now(),
         name: name || `Game${uniqueId()}`,
+        numPlayers,
+        numRounds,
+        numVictoryPoints,
         version,
         creator,
         players: {} as GamePlayerMap,
@@ -109,20 +124,29 @@ export function getGame(id: string): Game | null {
     return id ? _games[id] : null;
 }
 
-export function addPlayer(gameId: string, playerId: string | string[]) {
+type AddPlayerOptions = {
+    joinStatus?: GameJoinStatus;
+};
+
+export function addPlayer(gameId: string, playerId: string | string[], options?: AddPlayerOptions) {
     const game = getGame(gameId);
     if (!game) {
         return;
     }
 
+    // Default join as player
+    const { joinStatus = GameJoinStatus.PLAYER } = options || {};
+
     // Initialize all players added to the game.
     const playeridArray = Array.isArray(playerId) ? playerId : [playerId];
     playeridArray.forEach(pid => {
         if (!game.players[pid]) {
+            // New player
             game.players[pid] = {
                 id: pid,
                 name: pid,
                 joined: true,
+                joinStatus,
                 strategyCard: StrategyCardIndex.NONE,
                 strategyCardTaken: false,
                 stragetyCardFlipped: false,
@@ -133,7 +157,13 @@ export function addPlayer(gameId: string, playerId: string | string[]) {
                 victoryPoints: 0,
             };
         } else {
-            game.players[pid].joined = true;
+            // Existing player, rejoin
+            const player = game.players[pid];
+            player.joined = true;
+            if (player.joinStatus !== GameJoinStatus.PLAYER) {
+                // Can change status if not an active player
+                player.joinStatus = joinStatus;
+            }
         }
     });
 }

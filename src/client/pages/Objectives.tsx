@@ -1,7 +1,7 @@
 import React from 'react';
 import { Grid, Toolbar, Typography } from '@material-ui/core';
 
-import { Objective as ObjectiveType } from 'common/Game';
+import { GameJoinStatus, Objective as ObjectiveType } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
@@ -38,6 +38,9 @@ function StrategyCards() {
         });
     };
 
+    const isPlayer = player.joinStatus === GameJoinStatus.PLAYER;
+    const editable = player.joinStatus !== GameJoinStatus.SPECTATOR;
+
     return (
         <Grid container direction="column">
             <Toolbar>
@@ -47,20 +50,29 @@ function StrategyCards() {
             </Toolbar>
             <Grid item>
                 <PublicObjectives
-                    editable
+                    editable={editable}
                     publicObjectives={game.publicObjectives}
                     onChange={onPublicObjectivesChange}
                     showPlayers
                 />
             </Grid>
-            <Toolbar>
-                <Grid container justifyContent="center">
-                    <Typography variant="h6">My Secret Objective</Typography>
-                </Grid>
-            </Toolbar>
-            <Grid item>
-                <Objective editable objective={secretObjective.objective} onChange={onSecretObjectiveChange} />
-            </Grid>
+            {/* Only players have a secret objective */}
+            {isPlayer && (
+                <>
+                    <Toolbar>
+                        <Grid container justifyContent="center">
+                            <Typography variant="h6">My Secret Objective</Typography>
+                        </Grid>
+                    </Toolbar>
+                    <Grid item>
+                        <Objective
+                            editable={editable}
+                            objective={secretObjective.objective}
+                            onChange={onSecretObjectiveChange}
+                        />
+                    </Grid>
+                </>
+            )}
         </Grid>
     );
 }

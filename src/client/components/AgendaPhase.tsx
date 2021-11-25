@@ -14,19 +14,20 @@ import {
 
 import { useAppContext } from '../Context';
 import useAccountInfo from '../hooks/useAccountInfo';
+import { GameJoinStatus, getPlayersInGame } from 'common/Game';
 import { MessageType } from 'common/message';
 
 export default function AgendaPhase() {
     const { sendData } = useAppContext();
-    const { game, gameId, playerId } = useAccountInfo();
+    const { game, gameId, player, playerId } = useAccountInfo();
     const [endGameEarly, setEndGameEarly] = useState(false);
 
-    if (!game || !playerId) {
+    if (!game || !player || !playerId) {
         return null;
     }
 
     const onRefreshAll = () => {
-        const players = Object.values(game.players);
+        const players = getPlayersInGame(game);
         players.forEach(p => {
             const { id: playerId, planets } = p;
             sendData({
@@ -64,13 +65,18 @@ export default function AgendaPhase() {
     };
 
     const {
-        status: { custodiansRemoved, agenda1Voted, agenda2Voted },
+        status: { custodiansRemoved, agenda1Voted, agenda2Voted, round },
+        numRounds,
     } = game;
+
+    const isSpectator = player.joinStatus === GameJoinStatus.SPECTATOR;
+    const canEndEarly = round < numRounds && !isSpectator;
 
     return (
         <Grid container direction="column">
             <Toolbar>
                 <FormControlLabel
+                    disabled={isSpectator}
                     control={<Switch checked={custodiansRemoved} onChange={onCustodiansRemoved} color="primary" />}
                     label="Mecatol Rex Custodians Removed?"
                 />
@@ -78,14 +84,14 @@ export default function AgendaPhase() {
             <Toolbar>
                 <FormGroup>
                     <FormControlLabel
-                        disabled={!custodiansRemoved}
+                        disabled={isSpectator || !custodiansRemoved}
                         control={
                             <Checkbox checked={agenda1Voted} onChange={e => onAgendaVoted(e, true)} color="primary" />
                         }
                         label="First Agenda"
                     />
                     <FormControlLabel
-                        disabled={!agenda1Voted}
+                        disabled={isSpectator || !agenda1Voted}
                         control={
                             <Checkbox checked={agenda2Voted} onChange={e => onAgendaVoted(e, false)} color="primary" />
                         }
@@ -95,11 +101,17 @@ export default function AgendaPhase() {
             </Toolbar>
             <Toolbar />
             <Toolbar>
-                <Button color="primary" variant="contained" fullWidth onClick={() => onRefreshAll()}>
+                <Button
+                    disabled={isSpectator}
+                    color="primary"
+                    variant="contained"
+                    fullWidth
+                    onClick={() => onRefreshAll()}
+                >
                     <Typography>Refresh Everyone's Planets</Typography>
                 </Button>
             </Toolbar>
-            {game.status.round < 10 && (
+            {canEndEarly && (
                 <>
                     <Toolbar />
                     <Divider orientation="horizontal" />

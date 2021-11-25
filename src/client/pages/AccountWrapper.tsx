@@ -30,7 +30,7 @@ function AccountWrapper(props: AccountWrapperProps) {
     const isValidPlayer = Boolean(name && accounts[name]);
 
     useEffect(() => {
-        if (!initialized) {
+        if (!initialized || loginStatus === LoginStatus.LOGIN_PENDING || loginStatus === LoginStatus.LOGOUT_PENDING) {
             return;
         }
 

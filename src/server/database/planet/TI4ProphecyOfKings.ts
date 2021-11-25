@@ -262,7 +262,7 @@ const Planets: readonly Planet[] = [
         resources: 1,
         influence: 2,
         legendary:
-            'Mirage Flight Academy: Mirage Flight Academy - You may exhaust this card at the end of your turn to place up to 2 fighters from your reinforcements in any system that contains 1 or more of your ships.',
+            'Mirage Flight Academy: You may exhaust this card at the end of your turn to place up to 2 fighters from your reinforcements in any system that contains 1 or more of your ships.',
     },
 ];
 

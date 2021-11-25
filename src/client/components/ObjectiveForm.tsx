@@ -8,6 +8,7 @@ import { Objective } from 'common/Game';
 export interface ObjectiveFormProps {
     objective: Objective;
     onChange: (objective: Objective) => void;
+    disabled?: boolean;
 }
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -18,7 +19,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 function ObjectiveForm(props: ObjectiveFormProps) {
     const classes = useStyles(props);
-    const { objective, onChange } = props;
+    const { objective, onChange, disabled = false } = props;
 
     const onVpChange = (e: ChangeEvent<HTMLInputElement> | FocusEvent<HTMLInputElement | HTMLTextAreaElement>) =>
         onChange({ ...objective, vp: Number(e?.target?.value) });
@@ -27,6 +28,7 @@ function ObjectiveForm(props: ObjectiveFormProps) {
         <>
             <FormControl className={classes.formControl} fullWidth>
                 <TextField
+                    disabled={disabled}
                     variant="outlined"
                     fullWidth
                     value={objective.name}
@@ -38,6 +40,7 @@ function ObjectiveForm(props: ObjectiveFormProps) {
             </FormControl>
             <FormControl className={classes.formControl} fullWidth>
                 <TextField
+                    disabled={disabled}
                     variant="outlined"
                     fullWidth
                     value={objective.description}
@@ -48,6 +51,7 @@ function ObjectiveForm(props: ObjectiveFormProps) {
             </FormControl>
             <FormControl className={classes.formControl} fullWidth>
                 <TextField
+                    disabled={disabled}
                     variant="outlined"
                     fullWidth
                     value={objective.vp || ''} // Clear field if 0

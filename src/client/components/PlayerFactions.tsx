@@ -1,7 +1,7 @@
 import React from 'react';
 import { Table, TableHead, TableBody, TableRow, TableCell } from '@material-ui/core';
 
-import { GamePlayer } from 'common/Game';
+import { GamePlayer, getPlayersInGame } from 'common/Game';
 
 import useAccountInfo from '../hooks/useAccountInfo';
 import PlayerFactionForm from './PlayerFactionForm';
@@ -17,7 +17,7 @@ function PlayerFactions(props: PlayerFactionsProps) {
     }
 
     const { disabled = false } = props;
-    const joinedPlayers = Object.values(game.players).filter(p => p.joined);
+    const joinedPlayers = getPlayersInGame(game);
 
     return (
         <Table>

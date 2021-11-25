@@ -19,14 +19,12 @@ export const DEFAULT_SETTINGS = {
 } as const;
 
 export interface Account {
-    id: string;
-    name: string;
+    id: string; // unique id
+    name: string; // display name
     loggedIn: boolean;
-    joinedGame?: string | null;
+    joinedGame: string | null;
     invitedGames?: string[];
     settings: AccountSettings;
 }
 
-export interface AccountMap {
-    [name: string]: Account;
-}
+export type AccountMap = Record<string, Account>;

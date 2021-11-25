@@ -16,8 +16,8 @@ const Factions = loadable(() => import('./pages/Factions'));
 const StrategyCards = loadable(() => import('./pages/StrategyCards'));
 const Player = loadable(() => import('./pages/Player'));
 
-function renderPlayerPage(props: Record<string, unknown>, page: LoadableComponent<any>) {
-    return <AccountWrapper {...props} Page={page} />;
+function renderPlayerPage(page: LoadableComponent<any>) {
+    return <AccountWrapper Page={page} />;
 }
 
 function Router(props: Record<string, unknown>) {
@@ -26,14 +26,14 @@ function Router(props: Record<string, unknown>) {
             <Header />
             <Routes>
                 <Route path="/" element={<Home />} />
-                <Route path="/player/:id/game" element={renderPlayerPage(props, Game)} />
-                <Route path="/player/:id/manage-games" element={renderPlayerPage(props, ManageGames)} />
-                <Route path="/player/:id/game-results" element={renderPlayerPage(props, GameResults)} />
-                <Route path="/player/:id/objectives" element={renderPlayerPage(props, Objectives)} />
-                <Route path="/player/:id/planets" element={renderPlayerPage(props, Planets)} />
-                <Route path="/player/:id/factions" element={renderPlayerPage(props, Factions)} />
-                <Route path="/player/:id/strategy-cards" element={renderPlayerPage(props, StrategyCards)} />
-                <Route path="/player/:id" element={renderPlayerPage(props, Player)} />
+                <Route path="/player/:id/game" element={renderPlayerPage(Game)} />
+                <Route path="/player/:id/manage-games" element={renderPlayerPage(ManageGames)} />
+                <Route path="/player/:id/game-results" element={renderPlayerPage(GameResults)} />
+                <Route path="/player/:id/objectives" element={renderPlayerPage(Objectives)} />
+                <Route path="/player/:id/planets" element={renderPlayerPage(Planets)} />
+                <Route path="/player/:id/factions" element={renderPlayerPage(Factions)} />
+                <Route path="/player/:id/strategy-cards" element={renderPlayerPage(StrategyCards)} />
+                <Route path="/player/:id" element={renderPlayerPage(Player)} />
                 <Route element={<Navigate to="/" />} />
             </Routes>
         </BrowserRouter>

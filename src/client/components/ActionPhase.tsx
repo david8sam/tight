@@ -5,7 +5,7 @@ import { makeStyles } from '@material-ui/styles';
 
 import classNames from 'classnames';
 
-import { GamePlayer, StrategyCardIndex, getPlayerOrder, getNextPlayer } from 'common/Game';
+import { GamePlayer, StrategyCardIndex, getPlayerOrder, getNextPlayer, GameJoinStatus } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
@@ -41,8 +41,8 @@ function ActionPhase() {
     const classes = useStyles();
     const { sendData } = useAppContext();
 
-    const { game, gameId } = useAccountInfo();
-    if (!game) {
+    const { game, gameId, player: currentPlayer } = useAccountInfo();
+    if (!game || !currentPlayer) {
         return null;
     }
 
@@ -73,6 +73,8 @@ function ActionPhase() {
         }
     };
 
+    const isSpectator = currentPlayer.joinStatus === GameJoinStatus.SPECTATOR;
+
     return (
         <Grid container direction="column">
             {playerOrder.map((player: GamePlayer) => {
@@ -92,13 +94,13 @@ function ActionPhase() {
                                 }}
                             >
                                 <Grid container direction="row" justifyContent="space-between" alignItems="center">
-                                    <VictoryPointsExtra playerId={playerId} />
+                                    <VictoryPointsExtra playerId={playerId} disabled={isSpectator} />
                                     <Button
                                         classes={{ root: classes.button }}
                                         color="primary"
                                         variant="contained"
                                         onClick={() => onPassClick(playerId, !player.passed)}
-                                        disabled={!player.stragetyCardFlipped}
+                                        disabled={isSpectator || !player.stragetyCardFlipped}
                                     >
                                         {player.passed ? 'PASSED' : 'PASS'}
                                     </Button>
@@ -107,6 +109,7 @@ function ActionPhase() {
                                         color="primary"
                                         variant="contained"
                                         onClick={() => onFlipCardClick(playerId, !player.stragetyCardFlipped)}
+                                        disabled={isSpectator}
                                     >
                                         {player.stragetyCardFlipped ? 'FLIPPED' : 'FLIP'}
                                     </Button>
@@ -114,7 +117,7 @@ function ActionPhase() {
                                         classes={{ root: classes.button }}
                                         color="primary"
                                         variant="contained"
-                                        disabled={player.passed}
+                                        disabled={isSpectator || player.passed}
                                         onClick={() => onNextTurn(player, !playerDone)}
                                     >
                                         {playerDone ? 'DONE-D' : 'DONE'}

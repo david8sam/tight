@@ -1,7 +1,7 @@
 import React from 'react';
 import { Table, TableHead, TableRow, TableCell, TableBody, Select, MenuItem } from '@material-ui/core';
 
-import { GamePlayer, StrategyCard } from 'common/Game';
+import { GameJoinStatus, GamePlayer, getPlayersInGame, StrategyCard } from 'common/Game';
 
 import { useAppContext } from '../Context';
 import useAccountInfo from '../hooks/useAccountInfo';
@@ -10,12 +10,12 @@ import { MessageType } from 'common/message';
 export default function AssignStrategyCardTable() {
     const { state, sendData } = useAppContext();
     const { strategyCards } = state;
-    const { game, gameId } = useAccountInfo();
-    if (!game) {
+    const { game, gameId, player: currentPlayer } = useAccountInfo();
+    if (!game || !currentPlayer) {
         return null;
     }
 
-    const playersArray = Object.values(game.players);
+    const playersArray = getPlayersInGame(game);
 
     const onTakeCardClick = (playerId: string, strategyCard: number) => {
         sendData({ type: MessageType.PLAYER_TAKE_STRATEGY_CARD, data: { gameId, playerId, strategyCard } });
@@ -40,6 +40,7 @@ export default function AssignStrategyCardTable() {
                                     value={player.strategyCard}
                                     variant="outlined"
                                     onChange={e => onTakeCardClick(player.id, Number(e.target.value))}
+                                    disabled={currentPlayer.joinStatus === GameJoinStatus.SPECTATOR}
                                 >
                                     <MenuItem button key={0} value={0}>
                                         {'NONE'}

@@ -1,23 +1,25 @@
 import React, { ChangeEvent } from 'react';
 import { MenuItem, Select, Table, TableHead, TableRow, TableCell, TableBody } from '@material-ui/core';
 
+import { GameJoinStatus, getPlayersInGame } from 'common/Game';
+import { MessageType } from 'common/message';
+
 import { useAppContext } from '../Context';
 import useAccountInfo from '../hooks/useAccountInfo';
-import { MessageType } from 'common/message';
 
 const DEFAULT_PLAYER = 'PLAYER';
 
 function PlayerOrder() {
     const { sendData } = useAppContext();
-    const { game, gameId } = useAccountInfo();
-    if (!game) {
+    const { game, gameId, player } = useAccountInfo();
+    if (!game || !player) {
         return null;
     }
 
     const { status } = game;
     const { speaker, pickOrder } = status;
 
-    const playerNames = Object.values(game.players).map(p => p.name);
+    const playerNames = getPlayersInGame(game).map(p => p.name);
     const orderArray = Array(playerNames.length).fill(null);
 
     const onOrderChange = (playerId: string, order: number) => {
@@ -43,6 +45,7 @@ function PlayerOrder() {
                             <TableCell>{i === 0 ? 'Speaker' : i + 1}</TableCell>
                             <TableCell>
                                 <Select
+                                    disabled={player.joinStatus === GameJoinStatus.SPECTATOR}
                                     fullWidth
                                     variant="outlined"
                                     value={pickOrder[i] || DEFAULT_PLAYER}

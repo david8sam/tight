@@ -41,6 +41,6 @@ app.get('*', (req: express.Request, res: express.Response) => {
 });
 
 app.listen(port, () => {
-    console.log(`Server running on: ${ip.address()}`);
+    console.log(`Server running on: http://${ip.address()}`);
     console.log(`App listening on port: ${port}`);
 });

@@ -4,9 +4,9 @@ import { Grid, IconButton, TextField, Theme, Toolbar, Tooltip, Typography } from
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { makeStyles, useTheme } from '@material-ui/styles';
+import { makeStyles } from '@material-ui/styles';
 
-import { GamePlayer, Objective, SECRET_OBJECTIVE_ID } from 'common/Game';
+import { GamePlayer, getPlayersInGame, Objective, SECRET_OBJECTIVE_ID } from 'common/Game';
 
 import useAccountInfo from '../hooks/useAccountInfo';
 
@@ -65,7 +65,7 @@ export default function Objective(props: ObjectiveProps) {
     const { game } = useAccountInfo();
     const players: GamePlayer[] = [];
     if (showPlayers && game && id !== SECRET_OBJECTIVE_ID) {
-        Object.values(game.players).forEach(p => {
+        getPlayersInGame(game).forEach(p => {
             if (p.publicObjectives[id - 1] === true) {
                 players.push(p);
             }

@@ -23,6 +23,7 @@ interface ObjectiveCheckboxProps {
     color: string;
     backgroundColor: string;
     editable?: boolean;
+    disabled?: boolean;
     allowShowSecret?: boolean;
     onChange: (id: number, checked: boolean) => void;
     onSave?: (objective: Objective) => void;
@@ -35,6 +36,7 @@ function ObjectiveCheckbox(props: ObjectiveCheckboxProps) {
     const {
         checked,
         editable = false,
+        disabled = false,
         allowShowSecret = false,
         objective,
         onChange,
@@ -71,7 +73,14 @@ function ObjectiveCheckbox(props: ObjectiveCheckboxProps) {
         <>
             <FormControlLabel
                 key={id}
-                control={<Checkbox checked={checked} onChange={e => onChange(id, e.target.checked)} color="primary" />}
+                control={
+                    <Checkbox
+                        disabled={disabled}
+                        checked={checked}
+                        onChange={e => onChange(id, e.target.checked)}
+                        color="primary"
+                    />
+                }
                 label={
                     <IconButton ref={buttonRef} onClick={onInfoOpen}>
                         <Avatar style={{ color, backgroundColor }}>
@@ -95,7 +104,7 @@ function ObjectiveCheckbox(props: ObjectiveCheckboxProps) {
             >
                 <Card variant="outlined">
                     <CardContent>
-                        <ObjectiveForm objective={editObjective} onChange={setEditObjective} />
+                        <ObjectiveForm disabled={disabled} objective={editObjective} onChange={setEditObjective} />
                     </CardContent>
                     {editable && onSave && (
                         <CardActions>
@@ -107,7 +116,7 @@ function ObjectiveCheckbox(props: ObjectiveCheckboxProps) {
                                     color="primary"
                                     variant="contained"
                                     onClick={onSaveObjective}
-                                    disabled={!editObjective.name || editObjective.vp < 1}
+                                    disabled={disabled || !editObjective.name || editObjective.vp < 1}
                                 >
                                     <Typography>Save</Typography>
                                 </Button>

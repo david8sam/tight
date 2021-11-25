@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, Grid, Theme, Toolbar } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 
-import { GamePlayer, getPlayerOrder } from 'common/Game';
+import { GameJoinStatus, GamePlayer, getPlayerOrder } from 'common/Game';
 
 import useAccountInfo from '../hooks/useAccountInfo';
 import PlayerHeader from './PlayerHeader';
@@ -25,8 +25,8 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 function StatusPhase() {
     const classes = useStyles();
-    const { game } = useAccountInfo();
-    if (!game) {
+    const { game, player: currentPlayer } = useAccountInfo();
+    if (!game || !currentPlayer) {
         return null;
     }
 
@@ -42,7 +42,10 @@ function StatusPhase() {
                     <CardContent classes={{ root: classes.cardContent }}>
                         <Toolbar disableGutters>
                             <Grid container direction="row" justifyContent="center" alignItems="center">
-                                <VictoryPoints playerId={player.id} />
+                                <VictoryPoints
+                                    playerId={player.id}
+                                    disabled={currentPlayer.joinStatus === GameJoinStatus.SPECTATOR}
+                                />
                             </Grid>
                         </Toolbar>
                     </CardContent>

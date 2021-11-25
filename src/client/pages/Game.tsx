@@ -21,7 +21,7 @@ import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import { makeStyles } from '@material-ui/styles';
 
-import { Game, GameStatus, Phase, StrategyCardIndex } from 'common/Game';
+import { Game, GameJoinStatus, GameStatus, getPlayersInGame, Phase, StrategyCardIndex } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
@@ -47,9 +47,9 @@ function getPhaseContents(phase: number) {
 }
 
 function canNextPhase(game: Game): { canNext: boolean; message: string } {
-    const { status, players } = game;
+    const { status } = game;
     const { phase, custodiansRemoved, agenda1Voted, agenda2Voted } = status;
-    const playerArray = Object.values(players);
+    const playerArray = getPlayersInGame(game);
 
     let canNext = phase < Phase.AGENDA;
     let message = '';
@@ -120,7 +120,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 function Game() {
     const classes = useStyles();
     const { sendData } = useAppContext();
-    const { gameId, game, playerId } = useAccountInfo();
+    const { gameId, game, player, playerId } = useAccountInfo();
     const navigate = useNavigate();
 
     const [statusState, setStatusState] = useState<GameStatus>({
@@ -159,17 +159,16 @@ function Game() {
         }
     });
 
-    if (!game || game.status.ended || !playerId) {
+    if (!game || game.status.ended || !player || !playerId) {
         return null;
     }
 
-    const { status, players } = game;
-    const player = players[playerId];
-    if (!status.started && player.joined) {
+    const { status } = game;
+    if (!status.started) {
         return <PlayerSetup />;
-    } else if (!status.started) {
-        return null;
     }
+
+    const isSpectator = player.joinStatus === GameJoinStatus.SPECTATOR;
 
     const { round, phase, turn, pickOrder, pickTurn } = statusState;
     const canBack = round > 1 || (round === 1 && phase > Phase.STRATEGY);
@@ -216,7 +215,7 @@ function Game() {
     } else if (turn === StrategyCardIndex.END) {
         playerTurn = 'END';
     } else {
-        const player = Object.values(game.players).find(p => p.strategyCard === turn);
+        const player = getPlayersInGame(game).find(p => p.strategyCard === turn);
         playerTurn = player ? player.name : null;
     }
 
@@ -224,16 +223,16 @@ function Game() {
     if (message) {
         phaseStatus = <Typography>{message}</Typography>;
     } else if (phase === Phase.AGENDA) {
-        if (round === 10) {
+        if (round === game.numRounds) {
             phaseStatus = (
-                <Button color="primary" variant="contained" onClick={onEndGame}>
+                <Button disabled={isSpectator} color="primary" variant="contained" onClick={onEndGame}>
                     {pending ? <CircularProgress size="24" /> : 'End Game'}
                 </Button>
             );
         } else if (canNext) {
             phaseStatus = (
                 <Button
-                    disabled={pending || phase !== Phase.AGENDA}
+                    disabled={isSpectator || pending || phase !== Phase.AGENDA}
                     color="primary"
                     variant="contained"
                     onClick={e => onStartNextRound(e)}
@@ -257,7 +256,7 @@ function Game() {
 
     return (
         <Grid container direction="column">
-            <Accordion expanded={actionExpanded} onChange={() => setActionExpaned(expanded => !expanded)}>
+            <Accordion expanded={actionExpanded} onChange={(_e, expanded) => setActionExpaned(expanded)}>
                 <AccordionSummary disableMargin classes={{ root: classes.statusSummary }}>
                     <Grid container justifyContent="space-between" alignItems="center">
                         <Typography>{`Turn: ${playerTurn || ''}`}</Typography>
@@ -270,7 +269,7 @@ function Game() {
                             <Tooltip title={Phase[prevPhase]}>
                                 <span>
                                     <IconButton
-                                        disabled={pending || !canBack || phase === Phase.STRATEGY}
+                                        disabled={isSpectator || pending || !canBack || phase === Phase.STRATEGY}
                                         onClick={e => onPhaseClick(e, false)}
                                     >
                                         <NavigateBeforeIcon />
@@ -281,7 +280,7 @@ function Game() {
                             <Tooltip title={Phase[nextPhase]}>
                                 <span>
                                     <IconButton
-                                        disabled={pending || !canNext || phase === Phase.AGENDA}
+                                        disabled={isSpectator || pending || !canNext || phase === Phase.AGENDA}
                                         onClick={e => onPhaseClick(e, true)}
                                     >
                                         <NavigateNextIcon />
@@ -312,6 +311,7 @@ function Game() {
                     <SpeakerSelect
                         className={classes.speakerSelect}
                         classes={{ outlined: classes.speakerSelectInput }}
+                        disabled={isSpectator}
                     />
                 </Grid>
             </Toolbar>

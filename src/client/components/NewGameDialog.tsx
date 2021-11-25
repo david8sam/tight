@@ -5,15 +5,18 @@ import {
     Button,
     Dialog,
     DialogContent,
+    Divider,
     FormControl,
     Grid,
     IconButton,
+    Select,
     TextField,
     Toolbar,
     Tooltip,
     Typography,
     Theme,
-    Divider,
+    MenuItem,
+    InputLabel,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import CloseIcon from '@material-ui/icons/Close';
@@ -26,8 +29,21 @@ import PublicObjectives from './PublicObjectives';
 
 type GameOptions = {
     name: string;
+    numPlayers: number;
+    numRounds: number;
+    numVictoryPoints: number;
     publicObjectives?: Objective[];
 };
+
+function generateNumSelectOptions(size: number): { label: number; value: number }[] {
+    return Array(size)
+        .fill(0)
+        .map((_, i) => ({ label: i + 1, value: i + 1 }));
+}
+
+const NUM_PLAYER_OPTIONS = generateNumSelectOptions(8);
+const NUM_ROUNDS_OPTIONS = generateNumSelectOptions(20);
+const NUM_VP_OPTIONS = generateNumSelectOptions(20);
 
 export interface NewGameDialogProps {
     open: boolean;
@@ -55,8 +71,8 @@ const useStyles = makeStyles((theme: Theme) => ({
         marginLeft: theme.spacing(2),
         flex: 1,
     },
-    divider: {
-        margin: `${theme.spacing(2)}px 0px`,
+    gridItem: {
+        width: '100%',
     },
 }));
 
@@ -72,6 +88,9 @@ function NewGameDialog(props: NewGameDialogProps) {
 
     const [gameOptions, setGameOptions] = useState<GameOptions>(() => ({
         name: generateNextName(playerGames),
+        numPlayers: 8,
+        numRounds: 10,
+        numVictoryPoints: 10,
         publicObjectives: PUBLIC_OBJECTIVES_PLACEHOLDER,
     }));
 
@@ -84,11 +103,13 @@ function NewGameDialog(props: NewGameDialogProps) {
         onClose();
     };
 
-    const onNameChange = (name: string) => setGameOptions(v => ({ ...v, name }));
+    const onGameOptionChange = (options: Partial<GameOptions>) => setGameOptions(v => ({ ...v, ...options }));
 
-    const hasPOs = Boolean(gameOptions.publicObjectives?.length);
+    const { name, numPlayers, numRounds, numVictoryPoints, publicObjectives } = gameOptions;
     const gameExists = Boolean(playerGames.find(g => g.name === gameOptions.name));
-    const nameError = !gameOptions.name || gameExists;
+    const nameError = !name || gameExists;
+    const poError = !publicObjectives?.length;
+    const hasError = nameError || poError;
 
     return (
         <Dialog open={open} fullScreen>
@@ -103,26 +124,81 @@ function NewGameDialog(props: NewGameDialogProps) {
                 <Typography variant="h6" className={classes.title}>
                     Create New Game
                 </Typography>
-                <Button disabled={nameError || !hasPOs} autoFocus color="inherit" onClick={onSave}>
+                <Button disabled={hasError} autoFocus color="inherit" onClick={onSave}>
                     Save
                 </Button>
             </AppBar>
             <DialogContent dividers>
-                <Grid container justifyContent="center" alignItems="center">
-                    <Grid item xs>
+                <Grid container direction="column" justifyContent="center" alignItems="center" spacing={2}>
+                    <Grid item className={classes.gridItem}>
                         <FormControl fullWidth>
                             <TextField
                                 variant="outlined"
                                 fullWidth
-                                value={gameOptions.name}
-                                onChange={e => onNameChange(e && e.target && e.target.value)}
+                                value={name}
+                                onChange={e => onGameOptionChange({ name: e?.target?.value })}
                                 required
                                 error={nameError}
                                 helperText={gameExists ? 'Name already exists' : ''}
                                 label="Name"
                             />
                         </FormControl>
-                        <Divider variant="fullWidth" orientation="horizontal" className={classes.divider} />
+                    </Grid>
+                    <Grid item className={classes.gridItem}>
+                        <FormControl fullWidth variant="outlined">
+                            <InputLabel id="num-players">Number of Players</InputLabel>
+                            <Select
+                                labelId="num-players"
+                                value={numPlayers}
+                                onChange={e => onGameOptionChange({ numPlayers: Number(e?.target?.value) })}
+                                label="Number of Players"
+                            >
+                                {NUM_PLAYER_OPTIONS.map(({ label, value }) => (
+                                    <MenuItem button key={value} value={value}>
+                                        {label}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Grid>
+                    <Grid item className={classes.gridItem}>
+                        <FormControl fullWidth variant="outlined">
+                            <InputLabel id="num-rounds">Number of Rounds</InputLabel>
+                            <Select
+                                labelId="num-rounds"
+                                value={numRounds}
+                                onChange={e => onGameOptionChange({ numRounds: Number(e?.target?.value) })}
+                                label="Number of Players"
+                            >
+                                {NUM_ROUNDS_OPTIONS.map(({ label, value }) => (
+                                    <MenuItem button key={value} value={value}>
+                                        {label}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Grid>
+                    <Grid item className={classes.gridItem}>
+                        <FormControl fullWidth variant="outlined">
+                            <InputLabel id="num-vps">Victory Points To Win</InputLabel>
+                            <Select
+                                labelId="num-vps"
+                                value={numVictoryPoints}
+                                onChange={e => onGameOptionChange({ numVictoryPoints: Number(e?.target?.value) })}
+                                label="Victory Points To Win"
+                            >
+                                {NUM_VP_OPTIONS.map(({ label, value }) => (
+                                    <MenuItem button key={value} value={value}>
+                                        {label}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Grid>
+                    <Grid item className={classes.gridItem}>
+                        <Divider variant="fullWidth" orientation="horizontal" />
+                    </Grid>
+                    <Grid item className={classes.gridItem}>
                         <PublicObjectives
                             creatable
                             deletable

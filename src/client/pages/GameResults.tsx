@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Divider, Grid, Toolbar, Typography } from '@material-ui/core';
 
+import { GameJoinStatus } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
@@ -36,7 +37,13 @@ function GameResults() {
             <Divider orientation="horizontal" />
             <Toolbar />
             <Toolbar>
-                <Button fullWidth color="primary" variant="contained" onClick={onContinueGame}>
+                <Button
+                    fullWidth
+                    color="primary"
+                    variant="contained"
+                    onClick={onContinueGame}
+                    disabled={player.joinStatus === GameJoinStatus.SPECTATOR}
+                >
                     <Typography>Continue Game</Typography>
                 </Button>
             </Toolbar>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import uniq from 'lodash/uniq';
 import { Button, CircularProgress, Grid, Toolbar, Typography } from '@material-ui/core';
 
-import { Game } from 'common/Game';
+import { Game, GameJoinStatus, getPlayersInGame } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
@@ -20,7 +20,7 @@ function canNext(game: Game): boolean {
     }
 
     // Make sure every player has unique selected a color and faction.
-    const players = Object.values(game.players);
+    const players = getPlayersInGame(game);
     const colors = uniq(players.filter(p => Boolean(p.color)).map(p => p.color));
     const factions = uniq(players.filter(p => Boolean(p.faction)).map(p => p.faction));
 
@@ -32,16 +32,17 @@ function canStart(game: Game): boolean {
         return false;
     }
 
-    const { players, status } = game;
+    const { status } = game;
     const { speaker, pickOrder } = status;
     const po = uniq(pickOrder);
+    const players = getPlayersInGame(game);
 
     return Boolean(speaker) && po.length === Object.keys(players).length && po.every(p => Boolean(p));
 }
 
 function PlayerSetup() {
     const { sendData } = useAppContext();
-    const { gameId, game, playerId, player } = useAccountInfo();
+    const { gameId, game, player, playerId } = useAccountInfo();
 
     const [starting, setStarting] = useState(false);
     const [step, setStep] = useState<SetupStepType>(0);
@@ -69,6 +70,7 @@ function PlayerSetup() {
     }
 
     const disableNext = step === 0 ? !canNext(game) : starting || !canStart(game);
+    const isSpectator = player.joinStatus === GameJoinStatus.SPECTATOR;
 
     return (
         <>
@@ -94,7 +96,7 @@ function PlayerSetup() {
                             <Button
                                 color="primary"
                                 variant="contained"
-                                disabled={disableNext}
+                                disabled={disableNext || (step === 1 && isSpectator)}
                                 onClick={step === 1 ? onStartClick : () => setStep(1)}
                             >
                                 {nextLabel}

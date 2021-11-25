@@ -104,7 +104,9 @@ export default function PlanetNameCell(props: PlanetNameCellProps) {
                 <Grid item>
                     <Grid container justifyContent="center" alignItems="center" className={classes.grid}>
                         <FormControlLabel
-                            control={<Switch checked={planet.refreshedAbility} onChange={onExhaustChange} />}
+                            control={
+                                <Switch color="primary" checked={planet.refreshedAbility} onChange={onExhaustChange} />
+                            }
                             label={
                                 <Grid container direction="column" justifyContent="center" alignItems="center">
                                     <Typography variant="subtitle2">Exhaust</Typography>

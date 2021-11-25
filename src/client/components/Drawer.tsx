@@ -10,6 +10,7 @@ import { MessageType } from 'common/message';
 import { useAppContext } from '../Context';
 import { ActionType } from '../reducer';
 import useAccountInfo from '../hooks/useAccountInfo';
+import { GameJoinStatus } from 'common/Game';
 
 const useStyle = makeStyles(theme => ({
     drawer: {
@@ -29,7 +30,7 @@ function Drawer(props: DrawerProps) {
     const { open, onOpen, onClose, ...drawerProps } = props;
 
     const navigate = useNavigate();
-    const { loggedIn, game, playerId } = useAccountInfo();
+    const { loggedIn, game, player, playerId } = useAccountInfo();
 
     const onOptionClick = (e: React.SyntheticEvent<{}, Event>, id: string) => {
         onClose(e);
@@ -52,27 +53,23 @@ function Drawer(props: DrawerProps) {
         navigate('/');
     };
 
-    const playerInGame = Boolean(playerId && game && game.players[playerId]);
+    const inGame = Boolean(player);
+    const isPlayer = player ? player.joinStatus === GameJoinStatus.PLAYER : false;
 
     return (
         <SwipeableDrawer open={open} onOpen={onOpen} onClose={onClose} {...drawerProps}>
             <div className={classes.drawer}>
                 <List>
-                    <ListItem key="game" button disabled={!playerInGame} onClick={e => onOptionClick(e, 'game')}>
+                    <ListItem key="game" button disabled={!inGame} onClick={e => onOptionClick(e, 'game')}>
                         <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary="Game Status" />
                     </ListItem>
-                    <ListItem
-                        key="objectives"
-                        button
-                        disabled={!playerInGame}
-                        onClick={e => onOptionClick(e, 'objectives')}
-                    >
+                    <ListItem key="objectives" button disabled={!inGame} onClick={e => onOptionClick(e, 'objectives')}>
                         <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary="Objectives" />
                     </ListItem>
                     <ListItem
                         key="planets"
                         button
-                        disabled={!game || !game.status.started}
+                        disabled={!game || !game.status.started || !isPlayer}
                         onClick={e => onOptionClick(e, 'planets')}
                     >
                         <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary="My Planets" />

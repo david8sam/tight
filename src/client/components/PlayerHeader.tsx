@@ -37,7 +37,7 @@ function PlayerHeader(props: PlayerHeaderProps) {
 
     const { strategyCards } = state;
     const { player, hideInitiative = false } = props;
-    const { id: playerId, faction, strategyCard } = player;
+    const { name, faction, strategyCard } = player;
 
     const card = hideInitiative ? null : strategyCards.find(s => s.initiative === strategyCard);
     const playerColor = player.color || '#fff';
@@ -53,7 +53,7 @@ function PlayerHeader(props: PlayerHeaderProps) {
             style={{ color, backgroundColor }}
         >
             {card ? <InitiativeLabel card={card} infoIconColor={color} /> : null}
-            <Typography>{`${playerId} (${faction})`}</Typography>
+            <Typography>{`${name} (${faction})`}</Typography>
         </Grid>
     );
 }

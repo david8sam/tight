@@ -31,13 +31,26 @@ export function listAccounts() {
     return _accounts;
 }
 
-export function addAccount(id: string): boolean {
+type AddAccountOptions = {
+    name?: string;
+};
+
+export function addAccount(id: string, options?: AddAccountOptions): boolean {
     if (!id) {
         return false;
     }
 
     if (!_accounts[id]) {
-        _accounts[id] = { id, name: id, loggedIn: true, settings: { ...DEFAULT_SETTINGS } };
+        _accounts[id] = {
+            // Default values
+            id,
+            name: id,
+            loggedIn: true,
+            joinedGame: null,
+            settings: { ...DEFAULT_SETTINGS },
+            // Override from options
+            ...options,
+        };
     }
 
     return true;
@@ -56,13 +69,8 @@ export function getAccount(id: string): Account | null {
     return _accounts[id] || null;
 }
 
-export function login(id: string): boolean {
-    if (!addAccount(id)) {
-        return false;
-    }
-
-    _accounts[id].loggedIn = true;
-    return true;
+export function login(id: string, options?: AddAccountOptions): boolean {
+    return addAccount(id, options);
 }
 
 export function logout(id: string): boolean {

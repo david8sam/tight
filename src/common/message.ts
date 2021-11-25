@@ -15,6 +15,7 @@ export interface ChangeData {
     accounts?: AccountMap;
 }
 
+// TODO: Type per message type.
 export interface Message {
     type: MessageType;
     data?: any;

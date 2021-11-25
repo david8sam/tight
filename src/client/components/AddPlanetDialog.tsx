@@ -52,7 +52,7 @@ function AddPlanetDialog(props: AddPlanetDialogProps) {
     const { gameId, playerId } = props;
 
     const game = games[gameId];
-    const player = game && game.players && game.players[playerId];
+    const player = game?.players && game.players[playerId];
     const planetNames = player && player.planets;
 
     const [selection, setSelection] = useState(planetNames || []);

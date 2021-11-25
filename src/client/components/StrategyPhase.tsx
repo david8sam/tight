@@ -1,13 +1,14 @@
-import React, { MouseEvent, useState } from 'react';
+import React, { MouseEvent } from 'react';
 
 import { Grid, Toolbar, Typography } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 import {
     buildStrategyCardOwners,
+    GameJoinStatus,
     StrategyCard as StrategyCardType,
-    StrategyCardIndex,
     strategyCardHasOwner,
+    StrategyCardIndex,
 } from 'common/Game';
 import { MessageType } from 'common/message';
 
@@ -26,7 +27,7 @@ function StrategyPhase() {
         return null;
     }
 
-    const stratCardOwners = buildStrategyCardOwners(game.players);
+    const stratCardOwners = buildStrategyCardOwners(game);
 
     const onTakeCardClick = (e: MouseEvent<HTMLButtonElement>, strategyCard: StrategyCardIndex) => {
         e.stopPropagation();
@@ -36,6 +37,9 @@ function StrategyPhase() {
 
         sendData({ type, data: { gameId, playerId, strategyCard } });
     };
+
+    const isAdmin = player.joinStatus === GameJoinStatus.ADMIN;
+    const isSpectator = player.joinStatus === GameJoinStatus.SPECTATOR;
 
     return (
         <Grid container direction="column">
@@ -47,7 +51,11 @@ function StrategyPhase() {
                 const { initiative, name } = card;
                 const cardOwner = stratCardOwners[initiative];
                 let buttonLabel = cardOwner === playerId ? 'Return' : cardOwner || 'Take';
+
+                // Admins can't take/return cards with buttons, should the Assign UI instead.
                 let disabled =
+                    isAdmin ||
+                    isSpectator ||
                     (Boolean(player.strategyCard) && cardOwner !== playerId) ||
                     (Boolean(cardOwner) && cardOwner !== playerId);
 
@@ -64,14 +72,16 @@ function StrategyPhase() {
                 return <StrategyCard key={name} card={card} ButtonProps={ButtonProps} buttonLabel={buttonLabel} />;
             })}
             <Toolbar />
-            <Accordion disableMargin>
-                <AccordionSummary disableMargin expandIcon={<ExpandMoreIcon />}>
-                    <Typography>Re-assign Cards</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                    <AssignStrategyCardTable />
-                </AccordionDetails>
-            </Accordion>
+            {!isSpectator && (
+                <Accordion disableMargin>
+                    <AccordionSummary disableMargin expandIcon={<ExpandMoreIcon />}>
+                        <Typography>Assign Cards</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <AssignStrategyCardTable />
+                    </AccordionDetails>
+                </Accordion>
+            )}
         </Grid>
     );
 }

@@ -20,11 +20,12 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 interface VictoryPointsExtraProps {
     playerId: string;
+    disabled?: boolean;
 }
 
 function VictoryPointsExtra(props: VictoryPointsExtraProps) {
     const classes = useStyles(props);
-    const { playerId } = props;
+    const { playerId, disabled = false } = props;
     const { sendData } = useAppContext();
     const { game, gameId } = useAccountInfo();
 
@@ -45,7 +46,7 @@ function VictoryPointsExtra(props: VictoryPointsExtraProps) {
                 <span>
                     <IconButton
                         classes={{ root: classes.iconButton }}
-                        disabled={victoryPoints < 1}
+                        disabled={disabled || victoryPoints < 1}
                         onClick={() => onVictoryPointsChange(victoryPoints - 1)}
                     >
                         <MinusIcon />
@@ -62,12 +63,15 @@ function VictoryPointsExtra(props: VictoryPointsExtraProps) {
                 <Typography>{`${victoryPoints} VP`}</Typography>
             </Grid>
             <Tooltip title="Add VP">
-                <IconButton
-                    classes={{ root: classes.iconButton }}
-                    onClick={() => onVictoryPointsChange(victoryPoints + 1)}
-                >
-                    <AddIcon></AddIcon>
-                </IconButton>
+                <span>
+                    <IconButton
+                        classes={{ root: classes.iconButton }}
+                        onClick={() => onVictoryPointsChange(victoryPoints + 1)}
+                        disabled={disabled}
+                    >
+                        <AddIcon />
+                    </IconButton>
+                </span>
             </Tooltip>
         </Grid>
     );

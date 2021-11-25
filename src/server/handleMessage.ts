@@ -1,7 +1,15 @@
 import isNil from 'lodash/isNil';
 
 import { ErrorType } from 'common/error';
-import { buildStrategyCardOwners, getNextPlayer, Phase, strategyCardHasOwner, StrategyCardIndex } from 'common/Game';
+import {
+    buildStrategyCardOwners,
+    GameJoinStatus,
+    getNextPlayer,
+    getPlayersInGame,
+    Phase,
+    strategyCardHasOwner,
+    StrategyCardIndex,
+} from 'common/Game';
 import { MessageType } from 'common/message';
 
 import * as AccountDB from './database/account';
@@ -30,7 +38,7 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
     log('Receiving:\n', parsedMessage);
 
     const { type = null, data = null } = message ? JSON.parse(message) : {};
-    const { accountId = null, gameId = null, playerId = null } = data || {};
+    const { accountId = null, gameId = null, playerId = null, ...otherData } = data || {};
 
     // Handle list actions immediately
     switch (type) {
@@ -108,9 +116,8 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
 
     switch (type) {
         case MessageType.CREATE_GAME: {
-            const { version, name, publicObjectives } = data || {};
             if (playerId) {
-                const game = GameDB.createGame({ creator: playerId, version, name, publicObjectives });
+                const game = GameDB.createGame({ creator: playerId, ...otherData });
                 markGameDirty(game.id, { created: true });
             }
             break;
@@ -146,7 +153,7 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
 
         case MessageType.START_GAME:
             // Initialize players with their home planets.
-            Object.values(game.players).forEach(player => {
+            getPlayersInGame(game).forEach(player => {
                 if (player.faction) {
                     const factionPlanets = PlanetDB.getFactionPlanets(player.faction);
                     player.planets = factionPlanets.map(p => p.name);
@@ -170,7 +177,7 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             const { players, status } = game;
             if (!status.started || (status.started && players[playerId])) {
                 // Add player to the game
-                GameDB.addPlayer(gameId, playerId);
+                GameDB.addPlayer(gameId, playerId, otherData);
                 markGameDirty(gameId, { players: true });
 
                 const account = AccountDB.getAccount(playerId);
@@ -303,7 +310,7 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
 
         // Strategy Card actions
         case MessageType.PLAYER_TAKE_STRATEGY_CARD: {
-            const owners = buildStrategyCardOwners(players);
+            const owners = buildStrategyCardOwners(game);
             if (owners[data.strategyCard] === player.name || strategyCardHasOwner(owners, data.strategyCard)) {
                 return;
             }

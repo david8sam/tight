@@ -29,12 +29,13 @@ const useStyles = makeStyles((theme: Theme) => ({
 interface VictoryPointsProps {
     playerId: string;
     allowShowSecret?: boolean;
+    disabled?: boolean;
 }
 
 function VictoryPoints(props: VictoryPointsProps) {
     const theme = useTheme<Theme>();
     const classes = useStyles(props);
-    const { playerId, allowShowSecret = false } = props;
+    const { playerId, allowShowSecret = false, disabled = false } = props;
     const { sendData } = useAppContext();
     const { game, gameId, playerId: currentPlayerId } = useAccountInfo();
 
@@ -105,6 +106,7 @@ function VictoryPoints(props: VictoryPointsProps) {
                             backgroundColor={backgroundColor}
                             checked={publicObjectives[po.id - 1] ?? false}
                             editable
+                            disabled={disabled}
                             objective={po}
                             onChange={onPublicObjectiveCheck}
                             onSave={onPublicObjectiveSave}
@@ -114,13 +116,14 @@ function VictoryPoints(props: VictoryPointsProps) {
                         color={color}
                         backgroundColor={backgroundColor}
                         editable
+                        disabled={disabled}
                         allowShowSecret={allowShowSecret || isCurrentPlayer}
                         objective={secretObjective.objective}
                         checked={secretObjective.cleared}
                         onChange={onSecretObjectiveCheck}
                         onSave={onSecretObjectiveSave}
                     />
-                    <VictoryPointsExtra playerId={playerId} />
+                    <VictoryPointsExtra playerId={playerId} disabled={disabled} />
                 </Grid>
             </AccordionDetails>
         </Accordion>

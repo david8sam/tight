@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 
+// TODO: Save stuff to appdata
+
 export function getHomeDir(): string {
     return process.env.APPDATA || process.env.HOME || '';
 }

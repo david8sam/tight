@@ -10,7 +10,9 @@ const useStyle = makeStyles((theme: Theme) => ({
     },
     title: {
         padding: theme.spacing(),
-        borderRadius: theme.spacing(),
+    },
+    popoverPaper: {
+        marginTop: theme.spacing(),
     },
 }));
 
@@ -69,6 +71,7 @@ function PlanetIcon(props: PlanetIconProps) {
                     horizontal: 'center',
                 }}
                 onClick={e => e.stopPropagation()}
+                PaperProps={{ className: classes.popoverPaper }}
             >
                 <Typography className={classes.title}>{title}</Typography>
             </Popover>
