@@ -83,15 +83,15 @@ function updateState(state: State, payload: ChangeData) {
             const currentGame: Game = state.games[id] || {};
             const updatedGame: Game = { ...currentGame, ...created };
             if (status) {
-                updatedGame.status = { ...updatedGame.status, ...status };
+                updatedGame.status = { ...status };
             }
 
             if (planets) {
-                updatedGame.planets = { ...updatedGame.planets, ...planets };
+                updatedGame.planets = { ...planets };
             }
 
             if (players) {
-                updatedGame.players = { ...updatedGame.players, ...players };
+                updatedGame.players = { ...players };
             }
 
             if (publicObjectives) {

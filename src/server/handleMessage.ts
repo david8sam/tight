@@ -175,7 +175,18 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
 
         case MessageType.PLAYER_JOIN_GAME: {
             const { players, status } = game;
-            if (!status.started || (status.started && players[playerId])) {
+            const { joinStatus } = otherData;
+
+            // Anyone can join a game not started yet.
+            const canAnyoneJoin = !status.started;
+
+            // When a game has started, only previous players can re-join as players.
+            const canJoinAsPlayer = status.started && joinStatus === GameJoinStatus.PLAYER && players[playerId];
+
+            // Admins and specators can join anytime when a game has started. But not if they were a player before.
+            const canJoinAsNonPlayer = status.started && joinStatus !== GameJoinStatus.PLAYER && !players[playerId];
+
+            if (canAnyoneJoin || canJoinAsPlayer || canJoinAsNonPlayer) {
                 // Add player to the game
                 GameDB.addPlayer(gameId, playerId, otherData);
                 markGameDirty(gameId, { players: true });
@@ -193,9 +204,16 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             break;
         }
         case MessageType.PLAYER_LEAVE_GAME: {
-            // Remove player from the game
-            GameDB.removePlayer(gameId, playerId, Boolean(data.deletePlayer));
-            markGameDirty(gameId, { players: true });
+            // Remove player from the game if in the game
+            const gamePlayer = playerId && game.players[playerId];
+            if (gamePlayer) {
+                // Also remove if player is a nonplayer or game hasn't started yet.
+                const isNonGamePlayer = gamePlayer.joinStatus !== GameJoinStatus.PLAYER;
+                const deletePlayer = data.deletePlayer || !game.status.started || isNonGamePlayer;
+
+                GameDB.removePlayer(gameId, playerId, deletePlayer);
+                markGameDirty(gameId, { players: true });
+            }
 
             const player = AccountDB.getAccount(playerId);
             if (player) {
