@@ -11,6 +11,7 @@ import {
     GamePlanet,
     GamePlanetMap,
     GamePlayerMap,
+    generateBlankObjective,
     Objective,
     Phase,
     SECRET_OBJECTIVE_ID,
@@ -153,7 +154,7 @@ export function addPlayer(gameId: string, playerId: string | string[], options?:
                 passed: false,
                 planets: [],
                 publicObjectives: [],
-                secretObjective: { cleared: false, objective: { id: SECRET_OBJECTIVE_ID, name: 'Secret', vp: 1 } },
+                secretObjective: { cleared: false, objective: generateBlankObjective(SECRET_OBJECTIVE_ID) },
                 victoryPoints: 0,
             };
         } else {

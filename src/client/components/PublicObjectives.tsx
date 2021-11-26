@@ -1,11 +1,35 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 
-import { Button, Grid, IconButton, Toolbar, Typography } from '@material-ui/core';
+import {
+    Button,
+    Divider,
+    Grid,
+    IconButton,
+    ListItemIcon,
+    MenuItem,
+    MenuList,
+    Popover,
+    Theme,
+    Toolbar,
+    Typography,
+} from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
+import MoreVertIcon from '@material-ui/icons/MoreVert';
+import RotateLeftIcon from '@material-ui/icons/RotateLeft';
 
-import { Objective as ObjectiveType } from 'common/Game';
+import { generateBlankObjective, generateBlankPublicObjectives, Objective as ObjectiveType } from 'common/Game';
 import EditObjectiveDialog from './EditObjectiveDialog';
 import Objective from './Objective';
+import { makeStyles } from '@material-ui/styles';
+
+const useStyle = makeStyles((theme: Theme) => ({
+    poToolbar: {
+        width: '100%',
+    },
+    collapseButton: {
+        marginRight: theme.spacing(),
+    },
+}));
 
 export interface PublicObjectivesProps {
     creatable?: boolean;
@@ -17,6 +41,7 @@ export interface PublicObjectivesProps {
 }
 
 function PublicObjectives(props: PublicObjectivesProps) {
+    const classes = useStyle(props);
     const {
         creatable = false,
         deletable = false,
@@ -26,20 +51,11 @@ function PublicObjectives(props: PublicObjectivesProps) {
         showPlayers,
     } = props;
     const [createNewObjective, setCreateNewObjective] = useState(false);
+    const [optionsOpen, setOptionsOpen] = useState(false);
+    const optionsRef = useRef<HTMLButtonElement>(null);
+
     // index === public objective ID - 1
     const [expanded, setExpanded] = useState<boolean[]>(Array(publicObjectives.length).fill(false));
-
-    let toolbar = null;
-    if (creatable) {
-        toolbar = (
-            <Toolbar disableGutters>
-                <IconButton onClick={() => setCreateNewObjective(true)}>
-                    <AddIcon />
-                    <Typography>Public Objective</Typography>
-                </IconButton>
-            </Toolbar>
-        );
-    }
 
     const onObjectiveDelete = (o: ObjectiveType) => {
         if (onChange) {
@@ -82,56 +98,117 @@ function PublicObjectives(props: PublicObjectivesProps) {
         setExpanded(newExpanded);
     };
 
+    const onAddObjective = () => {
+        setOptionsOpen(false);
+        setCreateNewObjective(true);
+    };
+
+    const onResetAll = () => {
+        setOptionsOpen(false);
+        if (onChange) {
+            onChange(generateBlankPublicObjectives());
+        }
+    };
+
     return (
         <>
             <Grid container direction="column">
-                {toolbar}
                 <Toolbar>
-                    <Grid container justifyContent="space-evenly">
-                        <Button
-                            size="small"
-                            color="primary"
-                            variant="contained"
-                            disabled={expanded.every(e => !e)}
-                            onClick={() => onExpandChange(null, false)}
-                        >
-                            <Typography>Collapse All</Typography>
-                        </Button>
-                        <Button
-                            size="small"
-                            color="primary"
-                            variant="contained"
-                            disabled={expanded.every(e => e)}
-                            onClick={() => onExpandChange(null, true)}
-                        >
-                            <Typography>Expand All</Typography>
-                        </Button>
+                    <Grid container justifyContent="center">
+                        <Typography variant="h6">Public Objectives</Typography>
                     </Grid>
                 </Toolbar>
-                {publicObjectives.map((po: ObjectiveType) => (
-                    <Objective
-                        key={`${po.id}-${po.name}`}
-                        deletable={deletable}
-                        editable={editable}
-                        objective={po}
-                        onChange={onObjectiveChange}
-                        onDelete={onObjectiveDelete}
-                        showPlayers={showPlayers}
-                        AccordionProps={{
-                            expanded: expanded[po.id - 1],
-                            onChange: (_e, expand) => onExpandChange(po.id, expand),
-                        }}
-                    />
-                ))}
+                <Toolbar className={classes.poToolbar}>
+                    <Grid container justifyContent="space-between" alignItems="center" spacing={1}>
+                        <Grid item>
+                            <Button
+                                className={classes.collapseButton}
+                                size="small"
+                                color="primary"
+                                variant="contained"
+                                disabled={expanded.every(e => !e)}
+                                onClick={() => onExpandChange(null, false)}
+                            >
+                                <Typography>Collapse</Typography>
+                            </Button>
+                            <Button
+                                size="small"
+                                color="primary"
+                                variant="contained"
+                                disabled={expanded.every(e => e)}
+                                onClick={() => onExpandChange(null, true)}
+                            >
+                                <Typography>Expand</Typography>
+                            </Button>
+                        </Grid>
+                        {(creatable || deletable) && (
+                            <Grid item>
+                                <IconButton ref={optionsRef} onClick={() => setOptionsOpen(true)}>
+                                    <MoreVertIcon />
+                                </IconButton>
+                            </Grid>
+                        )}
+                    </Grid>
+                </Toolbar>
+                <Grid container direction="column">
+                    {publicObjectives.map((po: ObjectiveType) => (
+                        <Objective
+                            key={`${po.id}`}
+                            deletable={deletable}
+                            editable={editable}
+                            objective={po}
+                            onChange={onObjectiveChange}
+                            onDelete={onObjectiveDelete}
+                            showPlayers={showPlayers}
+                            AccordionProps={{
+                                expanded: expanded[po.id - 1],
+                                onChange: (_e, expand) => onExpandChange(po.id, expand),
+                            }}
+                        />
+                    ))}
+                </Grid>
             </Grid>
             {createNewObjective && (
                 <EditObjectiveDialog
-                    defaultObjective={{ id: publicObjectives.length + 1, vp: 1, name: 'Objective' }}
+                    defaultObjective={generateBlankObjective(publicObjectives.length + 1)}
                     open={createNewObjective}
                     onClose={() => setCreateNewObjective(false)}
                     onSave={onSaveObjective}
                 />
             )}
+            <Popover
+                open={optionsOpen}
+                onClose={() => setOptionsOpen(false)}
+                anchorEl={optionsRef.current}
+                anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'right',
+                }}
+                transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                }}
+            >
+                <MenuList>
+                    {creatable && (
+                        <MenuItem onClick={() => onAddObjective()}>
+                            <ListItemIcon>
+                                <AddIcon />
+                            </ListItemIcon>
+                            <Typography>Add</Typography>
+                        </MenuItem>
+                    )}
+                    {deletable && <Divider />}
+                    {deletable && (
+                        <MenuItem onClick={() => onResetAll()}>
+                            <ListItemIcon>
+                                <RotateLeftIcon />
+                            </ListItemIcon>
+                            <Typography>Reset All</Typography>
+                        </MenuItem>
+                    )}
+                </MenuList>
+            </Popover>
         </>
     );
 }

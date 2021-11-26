@@ -120,17 +120,9 @@ export interface GamePlayer {
 export type GamePlayerMap = Record<string, GamePlayer>;
 
 // id > 0
-export type Objective = { id: number; name: string; description?: string; vp: number };
+export type Objective = { id: number; description: string; vp: number };
 
 export const SECRET_OBJECTIVE_ID = -999;
-
-export const PUBLIC_OBJECTIVES_PLACEHOLDER: Objective[] = Array(10)
-    .fill('')
-    .map((_dummy, index) => ({
-        id: index + 1,
-        name: `Objective ${index + 1}`,
-        vp: 1,
-    }));
 
 export interface Game {
     readonly id: string;
@@ -176,6 +168,13 @@ export function getPlayerOrder(game: Game) {
 
 export function getNextPlayer(game: Game, currentPlayerId: string, playerOrder?: GamePlayer[]): GamePlayer | null {
     const players = playerOrder || getPlayerOrder(game);
+
+    // Everyone passed, no next player
+    if (players.every(p => p.passed)) {
+        return null;
+    }
+
+    // Find next player that has not passed yet.
     let nextIndex = players.findIndex(p => p.id === currentPlayerId) + 1;
     let nextPlayer = players[nextIndex];
     while (nextPlayer && nextPlayer.passed) {
@@ -224,4 +223,20 @@ export function calculateVictoryPoints(game: Game, playerId: string) {
     const totalvp = povp + sovp + victoryPoints;
 
     return totalvp;
+}
+
+/**
+ * Generate a single blank objective
+ */
+export function generateBlankObjective(id: number): Objective {
+    return { id, description: '', vp: 1 };
+}
+
+/**
+ * Generates an array of blank public objectives
+ */
+export function generateBlankPublicObjectives(count: number = 10): Objective[] {
+    return Array(count)
+        .fill('')
+        .map((_dummy, index) => generateBlankObjective(index + 1));
 }

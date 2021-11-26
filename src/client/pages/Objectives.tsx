@@ -8,10 +8,13 @@ import { useAppContext } from '../Context';
 import Objective from '../components/Objective';
 import PublicObjectives from '../components/PublicObjectives';
 import useAccountInfo from '../hooks/useAccountInfo';
+import useAutoNavigate from '../hooks/useAutoNavigate';
 
 function StrategyCards() {
     const { game, gameId, player, playerId } = useAccountInfo();
     const { sendData } = useAppContext();
+
+    useAutoNavigate({ to: `/player/${playerId}/manage-games`, condition: () => !gameId, deps: [gameId] });
 
     if (!game || !player || !playerId) {
         return null;
@@ -43,11 +46,6 @@ function StrategyCards() {
 
     return (
         <Grid container direction="column">
-            <Toolbar>
-                <Grid container justifyContent="center">
-                    <Typography variant="h6">Public Objectives</Typography>
-                </Grid>
-            </Toolbar>
             <Grid item>
                 <PublicObjectives
                     editable={editable}

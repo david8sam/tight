@@ -128,6 +128,18 @@ function ActionPhase() {
                     </Card>
                 );
             })}
+            <Toolbar />
+            <Toolbar>
+                <Button
+                    disabled={playerOrder.every(p => p.passed) || turn !== StrategyCardIndex.END}
+                    color="primary"
+                    variant="contained"
+                    fullWidth
+                    onClick={() => onNextTurn(playerOrder[0], false)}
+                >
+                    Next Turn
+                </Button>
+            </Toolbar>
         </Grid>
     );
 }

@@ -17,6 +17,7 @@ import PlanetIconInfoButton from '../components/PlanetIconInfoButton';
 import PlanetsTable from '../components/PlanetsTable';
 import TotalsTable, { TotalsTableProps } from '../components/TotalsTable';
 import useAccountInfo from '../hooks/useAccountInfo';
+import useAutoNavigate from '../hooks/useAutoNavigate';
 import { SendDataFunction } from '../hooks/useWebSocket';
 
 const useStyle = makeStyles(theme => ({
@@ -96,6 +97,8 @@ function Planets() {
     // Get all planets owned by this player
     const gamePlanets = game ? game.planets : ({} as GamePlanetMap);
     const playerPlanetNames = (player && player.planets) || [];
+
+    useAutoNavigate({ to: `/player/${playerId}/manage-games`, condition: () => !gameId, deps: [gameId] });
 
     // Sync with store data
     useEffect(

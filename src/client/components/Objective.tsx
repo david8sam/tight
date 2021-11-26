@@ -59,7 +59,7 @@ export default function Objective(props: ObjectiveProps) {
         showPlayers = false,
         AccordionProps,
     } = props;
-    const { name, description, id, vp } = objective;
+    const { description, id, vp } = objective;
     const [editOpen, setEditOpen] = useState(false);
 
     const { game } = useAccountInfo();
@@ -102,7 +102,7 @@ export default function Objective(props: ObjectiveProps) {
                 >
                     <Grid container direction="column">
                         <Toolbar className={classes.toolbar} disableGutters>
-                            <Typography>{`${id === SECRET_OBJECTIVE_ID ? 'S' : id} - ${name} (${vp} VP)`}</Typography>
+                            <Typography>{`Objective ${id === SECRET_OBJECTIVE_ID ? 'S' : id} (${vp} VP)`}</Typography>
                             {deletable && (
                                 <Tooltip title="Delete">
                                     <IconButton onClick={onDeleteClick}>

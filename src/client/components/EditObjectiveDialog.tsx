@@ -55,8 +55,6 @@ function EditObjectiveDialog(props: EditObjectiveDialogProps) {
         onClose();
     };
 
-    const canSave = Boolean(objective.name) && objective.vp > 0;
-
     return (
         <Dialog open={open} fullScreen>
             <AppBar classes={{ root: classes.appBar }}>
@@ -70,7 +68,7 @@ function EditObjectiveDialog(props: EditObjectiveDialogProps) {
                 <Typography variant="h6" className={classes.title}>
                     Edit Objective
                 </Typography>
-                <Button disabled={!canSave} autoFocus color="inherit" onClick={e => onSaveObjective()}>
+                <Button autoFocus color="inherit" onClick={e => onSaveObjective()}>
                     Save
                 </Button>
             </AppBar>

@@ -1,3 +1,4 @@
+import isEqual from 'lodash/isEqual';
 import React, { useEffect, useRef, useState } from 'react';
 
 import {
@@ -69,6 +70,8 @@ function ObjectiveCheckbox(props: ObjectiveCheckboxProps) {
         setInfoOpen(false);
     };
 
+    const canSave = !isEqual(objective, editObjective);
+
     return (
         <>
             <FormControlLabel
@@ -116,7 +119,7 @@ function ObjectiveCheckbox(props: ObjectiveCheckboxProps) {
                                     color="primary"
                                     variant="contained"
                                     onClick={onSaveObjective}
-                                    disabled={disabled || !editObjective.name || editObjective.vp < 1}
+                                    disabled={disabled || !canSave}
                                 >
                                     <Typography>Save</Typography>
                                 </Button>

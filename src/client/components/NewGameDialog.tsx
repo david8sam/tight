@@ -21,7 +21,7 @@ import {
 import { makeStyles } from '@material-ui/styles';
 import CloseIcon from '@material-ui/icons/Close';
 
-import { Game, Objective, PUBLIC_OBJECTIVES_PLACEHOLDER } from 'common/Game';
+import { Game, generateBlankPublicObjectives, Objective } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
@@ -35,10 +35,10 @@ type GameOptions = {
     publicObjectives?: Objective[];
 };
 
-function generateNumSelectOptions(size: number): { label: number; value: number }[] {
+function generateNumSelectOptions(size: number): { label: string; value: number }[] {
     return Array(size)
         .fill(0)
-        .map((_, i) => ({ label: i + 1, value: i + 1 }));
+        .map((_, i) => ({ label: `${i + 1}`, value: i + 1 }));
 }
 
 const NUM_PLAYER_OPTIONS = generateNumSelectOptions(8);
@@ -91,7 +91,7 @@ function NewGameDialog(props: NewGameDialogProps) {
         numPlayers: 8,
         numRounds: 10,
         numVictoryPoints: 10,
-        publicObjectives: PUBLIC_OBJECTIVES_PLACEHOLDER,
+        publicObjectives: generateBlankPublicObjectives(),
     }));
 
     const onCancel = () => {
