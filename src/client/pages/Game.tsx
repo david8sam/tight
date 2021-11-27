@@ -90,6 +90,9 @@ const useStyles = makeStyles((theme: Theme) => ({
     speakerSelectInput: {
         padding: theme.spacing(1),
     },
+    statusAccordion: {
+        width: '100%', // TODO: Why is this necessary? Pixel width doesn't actually change...
+    },
     statusSummary: {
         padding: `0px ${theme.spacing(1)}`,
     },
@@ -111,10 +114,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
     stepLabelAlternativeLabel: {
         marginTop: theme.spacing(1),
-    },
-    divider: {
-        marginBottom: theme.spacing(1),
-        height: 2,
     },
 }));
 
@@ -257,7 +256,11 @@ function Game() {
 
     return (
         <Grid container direction="column">
-            <Accordion expanded={actionExpanded} onChange={(_e, expanded) => setActionExpaned(expanded)}>
+            <Accordion
+                className={classes.statusAccordion}
+                expanded={actionExpanded}
+                onChange={(_e, expanded) => setActionExpaned(expanded)}
+            >
                 <AccordionSummary disableMargin classes={{ root: classes.statusSummary }}>
                     <Grid container justifyContent="space-between" alignItems="center">
                         <TextWithTooltip
@@ -310,7 +313,6 @@ function Game() {
                     </Grid>
                 </AccordionDetails>
             </Accordion>
-            <Divider classes={{ root: classes.divider }} />
             <Toolbar>
                 <Grid container justifyContent="space-between" alignItems="center">
                     <Typography>Speaker:</Typography>
