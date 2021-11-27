@@ -76,7 +76,7 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             dirty.accounts = true;
             break;
         case MessageType.ACCOUNT_LOGIN: {
-            AccountDB.login(accountId);
+            AccountDB.login(accountId, otherData);
             ws.accountId = accountId;
             sendData({ ws, type: MessageType.ACCOUNT_LOGIN, data: accountId });
             dirty.accounts = true;

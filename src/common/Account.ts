@@ -14,7 +14,7 @@ export type AccountSettings = {
     theme: AppTheme; // MUI theme
 };
 
-export const DEFAULT_SETTINGS = {
+export const DEFAULT_SETTINGS: AccountSettings = {
     theme: 'light',
 } as const;
 

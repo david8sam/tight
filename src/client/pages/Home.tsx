@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 function Home() {
     const classes = useStyles();
     const {
-        state: { loginStatus, accounts },
+        state: { loginStatus, accounts, theme },
         dispatch,
         sendData,
     } = useAppContext();
@@ -46,8 +46,11 @@ function Home() {
         e.preventDefault();
         e.stopPropagation();
 
-        dispatch({ type: ActionType.setLoginStatus, payload: { status: LoginStatus.LOGIN_PENDING, accountId: name } });
-        sendData({ type: MessageType.ACCOUNT_LOGIN, data: { accountId: name } });
+        dispatch({
+            type: ActionType.setLoginStatus,
+            payload: { status: LoginStatus.LOGIN_PENDING, accountId: name },
+        });
+        sendData({ type: MessageType.ACCOUNT_LOGIN, data: { accountId: name, settings: { theme } } });
     };
 
     useEffect(() => {

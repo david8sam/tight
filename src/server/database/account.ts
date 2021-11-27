@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import { Account, AccountMap, DEFAULT_SETTINGS } from 'common/Account';
+import { Account, AccountMap, AccountSettings, DEFAULT_SETTINGS } from 'common/Account';
 
 import { getHomeDir } from '../appData';
 
@@ -33,6 +33,7 @@ export function listAccounts() {
 
 type AddAccountOptions = {
     name?: string;
+    settings?: Partial<AccountSettings>;
 };
 
 export function addAccount(id: string, options?: AddAccountOptions): boolean {
@@ -47,9 +48,9 @@ export function addAccount(id: string, options?: AddAccountOptions): boolean {
             name: id,
             loggedIn: true,
             joinedGame: null,
-            settings: { ...DEFAULT_SETTINGS },
             // Override from options
             ...options,
+            settings: { ...DEFAULT_SETTINGS, ...options?.settings },
         };
     }
 

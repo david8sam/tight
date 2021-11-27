@@ -5,10 +5,11 @@ import Brightness6 from '@material-ui/icons/Brightness6';
 import Brightness6Outlined from '@material-ui/icons/Brightness6Outlined';
 import MenuIcon from '@material-ui/icons/Menu';
 
-import { AppTheme } from 'common/Account';
+import { AppTheme, LoginStatus } from 'common/Account';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
+import { ActionType } from '../reducer';
 import Drawer from './Drawer';
 import TextWithTooltip from './TextWithTooltip';
 
@@ -16,15 +17,20 @@ function Header() {
     const [drawerOpen, setDrawerOpen] = useState(false);
 
     const {
+        dispatch,
         sendData,
-        state: { accountId, accounts },
+        state: { accountId, accounts, loginStatus, theme = 'light' },
     } = useAppContext();
 
     const account = accountId ? accounts[accountId] : null;
-    const theme = account?.settings?.theme ?? 'light';
+    const loggedIn = loginStatus === LoginStatus.LOGGED_IN;
 
     const onThemeChange = (theme: AppTheme) => {
-        sendData({ type: MessageType.ACCOUNT_SET_SETTINGS, data: { accountId, settings: { theme } } });
+        if (loggedIn) {
+            sendData({ type: MessageType.ACCOUNT_SET_SETTINGS, data: { accountId, settings: { theme } } });
+        } else {
+            dispatch({ type: ActionType.setTheme, payload: { theme } });
+        }
     };
 
     return (

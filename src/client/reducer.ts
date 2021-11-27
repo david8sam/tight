@@ -5,6 +5,7 @@ import { AccountMap, AppTheme, LoginStatus } from 'common/Account';
 import { ChangeData } from 'common/message';
 
 export enum ActionType {
+    setTheme,
     setLoginStatus,
     initializeState,
     updateState,
@@ -80,6 +81,7 @@ function updateState(state: State, payload: ChangeData) {
                 return;
             }
 
+            // TODO: Investigate even more granular updates?
             const currentGame: Game = state.games[id] || {};
             const updatedGame: Game = { ...currentGame, ...created };
             if (status) {
@@ -118,6 +120,9 @@ function updateState(state: State, payload: ChangeData) {
 export default function reducer(state: State, action: Action): State {
     const { type, payload } = action;
     switch (type) {
+        case ActionType.setTheme:
+            return { ...state, theme: payload.theme };
+            break;
         case ActionType.setLoginStatus:
             return {
                 ...state,

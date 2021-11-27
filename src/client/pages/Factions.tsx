@@ -9,7 +9,6 @@ import { Faction } from 'common/Faction';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
-import useAccountInfo from '../hooks/useAccountInfo';
 import FactionInfo from '../components/FactionInfo';
 import FactionSelect from '../components/FactionSelect';
 
@@ -22,9 +21,6 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 function Factions() {
     const classes = useStyles();
-    const { gameId, game, playerId } = useAccountInfo();
-
-    // TODO: also use this page to allow player to select a faction during player setup.
 
     const { state, sendData } = useAppContext();
     const { factionNames, factionInfo: factionInfoStore } = state;

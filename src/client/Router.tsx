@@ -20,19 +20,19 @@ function renderPlayerPage(page: LoadableComponent<any>) {
     return <AccountWrapper Page={page} />;
 }
 
-function Router(props: Record<string, unknown>) {
+function Router() {
     return (
         <BrowserRouter>
             <Header />
             <Routes>
                 <Route path="/" element={<Home />} />
+                <Route path="factions" element={<Factions />} />
+                <Route path="strategy-cards" element={<StrategyCards />} />
                 <Route path="/player/:id/game" element={renderPlayerPage(Game)} />
                 <Route path="/player/:id/manage-games" element={renderPlayerPage(ManageGames)} />
                 <Route path="/player/:id/game-results" element={renderPlayerPage(GameResults)} />
                 <Route path="/player/:id/objectives" element={renderPlayerPage(Objectives)} />
                 <Route path="/player/:id/planets" element={renderPlayerPage(Planets)} />
-                <Route path="/player/:id/factions" element={renderPlayerPage(Factions)} />
-                <Route path="/player/:id/strategy-cards" element={renderPlayerPage(StrategyCards)} />
                 <Route path="/player/:id" element={renderPlayerPage(Player)} />
                 <Route element={<Navigate to="/" />} />
             </Routes>

@@ -12,7 +12,7 @@ import { ActionType } from '../reducer';
 import useAccountInfo from '../hooks/useAccountInfo';
 import { GameJoinStatus } from 'common/Game';
 
-const useStyle = makeStyles(theme => ({
+const useStyle = makeStyles(() => ({
     drawer: {
         width: 250,
     },
@@ -32,14 +32,21 @@ function Drawer(props: DrawerProps) {
     const navigate = useNavigate();
     const { loggedIn, game, player, playerId } = useAccountInfo();
 
-    const onOptionClick = (e: React.SyntheticEvent<{}, Event>, id: string) => {
+    const onOptionClick = (e: React.SyntheticEvent<{}, Event>, id: string, isPlayerPage?: boolean) => {
         onClose(e);
 
-        if (id === 'home') {
-            navigate('/');
-        } else if (playerId) {
-            navigate(`/player/${playerId}/${id}`);
+        if (isPlayerPage) {
+            if (playerId) {
+                navigate(`/player/${playerId}/${id}`);
+            }
+        } else {
+            navigate(`/${id}`);
         }
+    };
+
+    const onLogin = (e: React.SyntheticEvent<{}, Event>) => {
+        navigate('/');
+        onClose(e);
     };
 
     const onLogout = (e: React.SyntheticEvent<{}, Event>) => {
@@ -60,17 +67,22 @@ function Drawer(props: DrawerProps) {
         <SwipeableDrawer open={open} onOpen={onOpen} onClose={onClose} {...drawerProps}>
             <div className={classes.drawer}>
                 <List>
-                    <ListItem key="game" button disabled={!inGame} onClick={e => onOptionClick(e, 'game')}>
+                    <ListItem key="game" button disabled={!inGame} onClick={e => onOptionClick(e, 'game', true)}>
                         <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary="Game Status" />
                     </ListItem>
-                    <ListItem key="objectives" button disabled={!inGame} onClick={e => onOptionClick(e, 'objectives')}>
+                    <ListItem
+                        key="objectives"
+                        button
+                        disabled={!inGame}
+                        onClick={e => onOptionClick(e, 'objectives', true)}
+                    >
                         <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary="Objectives" />
                     </ListItem>
                     <ListItem
                         key="planets"
                         button
                         disabled={!game || !game.status.started || !isPlayer}
-                        onClick={e => onOptionClick(e, 'planets')}
+                        onClick={e => onOptionClick(e, 'planets', true)}
                     >
                         <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary="My Planets" />
                     </ListItem>
@@ -83,19 +95,19 @@ function Drawer(props: DrawerProps) {
                         key="manage-games"
                         button
                         disabled={!loggedIn}
-                        onClick={e => onOptionClick(e, 'manage-games')}
+                        onClick={e => onOptionClick(e, 'manage-games', true)}
                     >
                         <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary="Manage Games" />
                     </ListItem>
-                    <ListItem key="factions" button disabled={!loggedIn} onClick={e => onOptionClick(e, 'factions')}>
+
+                    <ListItem>
+                        <Divider classes={{ root: classes.divider }} />
+                    </ListItem>
+
+                    <ListItem key="factions" button onClick={e => onOptionClick(e, 'factions')}>
                         <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary="Factions" />
                     </ListItem>
-                    <ListItem
-                        key="strategy-cards"
-                        button
-                        disabled={!loggedIn}
-                        onClick={e => onOptionClick(e, 'strategy-cards')}
-                    >
+                    <ListItem key="strategy-cards" button onClick={e => onOptionClick(e, 'strategy-cards')}>
                         <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary="Strategy Cards" />
                     </ListItem>
 
@@ -103,8 +115,11 @@ function Drawer(props: DrawerProps) {
                         <Divider classes={{ root: classes.divider }} />
                     </ListItem>
 
-                    <ListItem key="logout" button disabled={!playerId} onClick={onLogout}>
-                        <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary="Logout" />
+                    <ListItem key="loginout" button onClick={loggedIn ? onLogout : onLogin}>
+                        <ListItemText
+                            primaryTypographyProps={{ variant: 'h5' }}
+                            primary={loggedIn ? 'Logout' : 'Login'}
+                        />
                     </ListItem>
                 </List>
             </div>
