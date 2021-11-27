@@ -12,10 +12,11 @@ import {
     Typography,
 } from '@material-ui/core';
 
+import { GameJoinStatus } from 'common/Game';
+import { MessageType } from 'common/message';
 import { useAppContext } from '../Context';
 import useAccountInfo from '../hooks/useAccountInfo';
-import { GameJoinStatus, getPlayersInGame } from 'common/Game';
-import { MessageType } from 'common/message';
+import RefreshAllbutton from './RefreshAllbutton';
 
 export default function AgendaPhase() {
     const { sendData } = useAppContext();
@@ -25,17 +26,6 @@ export default function AgendaPhase() {
     if (!game || !player || !playerId) {
         return null;
     }
-
-    const onRefreshAll = () => {
-        const players = getPlayersInGame(game);
-        players.forEach(p => {
-            const { id: playerId, planets } = p;
-            sendData({
-                type: MessageType.PLAYER_REFRESH_PLANET,
-                data: { gameId, playerId, planetId: planets, ability: true },
-            });
-        });
-    };
 
     const onCustodiansRemoved = (e: React.ChangeEvent<HTMLInputElement>): void => {
         const data: Record<string, unknown> = { gameId, custodiansRemoved: e.target.checked };
@@ -100,17 +90,7 @@ export default function AgendaPhase() {
                 </FormGroup>
             </Toolbar>
             <Toolbar />
-            <Toolbar>
-                <Button
-                    disabled={isSpectator}
-                    color="primary"
-                    variant="contained"
-                    fullWidth
-                    onClick={() => onRefreshAll()}
-                >
-                    <Typography>Refresh Everyone's Planets</Typography>
-                </Button>
-            </Toolbar>
+            <RefreshAllbutton />
             {canEndEarly && (
                 <>
                     <Toolbar />

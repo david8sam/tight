@@ -7,6 +7,7 @@ import { GameJoinStatus, GamePlayer, getPlayerOrder } from 'common/Game';
 
 import useAccountInfo from '../hooks/useAccountInfo';
 import PlayerHeader from './PlayerHeader';
+import RefreshAllbutton from './RefreshAllbutton';
 import VictoryPoints from './VictoryPoints';
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -52,6 +53,7 @@ function StatusPhase() {
                 </Card>
             ))}
             <Toolbar />
+            <RefreshAllbutton />
         </Grid>
     );
 }

@@ -30,23 +30,21 @@ function GameResults() {
         return null;
     }
 
+    const isSpectator = player.joinStatus === GameJoinStatus.SPECTATOR;
+
     return (
         <Grid container direction="column" justifyContent="center">
             <Results />
             <Toolbar />
             <Divider orientation="horizontal" />
             <Toolbar />
-            <Toolbar>
-                <Button
-                    fullWidth
-                    color="primary"
-                    variant="contained"
-                    onClick={onContinueGame}
-                    disabled={player.joinStatus === GameJoinStatus.SPECTATOR}
-                >
-                    <Typography>Continue Game</Typography>
-                </Button>
-            </Toolbar>
+            {!isSpectator && (
+                <Toolbar>
+                    <Button fullWidth color="primary" variant="contained" onClick={onContinueGame}>
+                        <Typography>Continue Game</Typography>
+                    </Button>
+                </Toolbar>
+            )}
         </Grid>
     );
 }
