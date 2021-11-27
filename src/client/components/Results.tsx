@@ -65,8 +65,12 @@ function Results() {
                         alignItems="center"
                         className={classes.winnerGrid}
                     >
-                        <Typography variant="h6">The Winner is</Typography>
-                        <Typography variant="h4">{playerOrder[0].id}</Typography>
+                        <Typography align="center" variant="h6">
+                            Our New Space Emperor is
+                        </Typography>
+                        <Typography align="center" variant="h4">
+                            {playerOrder[0].id}
+                        </Typography>
                     </Grid>
                     <span className={classes.emoji + ' ' + classes.flipX}>{EMOJI_PARTY_POPPER}</span>
                 </Grid>

@@ -9,10 +9,6 @@ import { LoginStatus } from 'common/Account';
 import { useAppContext } from '../Context';
 import { ActionType } from '../reducer';
 
-interface MatchParams {
-    id: string;
-}
-
 export interface AccountWrapperProps {
     Page: React.ElementType;
 }

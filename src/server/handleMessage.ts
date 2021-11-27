@@ -157,7 +157,13 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
                 if (player.faction) {
                     const factionPlanets = PlanetDB.getFactionPlanets(player.faction);
                     player.planets = factionPlanets.map(p => p.name);
-                    factionPlanets.forEach(p => (game.planets[p.name].owner = player.id));
+                    factionPlanets.forEach(p => {
+                        const gamePlanet = game.planets[p.name];
+                        gamePlanet.owner = player.id;
+
+                        // Make sure home planets are refreshed.
+                        gamePlanet.refreshed = true;
+                    });
                 }
             });
 

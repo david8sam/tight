@@ -108,6 +108,9 @@ const useStyles = makeStyles((theme: Theme) => ({
     phaseActions: {
         width: '50%',
     },
+    round: {
+        width: '25%',
+    },
     stepper: {
         width: '100%',
         padding: theme.spacing(1),
@@ -285,7 +288,11 @@ function Game() {
                                     </IconButton>
                                 </span>
                             </Tooltip>
-                            {pending ? <CircularProgress size="24" /> : <Typography>{`${Phase[phase]}`}</Typography>}
+                            {pending ? (
+                                <CircularProgress size="24" />
+                            ) : (
+                                <Typography align="center">{`${Phase[phase]}`}</Typography>
+                            )}
                             <Tooltip title={Phase[nextPhase]}>
                                 <span>
                                     <IconButton
@@ -297,7 +304,7 @@ function Game() {
                                 </span>
                             </Tooltip>
                         </Grid>
-                        <Typography>{`Round: ${round}`}</Typography>
+                        <Typography align="right" className={classes.round}>{`Round: ${round}`}</Typography>
                     </Grid>
                 </AccordionSummary>
                 <AccordionDetails classes={{ root: classes.phaseActionDetails }}>

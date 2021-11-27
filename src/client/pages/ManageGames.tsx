@@ -28,7 +28,7 @@ export default function ManageGames() {
             ) : null}
             <Toolbar>
                 <Typography classes={{ root: classes.title }} variant="subtitle1">
-                    GAMES
+                    MANAGE GAMES
                 </Typography>
                 <Tooltip title="Create">
                     <IconButton onClick={() => setOpenCreateDialog(true)}>

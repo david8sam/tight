@@ -2,10 +2,11 @@ import React from 'react';
 
 import { Button, Toolbar, Typography } from '@material-ui/core';
 
-import { useAppContext } from '../Context';
-import useAccountInfo from '../hooks/useAccountInfo';
 import { GameJoinStatus, getPlayersInGame } from 'common/Game';
 import { MessageType } from 'common/message';
+
+import { useAppContext } from '../Context';
+import useAccountInfo from '../hooks/useAccountInfo';
 
 export default function RefreshAllbutton() {
     const { sendData } = useAppContext();
