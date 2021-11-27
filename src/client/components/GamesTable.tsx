@@ -65,14 +65,14 @@ function GamesTable(props: GamesTableProps) {
         <Table>
             <TableHead>
                 <TableRow>
-                    <TableCell key="name">
+                    <TableCell key="name" width="30%">
                         <Typography>NAME</Typography>
                     </TableCell>
-                    <TableCell key="creator">
+                    <TableCell key="creator" width="40%">
                         <Typography>CREATOR</Typography>
                     </TableCell>
-                    <TableCell key="start" />
-                    <TableCell key="delete" />
+                    <TableCell key="join" width="20%" />
+                    <TableCell key="options" width="10%" />
                 </TableRow>
             </TableHead>
             <TableBody>

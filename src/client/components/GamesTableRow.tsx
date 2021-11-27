@@ -25,6 +25,7 @@ import { GameJoinStatus, Game } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
+import TextWithTooltip from './TextWithTooltip';
 
 const useStyle = makeStyles(() => ({
     root: {
@@ -87,6 +88,7 @@ function GamesTableRow(props: GamesTableRowProps) {
     };
 
     const joinedGameId = playerId && accounts[playerId] && accounts[playerId].joinedGame;
+    const playerInAGame = Boolean(joinedGameId);
 
     let button = null;
     const buttonProps: ButtonProps = { color: 'primary', variant: 'contained', size: 'small' };
@@ -124,7 +126,7 @@ function GamesTableRow(props: GamesTableRowProps) {
             <Button
                 {...buttonProps}
                 classes={{ root: classes.button }}
-                disabled={isPending || (Boolean(joinedGameId) && joinedGameId !== id)}
+                disabled={isPending || (playerInAGame && joinedGameId !== id)}
                 onClick={() => onJoinLeaveClick(id, join, { joinStatus })}
             >
                 {isPending ? <CircularProgress size={24} /> : label}
@@ -132,15 +134,20 @@ function GamesTableRow(props: GamesTableRowProps) {
         );
     }
 
-    const canAdmin = allowAdmin && (!player || player.joinStatus !== GameJoinStatus.PLAYER);
-    const canSpectate = !player || player.joinStatus !== GameJoinStatus.PLAYER;
+    const canAdmin = !playerInAGame && allowAdmin && (!player || player.joinStatus !== GameJoinStatus.PLAYER);
+    const canSpectate = !playerInAGame && (!player || player.joinStatus !== GameJoinStatus.PLAYER);
 
     return (
         <TableRow className={classes.root} key={id}>
-            <TableCell align="left">{name}</TableCell>
-            <TableCell align="left">{creator}</TableCell>
-            <TableCell>{button}</TableCell>
-            <TableCell>
+            <TableCell align="left" width="30%">
+                <TextWithTooltip text={name} />
+            </TableCell>
+            {/* maxWidth must be less than calculated width for percentage to be applied */}
+            <TableCell align="left" width="40%" style={{ maxWidth: 1 }}>
+                <TextWithTooltip text={creator} />
+            </TableCell>
+            <TableCell width="20%">{button}</TableCell>
+            <TableCell width="10%">
                 <IconButton ref={rowOptionsRef} onClick={() => setRowOptionsOpen(true)}>
                     <MoreVertIcon />
                 </IconButton>

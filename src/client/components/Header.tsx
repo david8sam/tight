@@ -10,6 +10,7 @@ import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
 import Drawer from './Drawer';
+import TextWithTooltip from './TextWithTooltip';
 
 function Header() {
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -36,7 +37,7 @@ function Header() {
                                 <MenuIcon />
                             </IconButton>
                         </Tooltip>
-                        <Typography variant="h6">{accountId || ''}</Typography>
+                        <TextWithTooltip text={account?.name ?? ''} width="75%" variant="h6" />
                     </Grid>
                     <Tooltip title={theme === 'light' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}>
                         <IconButton onClick={() => onThemeChange(theme === 'dark' ? 'light' : 'dark')}>

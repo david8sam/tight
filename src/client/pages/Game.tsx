@@ -28,6 +28,7 @@ import { useAppContext } from '../Context';
 import { Accordion, AccordionDetails, AccordionSummary } from '../components/Accordion';
 import PlayerSetup from '../components/PlayerSetup';
 import SpeakerSelect from '../components/SpeakerSelect';
+import TextWithTooltip from '../components/TextWithTooltip';
 
 import StrategyPhase from '../components/StrategyPhase';
 import ActionPhase from '../components/ActionPhase';
@@ -102,7 +103,7 @@ const useStyles = makeStyles((theme: Theme) => ({
         width: '100%',
     },
     phaseActions: {
-        width: 'auto',
+        width: '50%',
     },
     stepper: {
         width: '100%',
@@ -259,7 +260,12 @@ function Game() {
             <Accordion expanded={actionExpanded} onChange={(_e, expanded) => setActionExpaned(expanded)}>
                 <AccordionSummary disableMargin classes={{ root: classes.statusSummary }}>
                     <Grid container justifyContent="space-between" alignItems="center">
-                        <Typography>{`Turn: ${playerTurn || ''}`}</Typography>
+                        <TextWithTooltip
+                            text={`Turn: ${playerTurn || ''}`}
+                            title={playerTurn || ''}
+                            width="25%"
+                            onClick={e => e.stopPropagation()}
+                        />
                         <Grid
                             container
                             justifyContent="center"

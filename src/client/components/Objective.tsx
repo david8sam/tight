@@ -6,13 +6,13 @@ import EditIcon from '@material-ui/icons/Edit';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { makeStyles } from '@material-ui/styles';
 
-import { GamePlayer, getPlayersInGame, Objective, SECRET_OBJECTIVE_ID } from 'common/Game';
+import { calculateVictoryPoints, GamePlayer, getPlayersInGame, Objective, SECRET_OBJECTIVE_ID } from 'common/Game';
 
 import useAccountInfo from '../hooks/useAccountInfo';
 
 import { Accordion, AccordionDetails, AccordionProps, AccordionSummary } from './Accordion';
 import EditObjectiveDialog from './EditObjectiveDialog';
-import ObjectivePlayerAvatar from './ObjectivePlayerAvatar';
+import PlayerAvatar from './PlayerAvatar';
 
 const AVATAR_SIZE = 30;
 
@@ -122,10 +122,14 @@ export default function Objective(props: ObjectiveProps) {
                             {players.map(player => (
                                 <div key={player.id} className={classes.avatarContainer}>
                                     {/* Prevent click from expanding accordion */}
-                                    <ObjectivePlayerAvatar
-                                        game={game}
+                                    <PlayerAvatar
                                         player={player}
-                                        onOpen={e => e.stopPropagation()}
+                                        title={
+                                            game
+                                                ? `${player.name} - ${calculateVictoryPoints(game, player.id)} VPs`
+                                                : undefined
+                                        }
+                                        onClick={e => e.stopPropagation()}
                                     />
                                 </div>
                             ))}
