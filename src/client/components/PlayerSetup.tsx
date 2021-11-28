@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import uniq from 'lodash/uniq';
-import { Button, CircularProgress, Grid, Toolbar, Typography } from '@material-ui/core';
+import { Button, CircularProgress, Grid, Toolbar } from '@material-ui/core';
 
 import { Game, GameJoinStatus, getPlayersInGame } from 'common/Game';
 import { MessageType } from 'common/message';
@@ -9,6 +9,7 @@ import { useAppContext } from '../Context';
 import useAccountInfo from '../hooks/useAccountInfo';
 import PlayerFactions from './PlayerFactions';
 import PlayerOrder from './PlayerOrder';
+import GameInfoToolbar from './GameInfoToolbar';
 
 type SetupStepType = 0 | 1;
 
@@ -28,7 +29,7 @@ function canNext(game: Game): boolean {
 }
 
 function canStart(game: Game): boolean {
-    if (!game) {
+    if (!game || !canNext(game)) {
         return false;
     }
 
@@ -74,11 +75,7 @@ function PlayerSetup() {
 
     return (
         <>
-            <Toolbar>
-                <Grid container justifyContent="center">
-                    <Typography align="center" variant="h6">{`${game.name} (${game.creator})`}</Typography>
-                </Grid>
-            </Toolbar>
+            <GameInfoToolbar game={game} />
             <Toolbar>
                 <Grid container justifyContent="space-between" alignItems="center" wrap="nowrap">
                     <Grid container wrap="nowrap">

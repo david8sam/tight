@@ -5,6 +5,7 @@ import { GameJoinStatus, Objective as ObjectiveType } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
+import GameInfoToolbar from '../components/GameInfoToolbar';
 import Objective from '../components/Objective';
 import PublicObjectives from '../components/PublicObjectives';
 import useAccountInfo from '../hooks/useAccountInfo';
@@ -46,6 +47,7 @@ function StrategyCards() {
 
     return (
         <Grid container direction="column">
+            <GameInfoToolbar game={game} />
             <Grid item>
                 <PublicObjectives
                     editable={editable}

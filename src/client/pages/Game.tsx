@@ -6,7 +6,6 @@ import isEqual from 'lodash/isEqual';
 import {
     Button,
     CircularProgress,
-    Divider,
     Grid,
     IconButton,
     Stepper,
@@ -16,6 +15,7 @@ import {
     Toolbar,
     Typography,
     Tooltip,
+    Paper,
 } from '@material-ui/core';
 import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
@@ -26,6 +26,7 @@ import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
 import { Accordion, AccordionDetails, AccordionSummary } from '../components/Accordion';
+import GameInfoToolbar from '../components/GameInfoToolbar';
 import PlayerSetup from '../components/PlayerSetup';
 import SpeakerSelect from '../components/SpeakerSelect';
 import TextWithTooltip from '../components/TextWithTooltip';
@@ -84,6 +85,9 @@ function canNextPhase(game: Game): { canNext: boolean; message: string } {
 }
 
 const useStyles = makeStyles((theme: Theme) => ({
+    divider: {
+        height: 2,
+    },
     speakerSelect: {
         width: '70%',
     },
@@ -259,8 +263,12 @@ function Game() {
 
     return (
         <Grid container direction="column">
+            <Paper>
+                <GameInfoToolbar game={game} />
+            </Paper>
             <Accordion
                 className={classes.statusAccordion}
+                disableMargin
                 expanded={actionExpanded}
                 onChange={(_e, expanded) => setActionExpaned(expanded)}
             >

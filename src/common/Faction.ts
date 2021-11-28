@@ -13,9 +13,7 @@ export type UnitType =
     | 'spaceDock'
     | 'pds';
 
-export type UnitCountMap = {
-    [type in UnitType]?: number;
-};
+export type UnitCountMap = Partial<Record<UnitType, number>>;
 
 export interface Ability {
     name: string;

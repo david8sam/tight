@@ -13,7 +13,7 @@ export interface TextWithTooltipProps extends Omit<TypographyProps, 'noWrap'> {
 export default function TextWithTooltip(props: TextWithTooltipProps) {
     const { text, title, width, onClick, style: styleProp, ...TypographyProps } = props;
     const [open, onOpen, onClose] = useTooltipOnClick({ onTooltipOpen: onClick });
-    const style = width ? { ...styleProp, width } : undefined;
+    const style = width ? { ...styleProp, width } : styleProp;
 
     return (
         <Tooltip title={title ?? text} open={open} onClose={onClose}>

@@ -7,7 +7,7 @@ const Factions: Readonly<Faction[]> = [
             {
                 name: 'Mitosis',
                 description:
-                    'Your space docks cannot produce infantry.  At the start of the status phase , place 1 infantry from your reinforcements on any planet you control.',
+                    'Your space docks cannot produce infantry. At the start of the status phase , place 1 infantry from your reinforcements on any planet you control.',
             },
         ],
         promissoryNote: {

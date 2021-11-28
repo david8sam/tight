@@ -90,7 +90,7 @@ function Factions() {
                     </IconButton>
                 </Tooltip>
             </Toolbar>
-            <FactionInfo data={factionInfoState} />
+            <FactionInfo faction={factionInfoState} />
         </Grid>
     );
 }
