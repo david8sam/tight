@@ -74,12 +74,15 @@ function ActionPhase() {
     };
 
     const isSpectator = currentPlayer.joinStatus === GameJoinStatus.SPECTATOR;
+    const currentPlayerIndex =
+        turn === StrategyCardIndex.END ? playerOrder.length : playerOrder.findIndex(p => p.strategyCard === turn);
 
     return (
         <Grid container direction="column">
             {playerOrder.map((player: GamePlayer) => {
                 const { id: playerId } = player;
-                const playerDone = player.passed || turn > player.strategyCard;
+                const playerIndex = playerOrder.findIndex(p => p.id === playerId);
+                const playerDone = player.passed || currentPlayerIndex > playerIndex;
 
                 return (
                     <Card key={playerId} variant="outlined" classes={{ root: classes.card }}>
@@ -136,7 +139,8 @@ function ActionPhase() {
                         color="primary"
                         variant="contained"
                         fullWidth
-                        onClick={() => onNextTurn(playerOrder[0], false)}
+                        // Will always be a player, otherwise the button is disabled and not clickable.
+                        onClick={() => onNextTurn(playerOrder.find(p => !p.passed) as GamePlayer, false)}
                     >
                         Next Turn
                     </Button>

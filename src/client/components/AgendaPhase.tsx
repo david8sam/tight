@@ -125,6 +125,7 @@ export default function AgendaPhase() {
                     </Toolbar>
                 </>
             )}
+            <Toolbar />
         </Grid>
     );
 }

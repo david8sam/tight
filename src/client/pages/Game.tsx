@@ -88,11 +88,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     divider: {
         height: 2,
     },
-    speakerSelect: {
-        width: '70%',
-    },
-    speakerSelectInput: {
-        padding: theme.spacing(1),
+    speakerToolbar: {
+        margin: `${theme.spacing(2)}px 0px`,
     },
     statusAccordion: {
         width: '100%', // TODO: Why is this necessary? Pixel width doesn't actually change...
@@ -328,14 +325,14 @@ function Game() {
                     </Grid>
                 </AccordionDetails>
             </Accordion>
-            <Toolbar>
-                <Grid container justifyContent="space-between" alignItems="center">
-                    <Typography>Speaker:</Typography>
-                    <SpeakerSelect
-                        className={classes.speakerSelect}
-                        classes={{ outlined: classes.speakerSelectInput }}
-                        disabled={isSpectator}
-                    />
+            <Toolbar className={classes.speakerToolbar}>
+                <Grid container alignItems="center" spacing={1}>
+                    <Grid item xs={3}>
+                        <Typography>Speaker:</Typography>
+                    </Grid>
+                    <Grid item xs={9}>
+                        <SpeakerSelect fullWidth disabled={isSpectator} />
+                    </Grid>
                 </Grid>
             </Toolbar>
             {getPhaseContents(phase)}

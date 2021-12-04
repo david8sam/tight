@@ -148,6 +148,7 @@ export function addPlayer(gameId: string, playerId: string | string[], options?:
                 name: pid,
                 joined: true,
                 joinStatus,
+                hasNaaluZeroToken: false,
                 strategyCard: StrategyCardIndex.NONE,
                 strategyCardTaken: false,
                 stragetyCardFlipped: false,

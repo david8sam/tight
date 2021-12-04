@@ -129,7 +129,7 @@ function PublicObjectives(props: PublicObjectivesProps) {
                                 disabled={expanded.every(e => !e)}
                                 onClick={() => onExpandChange(null, false)}
                             >
-                                <Typography>Collapse</Typography>
+                                <Typography variant="body2">Collapse</Typography>
                             </Button>
                             <Button
                                 size="small"
@@ -138,7 +138,7 @@ function PublicObjectives(props: PublicObjectivesProps) {
                                 disabled={expanded.every(e => e)}
                                 onClick={() => onExpandChange(null, true)}
                             >
-                                <Typography>Expand</Typography>
+                                <Typography variant="body2">Expand</Typography>
                             </Button>
                         </Grid>
                         {(creatable || deletable) && (

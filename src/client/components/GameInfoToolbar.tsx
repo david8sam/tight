@@ -103,8 +103,6 @@ export default function GameInfoToolbar(props: GameInfoToolbarProps) {
                     {game.status.started && (
                         <>
                             <Divider className={classes.divider} />
-                            <Typography>Leaderboard</Typography>
-                            <Divider className={classes.divider} />
                             {leaderboard.map(p => (
                                 <TextWithTooltip
                                     key={p.id}

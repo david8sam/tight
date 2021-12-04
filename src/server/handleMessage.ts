@@ -5,6 +5,7 @@ import {
     buildStrategyCardOwners,
     GameJoinStatus,
     getNextPlayer,
+    getPlayerOrder,
     getPlayersInGame,
     Phase,
     strategyCardHasOwner,
@@ -298,8 +299,11 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
                     p.strategyCardTaken = false;
                     p.stragetyCardFlipped = false;
                     p.passed = false;
+                    p.hasNaaluZeroToken = p.faction === 'The Naalu Collective';
                 });
 
+                game.status.pickTurn = 0;
+                game.status.turn = StrategyCardIndex.NONE;
                 game.status.round += 1;
                 game.status.phase = Phase.STRATEGY;
                 game.status.agenda1Voted = false;
@@ -329,6 +333,14 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             break;
         case MessageType.PLAYER_SET_FACTION:
             player.faction = data.factionName;
+            if (data.factionName === 'The Naalu Collective') {
+                player.hasNaaluZeroToken = true;
+            }
+            markGameDirty(gameId, { players: true });
+            break;
+        case MessageType.PLAYER_TAKE_NAALU_ZERO_TOKEN:
+            getPlayersInGame(game).forEach(p => (p.hasNaaluZeroToken = false));
+            player.hasNaaluZeroToken = true;
             markGameDirty(gameId, { players: true });
             break;
 
@@ -348,17 +360,7 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
                 status.pickTurn = pickTurn === pickOrder.length - 1 ? 0 : pickTurn + 1;
             }
 
-            if (status.turn === StrategyCardIndex.NONE || data.strategyCard < status.turn) {
-                // Taken strategy card is the new lowest initiative.
-                status.turn = data.strategyCard;
-            } else if (data.strategyCard === StrategyCardIndex.NONE && player.strategyCard === status.turn) {
-                // Player's previous card was the lowest initiative, find the next lowest.
-                status.turn = Object.values(players)
-                    .filter(p => p.strategyCard > StrategyCardIndex.NONE)
-                    .map(p => p.strategyCard)
-                    .sort()[0];
-            }
-
+            status.turn = getPlayerOrder(game)[0].strategyCard;
             markGameDirty(gameId, { players: true, status: true });
             break;
         }
@@ -372,12 +374,7 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
 
             // If player is returning card that is the first turn, clear out the game turn and set to next player.
             if (game.status.turn === returnedCard) {
-                const stratCards = Object.values(players)
-                    .filter(p => p.strategyCard > StrategyCardIndex.NONE)
-                    .map(p => p.strategyCard)
-                    .sort();
-                game.status.turn = stratCards[0];
-
+                game.status.turn = getPlayerOrder(game)[0].strategyCard;
                 markGameDirty(gameId, { status: true });
             }
 

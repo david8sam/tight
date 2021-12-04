@@ -1,17 +1,27 @@
-export type UnitType =
+export enum UnitType {
     // ships
-    | 'flagship'
-    | 'warSun'
-    | 'dreadnought'
-    | 'cruiser'
-    | 'carrier'
-    | 'destroyer'
-    | 'fighter'
+    Flagship = 'Flagship',
+    WarSun = 'War Sun',
+    Dreadnought = 'Dreadnought',
+    Cruiser = 'Cruiser',
+    Carrier = 'Carrier',
+    Destroyer = 'Destroyer',
+    Fighter = 'Fighter',
     // ground forces
-    | 'infantry'
+    Mech = 'Mech',
+    Infantry = 'Infantry',
     // structures
-    | 'spaceDock'
-    | 'pds';
+    SpaceDock = 'Space Dock',
+    PDS = 'PDS',
+}
+
+export interface Unit {
+    type: UnitType;
+    cost?: number | [number, number];
+    combat?: number | [number, number]; // (i.e 7x2)
+    move?: number;
+    capacity?: number;
+}
 
 export type UnitCountMap = Partial<Record<UnitType, number>>;
 
@@ -25,7 +35,7 @@ export interface PromissoryNote {
     description: string;
 }
 
-export interface TechReq {
+export interface TechPrereq {
     biotic?: number;
     warfare?: number;
     propulsion?: number;
@@ -35,25 +45,52 @@ export interface TechReq {
 export interface FactionTech {
     name: string;
     description: string;
-    requirements: TechReq;
+    prerequisites?: TechPrereq;
 }
 
-export interface Flagship {
+export interface FactionUnit extends Unit {
     name: string;
+    abilities?: string[];
+    prerequisites?: TechPrereq;
+}
+
+export interface Flagship extends Omit<Unit, 'type'> {
     cost: number;
-    combat: [number, number]; // (i.e 7x2)
-    move: number;
-    capacity: number;
+    name: string;
     abilities: string[];
+    prerequisites?: TechPrereq;
+}
+
+export interface Mech extends Omit<Unit, 'type'> {
+    cost: number;
+    name: string;
+    description: string;
+    abilities?: string[];
+}
+
+export enum LeaderType {
+    Agent,
+    Commander,
+    Hero,
+}
+
+export interface Leader {
+    type: LeaderType;
+    name: string;
+    unlock: string;
+    ability: string;
 }
 
 export interface Faction {
     name: string;
     abilities?: Ability[];
-    promissoryNote?: PromissoryNote;
+    promissoryNotes?: PromissoryNote[];
     factionTech?: FactionTech[];
+    factionUnits?: FactionUnit[];
     startingUnits?: UnitCountMap;
     startingTech?: string[];
     commodities?: number;
-    flagship?: Flagship;
+    flagship?: Flagship | Flagship[];
+    mech?: Mech | Mech[];
+    leaders?: Leader[];
 }

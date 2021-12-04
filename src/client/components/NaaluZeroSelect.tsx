@@ -7,30 +7,30 @@ import { MessageType } from 'common/message';
 import { useAppContext } from '../Context';
 import useAccountInfo from '../hooks/useAccountInfo';
 
-export interface SpeakerSelectProps extends Omit<SelectProps, 'value' | 'onChange'> {}
+export interface NaaluZeroSelectProps extends Omit<SelectProps, 'value' | 'onChange'> {}
 
-export default function SpeakerSelect(props: SpeakerSelectProps) {
+export default function NaaluZeroSelect(props: NaaluZeroSelectProps) {
     const { sendData } = useAppContext();
     const { game, gameId } = useAccountInfo();
 
-    if (!game) {
+    const players = game && getPlayersInGame(game);
+    const playerWithZeroToken = players && players.find(p => p.hasNaaluZeroToken);
+    if (!playerWithZeroToken || !players) {
         return null;
     }
 
-    const { status } = game;
-    const players = getPlayersInGame(game);
     const nameOptions = players.map(p => ({ label: p.name, value: p.id }));
 
-    const onSpeakerChange = (playerId: string) => {
-        sendData({ type: MessageType.GAME_SET_SPEAKER, data: { gameId, speaker: playerId } });
+    const onNaaluZeroChange = (playerId: string) => {
+        sendData({ type: MessageType.PLAYER_TAKE_NAALU_ZERO_TOKEN, data: { gameId, playerId } });
     };
 
     return (
         <Select
             variant="outlined"
             {...props}
-            value={status.speaker}
-            onChange={e => onSpeakerChange(e.target.value as string)}
+            value={playerWithZeroToken.id}
+            onChange={e => onNaaluZeroChange(e.target.value as string)}
         >
             {nameOptions.map(({ label, value }) => (
                 <MenuItem key={value} value={value}>

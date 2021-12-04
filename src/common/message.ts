@@ -71,6 +71,7 @@ export enum MessageType {
     PLAYER_RETURN_STRATEGY_CARD = '/player/returnStrategyCard',
     PLAYER_FLIP_STRATEGY_CARD = '/player/filpStrategyCard',
     PLAYER_RESET_STRATEGY_CARDS = '/player/resetStrategyCards',
+    PLAYER_TAKE_NAALU_ZERO_TOKEN = '/player/takeNaaluZeroToken',
 
     // data: { passed: boolean }
     PLAYER_PASS_TURN = '/player/passTurn',

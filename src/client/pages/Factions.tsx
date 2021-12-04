@@ -11,6 +11,7 @@ import { MessageType } from 'common/message';
 import { useAppContext } from '../Context';
 import FactionInfo from '../components/FactionInfo';
 import FactionSelect from '../components/FactionSelect';
+import useAccountInfo from '../hooks/useAccountInfo';
 
 const useStyles = makeStyles((theme: Theme) => ({
     toolbar: {
@@ -23,6 +24,7 @@ function Factions() {
     const classes = useStyles();
 
     const { state, sendData } = useAppContext();
+    const { player } = useAccountInfo();
     const { factionNames, factionInfo: factionInfoStore } = state;
     const [factionInfoState, setFactionInfo] = useState<Faction | null>(null);
     const [pending, setPending] = useState(false);
@@ -35,7 +37,8 @@ function Factions() {
         }
 
         if (!pending && factionNames.length && !factionInfoState) {
-            sendData({ type: MessageType.FACTION_GET, data: { factionName: factionNames[0] } });
+            const factionName = player?.faction ?? factionNames[0];
+            sendData({ type: MessageType.FACTION_GET, data: { factionName } });
             setPending(true);
         } else if (pending && factionInfoState) {
             setPending(false);
@@ -48,8 +51,8 @@ function Factions() {
             setFactionInfo(null);
         }
 
-        const storeName = factionInfoStore && factionInfoStore.name;
-        const stateName = factionInfoState && factionInfoState.name;
+        const storeName = factionInfoStore?.name;
+        const stateName = factionInfoState?.name;
         if ((storeName && !stateName) || storeName !== stateName) {
             setFactionInfo(factionInfoStore);
         }

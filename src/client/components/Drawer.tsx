@@ -104,10 +104,10 @@ function Drawer(props: DrawerProps) {
                         <Divider classes={{ root: classes.divider }} />
                     </ListItem>
 
-                    <ListItem key="factions" button onClick={e => onOptionClick(e, 'factions')}>
+                    <ListItem key="factions" button onClick={e => onOptionClick(e, 'factions', loggedIn)}>
                         <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary="Factions" />
                     </ListItem>
-                    <ListItem key="strategy-cards" button onClick={e => onOptionClick(e, 'strategy-cards')}>
+                    <ListItem key="strategy-cards" button onClick={e => onOptionClick(e, 'strategy-cards', loggedIn)}>
                         <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary="Strategy Cards" />
                     </ListItem>
 

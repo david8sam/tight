@@ -6,6 +6,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import {
     buildStrategyCardOwners,
     GameJoinStatus,
+    getNaaluPlayer,
     StrategyCard as StrategyCardType,
     strategyCardHasOwner,
     StrategyCardIndex,
@@ -14,9 +15,10 @@ import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
 import AssignStrategyCardTable from '../components/AssignStrategyCardTable';
-import { Accordion, AccordionDetails, AccordionSummary } from '../components/Accordion';
-import StrategyCard from '../components/StrategyCard';
 import useAccountInfo from '../hooks/useAccountInfo';
+import { Accordion, AccordionDetails, AccordionSummary } from './Accordion';
+import NaaluZeroSelect from './NaaluZeroSelect';
+import StrategyCard from './StrategyCard';
 
 function StrategyPhase() {
     const { state, sendData } = useAppContext();
@@ -40,6 +42,25 @@ function StrategyPhase() {
 
     const isAdmin = player.joinStatus === GameJoinStatus.ADMIN;
     const isSpectator = player.joinStatus === GameJoinStatus.SPECTATOR;
+
+    let naaluZeroSelect = null;
+    if (!isSpectator && getNaaluPlayer(game)) {
+        naaluZeroSelect = (
+            <>
+                <Toolbar />
+                <Toolbar>
+                    <Grid container justifyContent="space-between" alignItems="center" spacing={1}>
+                        <Grid item xs={3}>
+                            <Typography align="center">Naalu "0":</Typography>
+                        </Grid>
+                        <Grid item xs={9}>
+                            <NaaluZeroSelect fullWidth />
+                        </Grid>
+                    </Grid>
+                </Toolbar>
+            </>
+        );
+    }
 
     return (
         <Grid container direction="column">
@@ -71,6 +92,7 @@ function StrategyPhase() {
 
                 return <StrategyCard key={name} card={card} ButtonProps={ButtonProps} buttonLabel={buttonLabel} />;
             })}
+            {naaluZeroSelect}
             <Toolbar />
             {!isSpectator && (
                 <Accordion disableMargin>

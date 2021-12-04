@@ -106,6 +106,7 @@ export interface GamePlayer {
     color?: PlayerColorValue | null;
     faction?: string | null;
 
+    hasNaaluZeroToken: boolean;
     strategyCard: StrategyCardIndex;
     strategyCardTaken: boolean;
     stragetyCardFlipped: boolean;
@@ -160,8 +161,27 @@ export function getPlayersInGame(game: Game) {
     return Object.values(game.players).filter(p => p.joinStatus === GameJoinStatus.PLAYER);
 }
 
-export function getPlayerOrder(game: Game) {
+export function getNaaluPlayer(game: Game) {
+    return getPlayersInGame(game).find(p => p.faction === 'The Naalu Collective');
+}
+
+export function getPlayerOrder(game: Game, checkNaalu: boolean = true) {
     return getPlayersInGame(game).sort((p1: GamePlayer, p2: GamePlayer) => {
+        if (checkNaalu) {
+            if (p1.hasNaaluZeroToken) {
+                return -1;
+            } else if (p2.hasNaaluZeroToken) {
+                return 1;
+            }
+        }
+
+        // Players that have not picked a strategy card are last.
+        if (p1.strategyCard === StrategyCardIndex.NONE) {
+            return 1;
+        } else if (p2.strategyCard === StrategyCardIndex.NONE) {
+            return 1;
+        }
+
         return p1.strategyCard < p2.strategyCard ? -1 : 1;
     });
 }
