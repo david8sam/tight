@@ -71,7 +71,12 @@ export function getAccount(id: string): Account | null {
 }
 
 export function login(id: string, options?: AddAccountOptions): boolean {
-    return addAccount(id, options);
+    const added = addAccount(id, options);
+    if (_accounts[id]) {
+        _accounts[id].loggedIn = true;
+    }
+
+    return added;
 }
 
 export function logout(id: string): boolean {

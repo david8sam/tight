@@ -65,6 +65,13 @@ function updateState(state: State, payload: ChangeData) {
         newState.accounts = accounts;
         if (state.accountId) {
             newState.theme = accounts[state.accountId].settings.theme;
+
+            const accountLoggedIn = accounts[state.accountId].loggedIn;
+            if (accountLoggedIn && state.loginStatus === LoginStatus.LOGIN_PENDING) {
+                newState.loginStatus = LoginStatus.LOGGED_IN;
+            } else if (!accountLoggedIn && state.loginStatus === LoginStatus.LOGOUT_PENDING) {
+                newState.loginStatus = LoginStatus.LOGGED_OUT;
+            }
         }
     }
 
