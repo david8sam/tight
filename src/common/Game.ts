@@ -114,14 +114,17 @@ export interface GamePlayer {
 
     planets: string[];
     secretObjective: { cleared: boolean; objective: Objective };
-    publicObjectives: boolean[]; // index === Objective.id
-    victoryPoints: number;
+    publicObjectives: boolean[]; // index === Objective.id - 1
+    victoryPoints: number; // additional from other game mechanics, does not include objectives
 }
 
 export type GamePlayerMap = Record<string, GamePlayer>;
 
-// id > 0
-export type Objective = { id: number; description: string; vp: number };
+export interface Objective {
+    id: number; // > 0
+    description: string;
+    vp: number;
+}
 
 export const SECRET_OBJECTIVE_ID = -999;
 
@@ -157,14 +160,23 @@ export interface GameChangeData {
 
 export type GameChangeDataMap = Record<string, GameChangeData>;
 
+/**
+ * Get all players in the game.
+ */
 export function getPlayersInGame(game: Game) {
     return Object.values(game.players).filter(p => p.joinStatus === GameJoinStatus.PLAYER);
 }
 
+/**
+ * Find the Naalu player if any
+ */
 export function getNaaluPlayer(game: Game) {
     return getPlayersInGame(game).find(p => p.faction === 'The Naalu Collective');
 }
 
+/**
+ * Get the current turn order of players.
+ */
 export function getPlayerOrder(game: Game, checkNaalu: boolean = true) {
     return getPlayersInGame(game).sort((p1: GamePlayer, p2: GamePlayer) => {
         if (checkNaalu) {
@@ -186,6 +198,9 @@ export function getPlayerOrder(game: Game, checkNaalu: boolean = true) {
     });
 }
 
+/**
+ * Get next player in the turn order.
+ */
 export function getNextPlayer(game: Game, currentPlayerId: string, playerOrder?: GamePlayer[]): GamePlayer | null {
     const players = playerOrder || getPlayerOrder(game);
 
@@ -205,6 +220,9 @@ export function getNextPlayer(game: Game, currentPlayerId: string, playerOrder?:
     return nextPlayer || null;
 }
 
+/**
+ * Map each strategy card to the player that currently owns it.
+ */
 export function buildStrategyCardOwners(game: Game): string[] {
     const playersArray = getPlayersInGame(game);
     const stratCardOwners: string[] = [''];
@@ -213,6 +231,9 @@ export function buildStrategyCardOwners(game: Game): string[] {
     return stratCardOwners;
 }
 
+/**
+ * Check if a strategy card, or other versions of it, is currently owned by a player.
+ */
 export function strategyCardHasOwner(stratCardOwners: string[], initiative: number): boolean {
     let hasOwner = false;
 
@@ -233,6 +254,9 @@ export function strategyCardHasOwner(stratCardOwners: string[], initiative: numb
     return hasOwner;
 }
 
+/**
+ * Calculates VPS from public and secret objectives, as well as any additional victory points held by the player.
+ */
 export function calculateVictoryPoints(game: Game, playerId: string) {
     const player = game.players[playerId];
     const { publicObjectives: gamePOs } = game;

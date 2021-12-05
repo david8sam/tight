@@ -48,9 +48,11 @@ export interface GamesTableRowProps {
 function GamesTableRow(props: GamesTableRowProps) {
     const classes = useStyle(props);
     const {
-        state: { accountId: playerId, accounts },
+        state: { account },
         sendData,
     } = useAppContext();
+
+    const playerId = account?.id;
 
     const rowOptionsRef = useRef<HTMLButtonElement>(null);
     const [rowOptionsOpen, setRowOptionsOpen] = useState(false);
@@ -87,7 +89,7 @@ function GamesTableRow(props: GamesTableRowProps) {
         sendData({ type: MessageType.DELETE_GAME, data: { gameId, playerId } });
     };
 
-    const joinedGameId = playerId && accounts[playerId] && accounts[playerId].joinedGame;
+    const joinedGameId = playerId && account?.joinedGame;
     const playerInAGame = Boolean(joinedGameId);
 
     let button = null;

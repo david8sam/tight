@@ -11,7 +11,7 @@ const Factions: Readonly<Faction[]> = [
             [UnitType.SpaceDock]: 1,
             [UnitType.PDS]: 1,
         },
-        startingTech: ['Choose TWO of the following: "Neural Motivato", "Sarween Tools", or "Plasma Scoring".'],
+        startingTech: ['Choose TWO of the following: "Neural Motivator", "Sarween Tools", or "Plasma Scoring".'],
         commodities: 3,
         abilities: [
             {
@@ -311,7 +311,7 @@ const Factions: Readonly<Faction[]> = [
         abilities: [
             {
                 name: 'DISTANT SUNS',
-                description: `When you explore a planet that contains 1 of your mechs, you may draw 1 additional card; choose 1 to resolve and descard the rest.`,
+                description: `When you explore a planet that contains 1 of your mechs, you may draw 1 additional card; choose 1 to resolve and discard the rest.`,
             },
             {
                 name: 'FABRICATION',
@@ -508,7 +508,7 @@ const Factions: Readonly<Faction[]> = [
         abilities: [
             {
                 name: 'TERRAGENESIS',
-                description: `After you explore a planet that does not have a sleeper token, you may place or move 1 sleepr token onto that planet.`,
+                description: `After you explore a planet that does not have a sleeper token, you may place or move 1 sleeper token onto that planet.`,
             },
             {
                 name: 'AWAKEN',

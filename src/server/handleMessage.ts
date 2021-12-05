@@ -18,8 +18,8 @@ import * as FactionDB from './database/faction';
 import * as GameDB from './database/game';
 import * as PlanetDB from './database/planet';
 
-import { dirty, markGameDirty } from './dirty';
-import log from './log';
+import { dirty, formatChangePlanets, markAccountDirty, markGameDirty } from './dirty';
+import { logWS } from './log';
 import { sendData, WebSocketServer, WebSocket } from './WebSocket';
 
 export interface handleMessageParams {
@@ -35,11 +35,11 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
         return;
     }
 
-    const parsedMessage = JSON.parse(message);
-    log('Receiving:\n', parsedMessage);
-
-    const { type = null, data = null } = message ? JSON.parse(message) : {};
+    const payload = JSON.parse(message);
+    const { type = null, data = null } = payload || {};
     const { accountId = null, gameId = null, playerId = null, ...otherData } = data || {};
+
+    logWS(false, ws.accountId, payload);
 
     // Handle list actions immediately
     switch (type) {
@@ -70,16 +70,18 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
     switch (type) {
         case MessageType.ACCOUNT_ADD:
             AccountDB.addAccount(accountId);
-            dirty.accounts = true;
+            markAccountDirty(accountId);
+            dirty.accountsInfo = true;
             break;
         case MessageType.ACCOUNT_DELETE:
             AccountDB.deleteAccount(accountId);
-            dirty.accounts = true;
+            dirty.accountsInfo = true;
             break;
         case MessageType.ACCOUNT_LOGIN: {
             AccountDB.login(accountId, otherData);
             ws.accountId = accountId;
-            dirty.accounts = true;
+            markAccountDirty(accountId);
+            dirty.accountsInfo = true;
             break;
         }
         case MessageType.ACCOUNT_LOGOUT: {
@@ -88,13 +90,13 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
                 const game = GameDB.getGame(account.joinedGame);
                 if (game) {
                     game.players[accountId].joined = false;
-                    markGameDirty(game.id, { players: true });
+                    markGameDirty(game.id, { players: [accountId] });
                 }
             }
 
             ws.accountId = null;
             AccountDB.logout(accountId);
-            dirty.accounts = true;
+            markAccountDirty(accountId);
             break;
         }
         case MessageType.ACCOUNT_SET_SETTINGS: {
@@ -105,7 +107,7 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
                     ...data.settings,
                 };
 
-                dirty.accounts = true;
+                markAccountDirty(accountId);
             }
             break;
         }
@@ -139,9 +141,9 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
                     const account = AccountDB.getAccount(p.id);
                     if (account) {
                         account.joinedGame = null;
+                        markAccountDirty(account.id);
                     }
                 });
-                dirty.accounts = true;
 
                 // Delete game
                 GameDB.deleteGame(gameId);
@@ -194,12 +196,12 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             if (canAnyoneJoin || canJoinAsPlayer || canJoinAsNonPlayer) {
                 // Add player to the game
                 GameDB.addPlayer(gameId, playerId, otherData);
-                markGameDirty(gameId, { players: true });
+                markGameDirty(gameId, { players: [playerId] });
 
                 const account = AccountDB.getAccount(playerId);
                 if (account) {
                     account.joinedGame = gameId;
-                    dirty.accounts = true;
+                    markAccountDirty(account.id);
                 }
             } else {
                 sendData({ ws, type: MessageType.PLAYER_JOIN_GAME, error: ErrorType.GAME_UNABLE_TO_JOIN });
@@ -217,13 +219,13 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
                 const deletePlayer = data.deletePlayer || !game.status.started || isNonGamePlayer;
 
                 GameDB.removePlayer(gameId, playerId, deletePlayer);
-                markGameDirty(gameId, { players: true });
+                markGameDirty(gameId, { players: [playerId] });
             }
 
-            const player = AccountDB.getAccount(playerId);
-            if (player) {
-                player.joinedGame = null;
-                dirty.accounts = true;
+            const account = AccountDB.getAccount(playerId);
+            if (account) {
+                account.joinedGame = null;
+                markAccountDirty(account.id);
             }
             break;
         }
@@ -327,19 +329,19 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
         // Player Setup actions
         case MessageType.PLAYER_SET_COLOR:
             player.color = data.color;
-            markGameDirty(gameId, { players: true });
+            markGameDirty(gameId, { players: [playerId] });
             break;
         case MessageType.PLAYER_SET_FACTION:
             player.faction = data.factionName;
             if (data.factionName === 'The Naalu Collective') {
                 player.hasNaaluZeroToken = true;
             }
-            markGameDirty(gameId, { players: true });
+            markGameDirty(gameId, { players: [playerId] });
             break;
         case MessageType.PLAYER_TAKE_NAALU_ZERO_TOKEN:
             getPlayersInGame(game).forEach(p => (p.hasNaaluZeroToken = false));
             player.hasNaaluZeroToken = true;
-            markGameDirty(gameId, { players: true });
+            markGameDirty(gameId, { players: [playerId] });
             break;
 
         // Strategy Card actions
@@ -359,7 +361,7 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             }
 
             status.turn = getPlayerOrder(game)[0].strategyCard;
-            markGameDirty(gameId, { players: true, status: true });
+            markGameDirty(gameId, { players: [playerId], status: true });
             break;
         }
 
@@ -368,7 +370,7 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             const returnedCard = player.strategyCard;
             player.strategyCard = StrategyCardIndex.NONE;
             player.stragetyCardFlipped = false;
-            markGameDirty(gameId, { players: true });
+            markGameDirty(gameId, { players: [playerId] });
 
             // If player is returning card that is the first turn, clear out the game turn and set to next player.
             if (game.status.turn === returnedCard) {
@@ -384,12 +386,12 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             if (!data.flipped) {
                 player.passed = false;
             }
-            markGameDirty(gameId, { players: true });
+            markGameDirty(gameId, { players: [playerId] });
             break;
 
         case MessageType.PLAYER_PASS_TURN:
             player.passed = data.passed;
-            markGameDirty(gameId, { players: true });
+            markGameDirty(gameId, { players: [playerId] });
 
             // If current player passed, set turn to the next player.
             if (game.status.turn === player.strategyCard) {
@@ -402,18 +404,18 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
 
         case MessageType.PLAYER_SET_PUBLIC_OBJECTIVES:
             player.publicObjectives = data.publicObjectives;
-            markGameDirty(gameId, { players: true });
+            markGameDirty(gameId, { players: [playerId] });
             break;
 
         case MessageType.PLAYER_SET_SECRET_OBJECTIVE:
             player.secretObjective = data.secretObjective;
-            markGameDirty(gameId, { players: true });
+            markGameDirty(gameId, { players: [playerId] });
             break;
 
         case MessageType.PLAYER_SET_VICTORY_POINTS:
             if (typeof data.victoryPoints === 'number') {
                 player.victoryPoints = data.victoryPoints;
-                markGameDirty(gameId, { players: true });
+                markGameDirty(gameId, { players: [playerId] });
             }
             break;
 
@@ -421,6 +423,8 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
         case MessageType.PLAYER_TAKE_PLANET: {
             const { planetId } = data || {};
             const planets = GameDB.getPlanetsArray(gameId, planetId);
+            const { changedPlanets, changedPlayers } = formatChangePlanets(planets, playerId);
+
             planets.forEach(p => {
                 const prevOwner = p.owner;
                 p.owner = playerId;
@@ -434,7 +438,7 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             });
 
             player.planets.sort();
-            markGameDirty(gameId, { planets: true, players: true });
+            markGameDirty(gameId, { planets: changedPlanets, players: changedPlayers });
 
             // TODO: Send notifications to previous owners.
             break;
@@ -442,6 +446,8 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
         case MessageType.PLAYER_LOST_PLANET: {
             const { planetId } = data || {};
             const planets = GameDB.getPlanetsArray(gameId, planetId);
+            const { changedPlanets, changedPlayers } = formatChangePlanets(planets, playerId);
+
             planets.forEach(p => {
                 if (p.owner === playerId) {
                     p.owner = null;
@@ -450,13 +456,15 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
 
             const planetIdArray = Array.isArray(planetId) ? planetId : [planetId];
             player.planets = player.planets.filter(p => !planetIdArray.includes(p)).sort();
-            markGameDirty(gameId, { planets: true, players: true });
+            markGameDirty(gameId, { planets: changedPlanets, players: changedPlayers });
 
             break;
         }
         case MessageType.PLAYER_EXHAUST_PLANET: {
             const { planetId, ability } = data || {};
             const planets = GameDB.getPlanetsArray(gameId, planetId).filter(p => p.owner === playerId);
+            const { changedPlanets } = formatChangePlanets(planets);
+
             planets.forEach(p => {
                 p.refreshed = false;
                 if (ability && p.refreshedAbility !== undefined) {
@@ -464,12 +472,14 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
                 }
             });
 
-            markGameDirty(gameId, { planets: true });
+            markGameDirty(gameId, { planets: changedPlanets });
             break;
         }
         case MessageType.PLAYER_REFRESH_PLANET: {
             const { planetId, ability } = data || {};
             const planets = GameDB.getPlanetsArray(gameId, planetId).filter(p => p.owner === playerId);
+            const { changedPlanets } = formatChangePlanets(planets);
+
             planets.forEach(p => {
                 p.refreshed = true;
                 if (ability && p.refreshedAbility !== undefined) {
@@ -477,7 +487,7 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
                 }
             });
 
-            markGameDirty(gameId, { planets: true });
+            markGameDirty(gameId, { planets: changedPlanets });
             break;
         }
         case MessageType.PLAYER_EXHAUST_PLANET_ABILITY: {
@@ -487,7 +497,8 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             );
             planets.forEach(p => (p.refreshedAbility = false));
 
-            markGameDirty(gameId, { planets: true });
+            const { changedPlanets } = formatChangePlanets(planets);
+            markGameDirty(gameId, { planets: changedPlanets });
             break;
         }
         case MessageType.PLAYER_REFRESH_PLANET_ABILITY: {
@@ -497,7 +508,8 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             );
             planets.forEach(p => (p.refreshedAbility = true));
 
-            markGameDirty(gameId, { planets: true });
+            const { changedPlanets } = formatChangePlanets(planets);
+            markGameDirty(gameId, { planets: changedPlanets });
             break;
         }
         default:

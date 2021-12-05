@@ -80,10 +80,11 @@ function NewGameDialog(props: NewGameDialogProps) {
     const classes = useStyles(props);
     const { open, onClose } = props;
     const {
-        state: { games, accountId },
+        state: { games, account },
         sendData,
     } = useAppContext();
 
+    const accountId = account?.id;
     const playerGames = Object.values(games).filter(g => g.creator === accountId);
 
     const [gameOptions, setGameOptions] = useState<GameOptions>(() => ({

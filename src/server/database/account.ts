@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import { Account, AccountMap, AccountSettings, DEFAULT_SETTINGS } from 'common/Account';
+import { Account, AccountMap, AccountSettings, BaseAccountMap, DEFAULT_SETTINGS } from 'common/Account';
 
 import { getHomeDir } from '../appData';
 
@@ -27,8 +27,22 @@ function save() {
     // fs.writeFileSync(ACCOUNTS_FILE, data);
 }
 
+/**
+ * List full account details
+ */
 export function listAccounts() {
     return _accounts;
+}
+
+/**
+ * List only basic account details
+ */
+export function listAccountsInfo(): BaseAccountMap {
+    return Object.values(_accounts).reduce((r, a) => {
+        const { id, name, loggedIn, joinedGame } = a;
+        r[a.id] = { id, name, loggedIn, joinedGame };
+        return r;
+    }, {} as BaseAccountMap);
 }
 
 type AddAccountOptions = {

@@ -18,11 +18,11 @@ import {
     StrategyCardIndex,
     Version,
 } from 'common/Game';
+import { Planet } from 'common/Planet';
 import uuidv4 from 'common/uuidv4';
 
 import { getHomeDir } from '../appData';
 import { Planets } from './planet';
-import { Planet } from 'common/Planet';
 
 const GAMES_FILE = path.join(getHomeDir(), 'games.json');
 console.log(`games file: ${GAMES_FILE}`);
@@ -32,8 +32,11 @@ let _games: GameMap = {};
 
 // Default setting for all planets in a new game
 const DEFAULT_GAME_PLANETS: Readonly<GamePlanetMap> = Planets.reduce((result: GamePlanetMap, planet: Planet) => {
-    const { name } = planet;
+    const { name, legendary } = planet;
     result[name] = { name, owner: null, refreshed: false };
+    if (legendary) {
+        result[name].refreshedAbility = true;
+    }
     return result;
 }, {});
 

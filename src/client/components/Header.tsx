@@ -19,10 +19,10 @@ function Header() {
     const {
         dispatch,
         sendData,
-        state: { accountId, accounts, loginStatus, theme = 'light' },
+        state: { account, loginStatus, theme = 'light' },
     } = useAppContext();
 
-    const account = accountId ? accounts[accountId] : null;
+    const accountId = account?.id;
     const loggedIn = loginStatus === LoginStatus.LOGGED_IN;
 
     const onThemeChange = (theme: AppTheme) => {

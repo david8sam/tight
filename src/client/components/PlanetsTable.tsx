@@ -89,8 +89,10 @@ function renderCells(
 function PlanetsTable(props: PlanetsTableProps) {
     const classes = useStyle(props);
     const {
-        state: { games, planets: planetDB = {}, accountId: loggedInPlayer },
+        state: { games, planets: planetDB = {}, account },
     } = useAppContext();
+
+    const loggedInPlayer = account?.id;
 
     const {
         gameId,

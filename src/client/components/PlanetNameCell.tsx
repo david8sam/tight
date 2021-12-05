@@ -92,6 +92,8 @@ export default function PlanetNameCell(props: PlanetNameCellProps) {
     };
 
     const isLegendary = Boolean(planet.legendary);
+    const abilityExhausted = !planet.refreshedAbility;
+
     return (
         <Grid container direction="row" spacing={2}>
             <Grid item>
@@ -104,9 +106,7 @@ export default function PlanetNameCell(props: PlanetNameCellProps) {
                 <Grid item>
                     <Grid container justifyContent="center" alignItems="center" className={classes.grid}>
                         <FormControlLabel
-                            control={
-                                <Switch color="primary" checked={planet.refreshedAbility} onChange={onExhaustChange} />
-                            }
+                            control={<Switch color="primary" checked={abilityExhausted} onChange={onExhaustChange} />}
                             label={
                                 <Grid container direction="column" justifyContent="center" alignItems="center">
                                     <Typography variant="subtitle2">Exhaust</Typography>

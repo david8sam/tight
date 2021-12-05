@@ -1,4 +1,4 @@
-# tight
+# TIGHT
 
 Twilight Imperium Game Helper and Tracker
 
@@ -14,7 +14,7 @@ Twilight Imperium Game Helper and Tracker
 
 ### 3. Run server
 
-`npm run server`
+`npm run start`
 
 Server URL will be printed in the console.
 
@@ -22,17 +22,17 @@ Server URL will be printed in the console.
 
 ## Run each of the following commands in their own separate console.
 
-### 1. Build and watch server in dev
+### 1. Run server in dev:
 
-`npm run build:server:dev`
-
-### 2. Run server in dev:
-
-`npm run server:dev`
+`npm run start:dev`
 
 Sometimes changes to server files don't hot reload correctly. Run `rs` in this console to restart the server.
 
-### 3. Run client in dev:
+### 2. Build and watch server in dev
+
+`npm run server:dev`
+
+### 3. Build and watch client in dev:
 
 `npm run client:dev`
 

@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 function Home() {
     const classes = useStyles();
     const {
-        state: { loginStatus, accounts, theme },
+        state: { loginStatus, accountsInfo, theme },
         dispatch,
         sendData,
     } = useAppContext();
@@ -59,7 +59,7 @@ function Home() {
         }
     }, [loggedIn]);
 
-    const accountInUse = Boolean(playerId !== name && accounts[name] && accounts[name].loggedIn);
+    const accountInUse = playerId !== name && accountsInfo[name]?.loggedIn;
 
     return (
         <Container classes={{ root: classes.root }}>

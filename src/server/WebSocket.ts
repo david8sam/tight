@@ -1,7 +1,8 @@
 import WS from 'ws';
 
+import { AccountMap } from 'common/Account';
 import { MessageType, ChangeData } from 'common/message';
-import log from './log';
+import { logDebug, logWS } from './log';
 
 export interface WebSocketServer extends WS.Server {}
 
@@ -11,7 +12,7 @@ export interface WebSocket extends WS {
 }
 
 export interface SendDataParams {
-    ws: WS;
+    ws: WebSocket;
     type: MessageType;
     data?: any;
     error?: any;
@@ -21,13 +22,13 @@ export interface SendDataParams {
  * Send data to one client
  */
 export function sendData({ ws, type, data, error }: SendDataParams) {
-    // log(`Sending to "${ws.accountId || 'unknown'}:"\n`, data);
+    logWS(true, ws.accountId, { type, data, error });
     ws.send(JSON.stringify({ type, data, error }));
 }
 
 export interface BroadcastChangeDataParams {
     wss: WebSocketServer;
-    type: MessageType;
+    updatedAccounts?: AccountMap | null;
     data?: ChangeData;
     error?: any;
 }
@@ -35,7 +36,32 @@ export interface BroadcastChangeDataParams {
 /**
  * Broadcast a message to all connected clients.
  */
-export function broadcastChangeData({ wss, type, data, error }: BroadcastChangeDataParams) {
-    log('Broadcasting:\n', data);
-    wss.clients.forEach((ws: WS) => ws.send(JSON.stringify({ type, data, error })));
+export function broadcastChangeData({ wss, updatedAccounts, data, error }: BroadcastChangeDataParams) {
+    const payload = { type: MessageType.BROADCAST_CHANGE, data, error };
+    const accountIds: string[] = [];
+    wss.clients.forEach(ws => {
+        const id = (ws as WebSocket).accountId;
+        if (id) {
+            accountIds.push(id);
+        }
+    });
+
+    if (updatedAccounts) {
+        logDebug('Updated Accounts:\n', updatedAccounts);
+    }
+    logWS(true, accountIds, payload);
+
+    wss.clients.forEach((ws: WS) => {
+        // If an user updated their account, only broadcast account changes to that user.
+        const accountId = (ws as WebSocket).accountId;
+        const updatedAccount = updatedAccounts && accountId ? updatedAccounts[accountId] : null;
+        if (updatedAccount && payload.data) {
+            payload.data.account = updatedAccount;
+        }
+
+        ws.send(JSON.stringify(payload));
+
+        // Reset user specific data for next account to broadcast to.
+        delete payload.data?.account;
+    });
 }

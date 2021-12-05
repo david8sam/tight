@@ -21,11 +21,11 @@ export interface GamesTableProps {
 
 function GamesTable(props: GamesTableProps) {
     const {
-        state: { accountId: playerId, accounts },
+        state: { account },
     } = useAppContext();
+    const playerId = account?.id;
 
     const [pending, setPending] = useState<null | PendingState>(null);
-
     const navigate = useNavigate();
 
     const { games } = props;

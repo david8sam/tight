@@ -1,7 +1,7 @@
 import { Faction } from 'common/Faction';
 import { GameMap, Game, StrategyCard } from 'common/Game';
 import { PlanetMap } from 'common/Planet';
-import { AccountMap, AppTheme, LoginStatus } from 'common/Account';
+import { Account, AppTheme, BaseAccountMap, LoginStatus } from 'common/Account';
 import { ChangeData } from 'common/message';
 
 export enum ActionType {
@@ -16,16 +16,17 @@ export interface State {
     // Client Data
     initialized: boolean;
     theme: AppTheme;
+    accountId: string | null;
     loginStatus: LoginStatus;
-    accountId?: string | null;
 
     // Server Data (Client does NOT modify)
     factionNames: string[];
     factionInfo: Faction | null;
 
+    account: Account | null; // Loggined in player account
+    accountsInfo: BaseAccountMap;
     games: GameMap;
 
-    accounts: AccountMap;
     planets: PlanetMap;
     strategyCards: StrategyCard[];
 }
@@ -39,40 +40,40 @@ export const initialState: State = {
     // Client data
     initialized: false,
     theme: 'light',
+    accountId: null,
     loginStatus: LoginStatus.LOGGED_OUT,
 
     // Server data
     factionNames: [],
     factionInfo: null,
     games: {},
-    accounts: {},
+    account: null,
+    accountsInfo: {},
     planets: {},
     strategyCards: [],
 };
 
 /**
  * Update State from server changes
- * @param state Current state
- * @param payload The change data
- * @returns The updated state
  */
-function updateState(state: State, payload: ChangeData) {
+function updateState(state: State, payload: ChangeData): State {
     let newState = { ...state };
 
     // Update app level states
-    const { games, accounts } = payload;
-    if (accounts) {
-        newState.accounts = accounts;
-        if (state.accountId) {
-            newState.theme = accounts[state.accountId].settings.theme;
-
-            const accountLoggedIn = accounts[state.accountId].loggedIn;
-            if (accountLoggedIn && state.loginStatus === LoginStatus.LOGIN_PENDING) {
-                newState.loginStatus = LoginStatus.LOGGED_IN;
-            } else if (!accountLoggedIn && state.loginStatus === LoginStatus.LOGOUT_PENDING) {
-                newState.loginStatus = LoginStatus.LOGGED_OUT;
-            }
+    const { games, account, accountsInfo } = payload;
+    if (account) {
+        newState.account = { ...state.account, ...account };
+        newState.theme = account.settings.theme;
+        const accountLoggedIn = account.loggedIn;
+        if (accountLoggedIn && state.loginStatus === LoginStatus.LOGIN_PENDING) {
+            newState.loginStatus = LoginStatus.LOGGED_IN;
+        } else if (!accountLoggedIn && state.loginStatus === LoginStatus.LOGOUT_PENDING) {
+            newState.loginStatus = LoginStatus.LOGGED_OUT;
         }
+    }
+
+    if (accountsInfo) {
+        newState.accountsInfo = accountsInfo;
     }
 
     // Update changes to games
@@ -96,11 +97,18 @@ function updateState(state: State, payload: ChangeData) {
             }
 
             if (planets) {
-                updatedGame.planets = { ...planets };
+                updatedGame.planets = { ...updatedGame.planets, ...planets };
             }
 
             if (players) {
-                updatedGame.players = { ...players };
+                updatedGame.players = { ...updatedGame.players, ...players };
+
+                // Key without no value means admin or spectator has left
+                Object.keys(players).forEach(id => {
+                    if (!players[id]) {
+                        delete updatedGame.players[id];
+                    }
+                });
             }
 
             if (publicObjectives) {
@@ -120,9 +128,6 @@ function updateState(state: State, payload: ChangeData) {
 
 /**
  * Reducer function to handle dispatched actions
- * @param state Current state
- * @param action The dispatched action
- * @returns The final state
  */
 export default function reducer(state: State, action: Action): State {
     const { type, payload } = action;

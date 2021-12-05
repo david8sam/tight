@@ -15,7 +15,7 @@ export interface AccountWrapperProps {
 
 function AccountWrapper(props: AccountWrapperProps) {
     const { state, dispatch, sendData } = useAppContext();
-    const { initialized, accounts, loginStatus } = state;
+    const { initialized, accountsInfo, loginStatus } = state;
 
     const navigate = useNavigate();
     const params = useParams();
@@ -23,14 +23,14 @@ function AccountWrapper(props: AccountWrapperProps) {
     const { Page } = props;
     const name = params.id;
 
-    const isValidPlayer = Boolean(name && accounts[name]);
+    const isValidPlayer = name ? accountsInfo[name] : false;
 
     useEffect(() => {
         if (!initialized || loginStatus === LoginStatus.LOGIN_PENDING || loginStatus === LoginStatus.LOGOUT_PENDING) {
             return;
         }
 
-        if (!name || !accounts[name]) {
+        if (!name || !isValidPlayer) {
             navigate('/');
         } else if (name && loginStatus === LoginStatus.LOGGED_OUT) {
             dispatch({

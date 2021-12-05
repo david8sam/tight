@@ -1,10 +1,11 @@
 import { GameChangeDataMap, GameMap, StrategyCardsType } from './Game';
 import { PlanetMap } from 'common/Planet';
-import { AccountMap } from 'common/Account';
+import { Account, AccountMap, BaseAccountMap } from 'common/Account';
 
 export interface AllData {
+    account: Account | null;
+    accountsInfo: BaseAccountMap;
     games: GameMap;
-    accounts: AccountMap;
     planets: PlanetMap;
     strategyCards: StrategyCardsType;
     factionNames: readonly string[];
@@ -12,7 +13,8 @@ export interface AllData {
 
 export interface ChangeData {
     games?: GameChangeDataMap;
-    accounts?: AccountMap;
+    account?: Account;
+    accountsInfo?: BaseAccountMap;
 }
 
 // TODO: Type per message type.

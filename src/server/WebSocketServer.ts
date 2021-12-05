@@ -1,7 +1,8 @@
-import express from 'express';
+import { Application } from 'express';
 import http from 'http';
 import ws from 'ws';
 
+import { AccountMap } from 'common/Account';
 import { ChangeData, MessageType, AllData } from 'common/message';
 
 import * as FactionDB from './database/faction';
@@ -14,6 +15,11 @@ import { dirty, isDirty, setDirty, getDirtyGameData } from './dirty';
 import handleMessage from './handleMessage';
 import log from './log';
 import { WebSocket, WebSocketServer, sendData, broadcastChangeData } from './WebSocket';
+
+const KEEP_ALIVE_INTERVAL = 10000; // ms
+const BROADCAST_INTERVAL = 300; // ms
+
+const WSS_PORT = 8080;
 
 interface OnConnectionParam {
     wss: WebSocketServer;
@@ -32,7 +38,8 @@ function onConnection({ wss, ws }: OnConnectionParam) {
     // Send initial packet to client
     const allData: AllData = {
         games: GameDB.listGames(),
-        accounts: AccountDB.listAccounts(),
+        account: ws.accountId ? AccountDB.getAccount(ws.accountId) : null,
+        accountsInfo: AccountDB.listAccountsInfo(),
         planets: PlanetDB.listPlanets(),
         strategyCards: StrategyDB.listCards(),
         factionNames: FactionDB.listFactionNames(),
@@ -41,7 +48,7 @@ function onConnection({ wss, ws }: OnConnectionParam) {
     sendData({ ws, type: MessageType.BROADCAST_INITIALIZE, data: allData });
 }
 
-export default function initialize(app: express.Application) {
+export default function initialize(app: Application) {
     if (wss) {
         return wss;
     }
@@ -68,7 +75,7 @@ export default function initialize(app: express.Application) {
             ws.isAlive = false;
             ws.ping(null, false);
         });
-    }, 10000);
+    }, KEEP_ALIVE_INTERVAL);
 
     // Broadcast game state on an interval
     setInterval(() => {
@@ -78,8 +85,20 @@ export default function initialize(app: express.Application) {
         }
 
         const data: ChangeData = {};
-        if (dirty.accounts) {
-            data.accounts = AccountDB.listAccounts();
+
+        let updatedAccounts: AccountMap | null = null;
+        if (dirty.accounts.length) {
+            updatedAccounts = {};
+            dirty.accounts.forEach(a => {
+                const account = AccountDB.getAccount(a);
+                if (account && updatedAccounts) {
+                    updatedAccounts[account.id] = account;
+                }
+            });
+        }
+
+        if (dirty.accountsInfo) {
+            data.accountsInfo = AccountDB.listAccountsInfo();
         }
 
         const dirtyGames = getDirtyGameData();
@@ -90,11 +109,11 @@ export default function initialize(app: express.Application) {
         // TODO: Save changes to disk
 
         setDirty(false);
-        broadcastChangeData({ wss, type: MessageType.BROADCAST_CHANGE, data });
-    }, 300);
+        broadcastChangeData({ wss, updatedAccounts, data });
+    }, BROADCAST_INTERVAL);
 
-    server.listen(8080, () => {
-        console.log(`WebSocket server started on port: 8080`);
+    server.listen(WSS_PORT, () => {
+        console.log(`WebSocket server started on port: ${WSS_PORT}`);
     });
 
     return wss;

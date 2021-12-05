@@ -18,12 +18,16 @@ export const DEFAULT_SETTINGS: AccountSettings = {
     theme: 'light',
 } as const;
 
-export interface Account {
+export interface BaseAccount {
     id: string; // unique id
     name: string; // display name
     loggedIn: boolean;
     joinedGame: string | null;
-    invitedGames?: string[];
+}
+
+export type BaseAccountMap = Record<string, BaseAccount>;
+
+export interface Account extends BaseAccount {
     settings: AccountSettings;
 }
 
