@@ -33,6 +33,8 @@ function Header() {
         }
     };
 
+    const accoutnName = loggedIn ? account?.name : '';
+
     return (
         <>
             <AppBar position="fixed">
@@ -43,7 +45,7 @@ function Header() {
                                 <MenuIcon />
                             </IconButton>
                         </Tooltip>
-                        <TextWithTooltip text={account?.name ?? ''} width="75%" variant="h6" />
+                        <TextWithTooltip text={accoutnName ?? ''} width="75%" variant="h6" />
                     </Grid>
                     <Tooltip title={theme === 'light' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}>
                         <IconButton onClick={() => onThemeChange(theme === 'dark' ? 'light' : 'dark')}>
