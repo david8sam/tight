@@ -37,7 +37,7 @@ function Header() {
 
     return (
         <>
-            <AppBar position="fixed">
+            <AppBar position="sticky">
                 <Toolbar>
                     <Grid container alignItems="center">
                         <Tooltip title="Menu">
@@ -54,7 +54,6 @@ function Header() {
                     </Tooltip>
                 </Toolbar>
             </AppBar>
-            <Toolbar />
             <Drawer open={drawerOpen} onOpen={() => setDrawerOpen(true)} onClose={() => setDrawerOpen(false)} />
         </>
     );

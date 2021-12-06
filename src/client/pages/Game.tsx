@@ -16,6 +16,7 @@ import {
     Typography,
     Tooltip,
     Paper,
+    AppBar,
 } from '@material-ui/core';
 import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
@@ -24,6 +25,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Game, GameJoinStatus, GameStatus, getPlayersInGame, Phase, StrategyCardIndex } from 'common/Game';
 import { MessageType } from 'common/message';
 
+import { HEADER_HEIGHT } from '../constants';
 import { useAppContext } from '../Context';
 import { Accordion, AccordionDetails, AccordionSummary } from '../components/Accordion';
 import GameInfoToolbar from '../components/GameInfoToolbar';
@@ -85,6 +87,9 @@ function canNextPhase(game: Game): { canNext: boolean; message: string } {
 }
 
 const useStyles = makeStyles((theme: Theme) => ({
+    appBar: {
+        top: HEADER_HEIGHT,
+    },
     divider: {
         height: 2,
     },
@@ -259,84 +264,88 @@ function Game() {
     }
 
     return (
-        <Grid container direction="column">
-            <Paper>
-                <GameInfoToolbar game={game} />
-            </Paper>
-            <Accordion
-                className={classes.statusAccordion}
-                disableMargin
-                expanded={actionExpanded}
-                onChange={(_e, expanded) => setActionExpaned(expanded)}
-            >
-                <AccordionSummary disableMargin classes={{ root: classes.statusSummary }}>
-                    <Grid container justifyContent="space-between" alignItems="center">
-                        <TextWithTooltip
-                            text={`Turn: ${playerTurn || ''}`}
-                            title={playerTurn || ''}
-                            width="25%"
-                            onClick={e => e.stopPropagation()}
-                        />
-                        <Grid
-                            container
-                            justifyContent="center"
-                            alignItems="center"
-                            classes={{ root: classes.phaseActions }}
-                        >
-                            <Tooltip title={Phase[prevPhase]}>
-                                <span>
-                                    <IconButton
-                                        disabled={isSpectator || pending || !canBack || phase === Phase.STRATEGY}
-                                        onClick={e => onPhaseClick(e, false)}
-                                    >
-                                        <NavigateBeforeIcon />
-                                    </IconButton>
-                                </span>
-                            </Tooltip>
-                            {pending ? (
-                                <CircularProgress size="24" />
-                            ) : (
-                                <Typography align="center">{`${Phase[phase]}`}</Typography>
-                            )}
-                            <Tooltip title={Phase[nextPhase]}>
-                                <span>
-                                    <IconButton
-                                        disabled={isSpectator || pending || !canNext || phase === Phase.AGENDA}
-                                        onClick={e => onPhaseClick(e, true)}
-                                    >
-                                        <NavigateNextIcon />
-                                    </IconButton>
-                                </span>
-                            </Tooltip>
+        <>
+            <AppBar className={classes.appBar} color="inherit" position="sticky">
+                <Paper>
+                    <GameInfoToolbar game={game} />
+                </Paper>
+                <Accordion
+                    className={classes.statusAccordion}
+                    disableMargin
+                    expanded={actionExpanded}
+                    onChange={(_e, expanded) => setActionExpaned(expanded)}
+                >
+                    <AccordionSummary disableMargin classes={{ root: classes.statusSummary }}>
+                        <Grid container justifyContent="space-between" alignItems="center">
+                            <TextWithTooltip
+                                text={`Turn: ${playerTurn || ''}`}
+                                title={playerTurn || ''}
+                                width="25%"
+                                onClick={e => e.stopPropagation()}
+                            />
+                            <Grid
+                                container
+                                justifyContent="center"
+                                alignItems="center"
+                                classes={{ root: classes.phaseActions }}
+                            >
+                                <Tooltip title={Phase[prevPhase]}>
+                                    <span>
+                                        <IconButton
+                                            disabled={isSpectator || pending || !canBack || phase === Phase.STRATEGY}
+                                            onClick={e => onPhaseClick(e, false)}
+                                        >
+                                            <NavigateBeforeIcon />
+                                        </IconButton>
+                                    </span>
+                                </Tooltip>
+                                {pending ? (
+                                    <CircularProgress size="24" />
+                                ) : (
+                                    <Typography align="center">{`${Phase[phase]}`}</Typography>
+                                )}
+                                <Tooltip title={Phase[nextPhase]}>
+                                    <span>
+                                        <IconButton
+                                            disabled={isSpectator || pending || !canNext || phase === Phase.AGENDA}
+                                            onClick={e => onPhaseClick(e, true)}
+                                        >
+                                            <NavigateNextIcon />
+                                        </IconButton>
+                                    </span>
+                                </Tooltip>
+                            </Grid>
+                            <Typography align="right" className={classes.round}>{`Round: ${round}`}</Typography>
                         </Grid>
-                        <Typography align="right" className={classes.round}>{`Round: ${round}`}</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails classes={{ root: classes.phaseActionDetails }}>
+                        <Grid container direction="column">
+                            {stepperToolbar}
+                            <Stepper classes={{ root: classes.stepper }} activeStep={phase} alternativeLabel>
+                                {STEPS.map(label => (
+                                    <Step classes={{ alternativeLabel: classes.stepLabelAlternativeLabel }} key={label}>
+                                        <StepLabel>{label}</StepLabel>
+                                    </Step>
+                                ))}
+                            </Stepper>
+                        </Grid>
+                    </AccordionDetails>
+                </Accordion>
+            </AppBar>
+            <Grid container direction="column">
+                <Toolbar className={classes.speakerToolbar}>
+                    <Grid container alignItems="center" spacing={1}>
+                        <Grid item xs={3}>
+                            <Typography>Speaker:</Typography>
+                        </Grid>
+                        <Grid item xs={9}>
+                            <SpeakerSelect fullWidth disabled={isSpectator} />
+                        </Grid>
                     </Grid>
-                </AccordionSummary>
-                <AccordionDetails classes={{ root: classes.phaseActionDetails }}>
-                    <Grid container direction="column">
-                        {stepperToolbar}
-                        <Stepper classes={{ root: classes.stepper }} activeStep={phase} alternativeLabel>
-                            {STEPS.map(label => (
-                                <Step classes={{ alternativeLabel: classes.stepLabelAlternativeLabel }} key={label}>
-                                    <StepLabel>{label}</StepLabel>
-                                </Step>
-                            ))}
-                        </Stepper>
-                    </Grid>
-                </AccordionDetails>
-            </Accordion>
-            <Toolbar className={classes.speakerToolbar}>
-                <Grid container alignItems="center" spacing={1}>
-                    <Grid item xs={3}>
-                        <Typography>Speaker:</Typography>
-                    </Grid>
-                    <Grid item xs={9}>
-                        <SpeakerSelect fullWidth disabled={isSpectator} />
-                    </Grid>
-                </Grid>
-            </Toolbar>
-            {getPhaseContents(phase)}
-        </Grid>
+                </Toolbar>
+                {getPhaseContents(phase)}
+            </Grid>
+        </>
     );
 }
 

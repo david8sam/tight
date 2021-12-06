@@ -1,9 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Divider, IconButton, Toolbar, Tooltip, Typography } from '@material-ui/core';
+import { AppBar, Divider, IconButton, makeStyles, Toolbar, Tooltip, Typography } from '@material-ui/core';
 import EditIcon from '@material-ui/icons/Edit';
 import SyncIcon from '@material-ui/icons/Sync';
 import SyncDisabledIcon from '@material-ui/icons/SyncDisabled';
-import { makeStyles } from '@material-ui/styles';
 
 import debounce from 'lodash/debounce';
 import isEmpty from 'lodash/isEmpty';
@@ -11,6 +10,7 @@ import isEmpty from 'lodash/isEmpty';
 import { GamePlanetMap } from 'common/Game';
 import { MessageType } from 'common/message';
 
+import { HEADER_HEIGHT } from '../constants';
 import { useAppContext } from '../Context';
 import AddPlanetDialog from '../components/AddPlanetDialog';
 import PlanetIconInfoButton from '../components/PlanetIconInfoButton';
@@ -21,6 +21,9 @@ import useAutoNavigate from '../hooks/useAutoNavigate';
 import { SendDataFunction } from '../hooks/useWebSocket';
 
 const useStyle = makeStyles(theme => ({
+    appBar: {
+        top: HEADER_HEIGHT,
+    },
     title: {
         flex: '1 1 100%',
     },
@@ -221,42 +224,44 @@ function Planets() {
 
     return (
         <>
-            <Toolbar>
-                <Typography classes={{ root: classes.title }} variant="subtitle1">
-                    MY PLANETS
-                </Typography>
-                <Tooltip title="Refresh All Planets">
-                    <span>
-                        <IconButton
-                            disabled={exhaustedPlanets.length === 0 || playerPlanetNames.length === 0}
-                            onClick={() => onRefreshAll(true)}
-                        >
-                            <SyncIcon />
-                        </IconButton>
-                    </span>
-                </Tooltip>
-                <Tooltip title="Exhaust All Planets">
-                    <span>
-                        <IconButton
-                            disabled={exhaustedPlanets.length === playerPlanetNames.length}
-                            onClick={() => onRefreshAll(false)}
-                        >
-                            <SyncDisabledIcon />
-                        </IconButton>
-                    </span>
-                </Tooltip>
-                <Divider orientation="vertical" />
-                <PlanetIconInfoButton />
-                <Divider orientation="vertical" />
-                <Tooltip title="Add/Remove Planets">
-                    <span>
-                        <IconButton disabled={!gameId || !playerId} onClick={() => setOpenAddDialog(true)}>
-                            <EditIcon />
-                        </IconButton>
-                    </span>
-                </Tooltip>
-            </Toolbar>
-            <TotalsTable {...totals} />
+            <AppBar className={classes.appBar} color="inherit" position="sticky">
+                <Toolbar>
+                    <Typography classes={{ root: classes.title }} variant="subtitle1">
+                        MY PLANETS
+                    </Typography>
+                    <Tooltip title="Refresh All Planets">
+                        <span>
+                            <IconButton
+                                disabled={exhaustedPlanets.length === 0 || playerPlanetNames.length === 0}
+                                onClick={() => onRefreshAll(true)}
+                            >
+                                <SyncIcon />
+                            </IconButton>
+                        </span>
+                    </Tooltip>
+                    <Tooltip title="Exhaust All Planets">
+                        <span>
+                            <IconButton
+                                disabled={exhaustedPlanets.length === playerPlanetNames.length}
+                                onClick={() => onRefreshAll(false)}
+                            >
+                                <SyncDisabledIcon />
+                            </IconButton>
+                        </span>
+                    </Tooltip>
+                    <Divider orientation="vertical" />
+                    <PlanetIconInfoButton />
+                    <Divider orientation="vertical" />
+                    <Tooltip title="Add/Remove Planets">
+                        <span>
+                            <IconButton disabled={!gameId || !playerId} onClick={() => setOpenAddDialog(true)}>
+                                <EditIcon />
+                            </IconButton>
+                        </span>
+                    </Tooltip>
+                </Toolbar>
+                <TotalsTable {...totals} />
+            </AppBar>
             <PlanetsTable
                 columns={['name', 'resources', 'influence']}
                 showFilterByName

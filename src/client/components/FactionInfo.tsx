@@ -1,5 +1,5 @@
-import React, { ChangeEvent, useState } from 'react';
-import { AccordionProps, Button, Grid, Toolbar, Typography } from '@material-ui/core';
+import React, { ChangeEvent } from 'react';
+import { AccordionProps, Grid } from '@material-ui/core';
 
 import { Faction } from 'common/Faction';
 
@@ -12,17 +12,28 @@ import FlagshipAccordion from './FlagshipAccordion';
 import LeadersAccordion from './LeadersAccordion';
 import MechAccordion from './MechAccordion';
 
-// Num accordions
-const COUNT = 10;
+export enum FactionAccordionIndex {
+    StartingUnits,
+    StartingTech,
+    Commodities,
+    Abilities,
+    PromissoryNotes,
+    FactionTech,
+    FactionUnits,
+    Flagship,
+    Mech,
+    Leaders,
+}
 
 export interface FactionInfoProps {
     faction: Faction | null;
+    expanded: boolean[];
+    onExpandedChange: (index: FactionAccordionIndex, e: ChangeEvent<{}>, expanded: boolean) => void;
 }
 
 function FactionInfo(props: FactionInfoProps) {
-    const { faction } = props;
+    const { faction, expanded, onExpandedChange } = props;
     const {
-        name,
         abilities,
         promissoryNotes,
         factionTech,
@@ -35,69 +46,43 @@ function FactionInfo(props: FactionInfoProps) {
         leaders,
     } = faction || {};
 
-    const [expandedStates, setExpandedStates] = useState<boolean[]>(Array(COUNT).fill(false));
-
-    const onExpandedChange = (index: number, e: ChangeEvent<{}>, expanded: boolean) => {
-        const newExpandedStates = [...expandedStates];
-        newExpandedStates[index] = expanded;
-        setExpandedStates(newExpandedStates);
-    };
-
-    const getAccordionProps = (index: number): { expanded: boolean; onChange: AccordionProps['onChange'] } => ({
-        expanded: expandedStates[index],
+    const getAccordionProps = (
+        index: FactionAccordionIndex,
+    ): { expanded: boolean; onChange: AccordionProps['onChange'] } => ({
+        expanded: expanded[index],
         onChange: (...args) => onExpandedChange(index, ...args),
     });
 
     return (
         <Grid container direction="column">
-            <Toolbar>
-                <Grid container direction="row" justifyContent="flex-start" spacing={1}>
-                    <Grid item>
-                        <Button
-                            size="small"
-                            color="primary"
-                            variant="contained"
-                            disabled={expandedStates.every(e => !e)}
-                            onClick={() => setExpandedStates(Array(COUNT).fill(false))}
-                        >
-                            <Typography variant="body2">Collapse</Typography>
-                        </Button>
-                    </Grid>
-                    <Grid item>
-                        <Button
-                            size="small"
-                            color="primary"
-                            variant="contained"
-                            disabled={expandedStates.every(e => e)}
-                            onClick={() => setExpandedStates(Array(COUNT).fill(true))}
-                        >
-                            <Typography variant="body2">Expand</Typography>
-                        </Button>
-                    </Grid>
-                </Grid>
-            </Toolbar>
-            <FactionStartingUnitsAccordion {...getAccordionProps(0)} startingUnits={startingUnits} />
+            <FactionStartingUnitsAccordion
+                {...getAccordionProps(FactionAccordionIndex.StartingUnits)}
+                startingUnits={startingUnits}
+            />
             <AccordionTextFields
-                {...getAccordionProps(1)}
+                {...getAccordionProps(FactionAccordionIndex.StartingTech)}
                 summary="Starting Tech"
                 texts={startingTech ? [{ label: 'Tech', value: `\u2022 ${startingTech.join('\n\u2022 ')}` }] : null}
             />
             <AccordionTextFields
-                {...getAccordionProps(2)}
+                {...getAccordionProps(FactionAccordionIndex.Commodities)}
                 summary="Commodities"
                 texts={commodities ? [{ value: commodities }] : null}
             />
-            <FactionAbilitiesAccordion {...getAccordionProps(3)} abilities={abilities} />
+            <FactionAbilitiesAccordion {...getAccordionProps(FactionAccordionIndex.Abilities)} abilities={abilities} />
             <AccordionTextFields
-                {...getAccordionProps(4)}
+                {...getAccordionProps(FactionAccordionIndex.PromissoryNotes)}
                 summary="Promissory Note"
                 texts={promissoryNotes ? promissoryNotes.map(n => ({ label: n.name, value: n.description })) : null}
             />
-            <FactionTechAccordion {...getAccordionProps(5)} factionTech={factionTech} />
-            <FactionUnitsAccordion {...getAccordionProps(6)} factionUnits={factionUnits} />
-            <FlagshipAccordion {...getAccordionProps(7)} flagship={flagship} />
-            <MechAccordion {...getAccordionProps(8)} mech={mech} />
-            <LeadersAccordion {...getAccordionProps(9)} leaders={leaders} />
+            <FactionTechAccordion {...getAccordionProps(FactionAccordionIndex.FactionTech)} factionTech={factionTech} />
+            <FactionUnitsAccordion
+                {...getAccordionProps(FactionAccordionIndex.FactionUnits)}
+                factionUnits={factionUnits}
+            />
+            <FlagshipAccordion {...getAccordionProps(FactionAccordionIndex.Flagship)} flagship={flagship} />
+            <MechAccordion {...getAccordionProps(FactionAccordionIndex.Mech)} mech={mech} />
+            <LeadersAccordion {...getAccordionProps(FactionAccordionIndex.Leaders)} leaders={leaders} />
         </Grid>
     );
 }

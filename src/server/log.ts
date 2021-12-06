@@ -14,14 +14,14 @@ function formatTime() {
 }
 
 /**
- * Log a Web Socket message being recieved or sent.
+ * Log a Web Socket message being received or sent.
  */
 export function logWS(
     send: boolean,
     accountId: string | string[] | null | undefined,
     payload: { type: MessageType; data: any; error?: any },
 ) {
-    let message = chalk.cyan(send ? 'Sending' : 'Recieving');
+    let message = chalk.cyan(send ? 'Sending' : 'Receiving');
     const accountIdsMessage = Array.isArray(accountId) ? accountId.join() : accountId;
     if (accountIdsMessage) {
         const toFrom = `${send ? ' to ' : ' from '}`;
