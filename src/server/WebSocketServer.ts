@@ -1,9 +1,11 @@
 import { Application } from 'express';
-import http from 'http';
+import http, { IncomingMessage } from 'http';
+import { parse } from 'url';
 import ws from 'ws';
 
 import { AccountMap } from 'common/Account';
-import { ChangeData, MessageType, AllData } from 'common/message';
+import { WSS_PORT } from 'common/constants';
+import { AllData, ChangeData, MessageType, PartialData } from 'common/message';
 
 import * as FactionDB from './database/faction';
 import * as GameDB from './database/game';
@@ -19,33 +21,53 @@ import { WebSocket, WebSocketServer, sendData, broadcastChangeData } from './Web
 const KEEP_ALIVE_INTERVAL = 10000; // ms
 const BROADCAST_INTERVAL = 300; // ms
 
-const WSS_PORT = 8080;
-
 interface OnConnectionParam {
     wss: WebSocketServer;
     ws: WebSocket;
+    request: IncomingMessage;
 }
 
 let wss: WebSocketServer;
 
-function onConnection({ wss, ws }: OnConnectionParam) {
+function onConnection({ wss, ws, request }: OnConnectionParam) {
+    const reconnectId = request.url ? (parse(request.url, true).query?.reconnect as string) : null;
+    if (reconnectId && reconnectId !== 'anonymous') {
+        ws.accountId = reconnectId;
+    }
+
+    const wsKey = request.headers['sec-websocket-key'];
+    const idMsg = ws.accountId ? `${wsKey} (${ws.accountId})` : wsKey;
+    log(`Opening web socket connection: ${idMsg}`);
+
     ws.isAlive = true;
 
     ws.on('pong', () => (ws.isAlive = true));
     ws.on('message', (message: string) => handleMessage({ wss, ws, message }));
+    ws.on('close', () => log(`Closing web socket connection: ${idMsg}`));
 
     // TODO: Design a better way to initialize without sending everything.
     // Send initial packet to client
-    const allData: AllData = {
-        games: GameDB.listGames(),
-        account: ws.accountId ? AccountDB.getAccount(ws.accountId) : null,
-        accountsInfo: AccountDB.listAccountsInfo(),
-        planets: PlanetDB.listPlanets(),
-        strategyCards: StrategyDB.listCards(),
-        factionNames: FactionDB.listFactionNames(),
-    };
+    if (reconnectId) {
+        const data: PartialData = {
+            games: GameDB.listGames(),
+            accountsInfo: AccountDB.listAccountsInfo(),
+        };
 
-    sendData({ ws, type: MessageType.BROADCAST_INITIALIZE, data: allData });
+        sendData({ ws, type: MessageType.BROADCAST_RECONNECT, data });
+    } else {
+        const data: AllData = {
+            // Dynamic data
+            games: GameDB.listGames(),
+            accountsInfo: AccountDB.listAccountsInfo(),
+
+            // Static data
+            planets: PlanetDB.listPlanets(),
+            strategyCards: StrategyDB.listCards(),
+            factionNames: FactionDB.listFactionNames(),
+        };
+
+        sendData({ ws, type: MessageType.BROADCAST_INITIALIZE, data });
+    }
 }
 
 export default function initialize(app: Application) {
@@ -57,7 +79,7 @@ export default function initialize(app: Application) {
     const server: http.Server = http.createServer(app);
 
     wss = new ws.Server({ server });
-    wss.on('connection', (ws: WebSocket) => onConnection({ wss, ws }));
+    wss.on('connection', (ws: WebSocket, request: IncomingMessage) => onConnection({ wss, ws, request }));
 
     // Keep connections alive
     setInterval(() => {
@@ -68,7 +90,8 @@ export default function initialize(app: Application) {
         wss.clients.forEach((websocket: ws) => {
             const ws: WebSocket = websocket as WebSocket;
             if (!ws.isAlive) {
-                log(`Terminating websocket (${ws.accountId})`);
+                const idMsg = ws.accountId ? `for ${ws.accountId}` : '';
+                log(`Terminating websocket${idMsg}`);
                 return ws.terminate();
             }
 

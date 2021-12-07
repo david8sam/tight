@@ -1,15 +1,16 @@
 import { GameChangeDataMap, GameMap, StrategyCardsType } from './Game';
 import { PlanetMap } from 'common/Planet';
-import { Account, AccountMap, BaseAccountMap } from 'common/Account';
+import { Account, BaseAccountMap } from 'common/Account';
 
 export interface AllData {
-    account: Account | null;
-    accountsInfo: BaseAccountMap;
     games: GameMap;
+    accountsInfo: BaseAccountMap;
     planets: PlanetMap;
     strategyCards: StrategyCardsType;
     factionNames: readonly string[];
 }
+
+export interface PartialData extends Partial<AllData> {}
 
 export interface ChangeData {
     games?: GameChangeDataMap;
@@ -26,6 +27,7 @@ export interface Message {
 export enum MessageType {
     // Messages from the server
     BROADCAST_INITIALIZE = '/broadcast/initialize',
+    BROADCAST_RECONNECT = '/broadcast/reconnect',
     BROADCAST_CHANGE = '/broadcast/change',
 
     // Account actions

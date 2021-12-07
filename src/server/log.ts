@@ -35,7 +35,7 @@ export function logWS(
     if (!send) {
         logData = isDev ? data : chalk.green(JSON.stringify(data));
     } else if (isDev) {
-        logData = data;
+        logData = process.env.LOG_LEVEL === 'debug' ? data : Object.keys(data);
     }
 
     if (typeof logData !== 'string' && Object.keys(data).length === 0) {

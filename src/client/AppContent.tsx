@@ -1,11 +1,14 @@
 import React from 'react';
 
-import { Skeleton } from '@material-ui/lab';
 import { makeStyles } from '@material-ui/styles';
+import { CircularProgress, Grid, Toolbar, Typography } from '@material-ui/core';
 
 import Router from './Router';
 
 const useStyle = makeStyles(() => ({
+    loading: {
+        height: '100%',
+    },
     content: {
         display: 'flex',
         flexDirection: 'column',
@@ -21,7 +24,28 @@ export interface AppContentProps {
 function AppContent(props: AppContentProps) {
     const classes = useStyle(props);
     const { loading } = props;
-    return <div className={classes.content}>{loading ? <Skeleton variant="rect" height="100%" /> : <Router />}</div>;
+
+    return (
+        <div className={classes.content}>
+            {loading ? (
+                <Grid
+                    className={classes.loading}
+                    container
+                    justifyContent="center"
+                    alignItems="center"
+                    direction="column"
+                >
+                    <CircularProgress size={'50vw'} />
+                    <Toolbar />
+                    <Typography variant="h4" color="primary">
+                        Connecting
+                    </Typography>
+                </Grid>
+            ) : (
+                <Router />
+            )}
+        </div>
+    );
 }
 
 export default AppContent;

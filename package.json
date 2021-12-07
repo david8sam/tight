@@ -13,6 +13,7 @@
         "start": "nodemon ./build/server.js",
         "start:dev": "cross-env TARGET=node NODE_ENV=development nodemon --inspect ./build/server-dev.js",
         "server:dev": "cross-env TARGET=node NODE_ENV=development webpack --config webpack.config.js",
+        "server:debug": "cross-env TARGET=node NODE_ENV=development LOG_LEVEL=debug webpack --config webpack.config.js",
         "client:dev": "cross-env TARGET=web NODE_ENV=development webpack-dev-server --port 3001"
     },
     "dependencies": {

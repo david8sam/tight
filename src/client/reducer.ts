@@ -5,9 +5,10 @@ import { Account, AppTheme, BaseAccountMap, LoginStatus } from 'common/Account';
 import { ChangeData } from 'common/message';
 
 export enum ActionType {
+    setReconnecting,
     setTheme,
     setLoginStatus,
-    initializeState,
+    setState,
     updateState,
     setFactionInfo,
 }
@@ -15,6 +16,7 @@ export enum ActionType {
 export interface State {
     // Client Data
     initialized: boolean;
+    reconnecting: boolean;
     theme: AppTheme;
     accountId: string | null;
     loginStatus: LoginStatus;
@@ -39,6 +41,7 @@ export interface Action {
 export const initialState: State = {
     // Client data
     initialized: false,
+    reconnecting: false,
     theme: 'light',
     accountId: null,
     loginStatus: LoginStatus.LOGGED_OUT,
@@ -132,9 +135,10 @@ function updateState(state: State, payload: ChangeData): State {
 export default function reducer(state: State, action: Action): State {
     const { type, payload } = action;
     switch (type) {
+        case ActionType.setReconnecting:
+            return { ...state, reconnecting: payload };
         case ActionType.setTheme:
             return { ...state, theme: payload.theme };
-            break;
         case ActionType.setLoginStatus:
             return {
                 ...state,
@@ -142,7 +146,7 @@ export default function reducer(state: State, action: Action): State {
                 accountId: payload.accountId,
             };
 
-        case ActionType.initializeState:
+        case ActionType.setState:
             return { ...state, ...payload, initialized: true };
         case ActionType.updateState:
             return updateState(state, payload);

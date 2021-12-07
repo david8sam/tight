@@ -3,6 +3,8 @@ import React, { useReducer, useState } from 'react';
 import { CssBaseline } from '@material-ui/core';
 import { createTheme, ThemeProvider } from '@material-ui/core/styles';
 
+import { WSS_PORT } from 'common/constants';
+
 import Context from './Context';
 import AppContent from './AppContent';
 import reducer, { initialState } from './reducer';
@@ -22,19 +24,20 @@ const DARK_THEME = createTheme({
 
 function App() {
     const [state, dispatch] = useReducer(reducer, initialState);
-    const [webSocketOpen, setWebSocketOpen] = useState(false);
+    const [webSocketInitialized, setWebSocketInitialized] = useState(false);
 
     const { sendData } = useWebSocket({
-        url: `ws://${window.location.hostname}:8080/`,
-        onOpen: () => setWebSocketOpen(true),
+        url: `ws://${window.location.hostname}:${WSS_PORT}/`,
+        onInitialized: () => setWebSocketInitialized(true),
         dispatch,
+        accountId: state.accountId,
     });
 
     return (
         <ThemeProvider theme={state.theme === 'dark' ? DARK_THEME : LIGHT_THEME}>
             <CssBaseline />
             <Context.Provider value={{ state, dispatch, sendData }}>
-                <AppContent loading={!webSocketOpen} />
+                <AppContent loading={!webSocketInitialized || state.reconnecting} />
             </Context.Provider>
         </ThemeProvider>
     );

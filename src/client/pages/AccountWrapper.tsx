@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { ElementType, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
 import { Skeleton } from '@material-ui/lab';
@@ -10,12 +10,12 @@ import { useAppContext } from '../Context';
 import { ActionType } from '../reducer';
 
 export interface AccountWrapperProps {
-    Page: React.ElementType;
+    Page: ElementType;
 }
 
 function AccountWrapper(props: AccountWrapperProps) {
     const { state, dispatch, sendData } = useAppContext();
-    const { initialized, accountsInfo, loginStatus } = state;
+    const { initialized, reconnecting, accountsInfo, loginStatus } = state;
 
     const navigate = useNavigate();
     const params = useParams();
@@ -26,7 +26,12 @@ function AccountWrapper(props: AccountWrapperProps) {
     const isValidPlayer = name ? accountsInfo[name] : false;
 
     useEffect(() => {
-        if (!initialized || loginStatus === LoginStatus.LOGIN_PENDING || loginStatus === LoginStatus.LOGOUT_PENDING) {
+        if (
+            !initialized ||
+            reconnecting ||
+            loginStatus === LoginStatus.LOGIN_PENDING ||
+            loginStatus === LoginStatus.LOGOUT_PENDING
+        ) {
             return;
         }
 
@@ -39,11 +44,13 @@ function AccountWrapper(props: AccountWrapperProps) {
             });
             sendData({ type: MessageType.ACCOUNT_LOGIN, data: { accountId: name } });
         }
-    }, [initialized, name]);
+    }, [initialized, reconnecting, loginStatus, name, isValidPlayer]);
 
+    // TDOD: Render something more useful or just nothing at all?
     // Wait for player to log in
     if (
         !initialized ||
+        reconnecting ||
         !isValidPlayer ||
         loginStatus === LoginStatus.LOGIN_PENDING ||
         loginStatus === LoginStatus.LOGOUT_PENDING
