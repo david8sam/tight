@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 import {
     Divider,
@@ -15,7 +15,15 @@ import {
 } from '@material-ui/core';
 import InfoIcon from '@material-ui/icons/Info';
 
-import { calculateVictoryPoints, Game, GamePlayer, getPlayersInGame } from 'common/Game';
+import {
+    calculateVictoryPoints,
+    Game,
+    GameJoinStatus,
+    GamePlayer,
+    getPlayersInGame,
+    Phase,
+    StrategyCardIndex,
+} from 'common/Game';
 import TextWithTooltip from './TextWithTooltip';
 
 function getPlayerColors(theme: Theme, player: GamePlayer): { color: string; backgroundColor: string } {
@@ -36,6 +44,15 @@ const useStyle = makeStyles(theme => ({
     player: {
         padding: theme.spacing(),
     },
+    turn: {
+        width: '30%',
+    },
+    info: {
+        width: '40%',
+    },
+    round: {
+        width: '30%',
+    },
 }));
 
 export interface GameInfoToolbarProps {
@@ -48,8 +65,29 @@ export default function GameInfoToolbar(props: GameInfoToolbarProps) {
     const classes = useStyle(props);
 
     const { game, onInfoClick } = props;
-    const { creator, numRounds, numVictoryPoints } = game;
-    const playersArray = getPlayersInGame(game);
+    const { creator, numRounds, numVictoryPoints, players, status } = game;
+
+    const playersArray: GamePlayer[] = [];
+    const admins: GamePlayer[] = [];
+    const spectators: GamePlayer[] = [];
+    Object.values(players).forEach(p => {
+        switch (p.joinStatus) {
+            case GameJoinStatus.PLAYER:
+                playersArray.push(p);
+                break;
+            case GameJoinStatus.ADMIN:
+                admins.push(p);
+                break;
+            case GameJoinStatus.SPECTATOR:
+                spectators.push(p);
+                break;
+            default:
+                break;
+        }
+    });
+
+    const adminNames = admins.map(a => a.name);
+    const specatorsNames = spectators.map(s => s.name);
 
     const vpMap = playersArray.reduce((r, p) => {
         r[p.id] = calculateVictoryPoints(game, p.id);
@@ -65,6 +103,18 @@ export default function GameInfoToolbar(props: GameInfoToolbarProps) {
     const [infoOpen, setInfoOpen] = useState(false);
     const infoRef = useRef<HTMLButtonElement>(null);
 
+    const { started, round, phase, turn, pickOrder, pickTurn } = status;
+
+    let playerTurn = null;
+    if (phase === Phase.STRATEGY) {
+        playerTurn = pickOrder[pickTurn];
+    } else if (turn === StrategyCardIndex.END) {
+        playerTurn = 'END';
+    } else {
+        const player = getPlayersInGame(game).find(p => p.strategyCard === turn);
+        playerTurn = player ? player.name : null;
+    }
+
     const onInfoButtonClick: IconButtonProps['onClick'] = e => {
         setInfoOpen(true);
         if (onInfoClick) {
@@ -74,13 +124,27 @@ export default function GameInfoToolbar(props: GameInfoToolbarProps) {
 
     return (
         <Toolbar>
-            <Grid container justifyContent="center" alignItems="center" spacing={1}>
-                <Typography variant="h6">{game.name}</Typography>
-                <Tooltip title="Game Info">
-                    <IconButton ref={infoRef} onClick={onInfoButtonClick}>
-                        <InfoIcon />
-                    </IconButton>
-                </Tooltip>
+            <Grid container justifyContent="center" alignItems="center">
+                {started && (
+                    <Grid item className={classes.turn}>
+                        <TextWithTooltip text={`Turn: ${playerTurn || ''}`} title={playerTurn || ''} />
+                    </Grid>
+                )}
+                <Grid item className={classes.info}>
+                    <Grid container justifyContent="center" alignItems="center">
+                        <Typography variant="h6">{game.name}</Typography>
+                        <Tooltip title="Game Info">
+                            <IconButton ref={infoRef} onClick={onInfoButtonClick}>
+                                <InfoIcon />
+                            </IconButton>
+                        </Tooltip>
+                    </Grid>
+                </Grid>
+                {started && (
+                    <Grid item className={classes.round}>
+                        <Typography align="right">{`Round: ${round}`}</Typography>
+                    </Grid>
+                )}
             </Grid>
             <Popover
                 open={infoOpen}
@@ -112,6 +176,18 @@ export default function GameInfoToolbar(props: GameInfoToolbarProps) {
                                     className={classes.player}
                                 />
                             ))}
+                            {adminNames.length > 0 && (
+                                <>
+                                    <Divider className={classes.divider} />
+                                    <Typography>{`Admins: ${adminNames.join(', ')}`}</Typography>
+                                </>
+                            )}
+                            {specatorsNames.length > 0 && (
+                                <>
+                                    <Divider className={classes.divider} />
+                                    <Typography>{`Spectators: ${specatorsNames.join(', ')}`}</Typography>
+                                </>
+                            )}
                         </>
                     )}
                 </Grid>

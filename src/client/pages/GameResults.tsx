@@ -25,7 +25,7 @@ function GameResults() {
         }
     });
 
-    const onContinueGame = () => sendData({ type: MessageType.END_GAME, data: { gameId, ended: false } });
+    const onResumeGame = () => sendData({ type: MessageType.END_GAME, data: { gameId, ended: false } });
 
     if (!game || !player || !game.status.ended) {
         return null;
@@ -43,8 +43,8 @@ function GameResults() {
             <Toolbar />
             {!isSpectator && (
                 <Toolbar>
-                    <Button fullWidth color="primary" variant="contained" onClick={onContinueGame}>
-                        <Typography>Continue Game</Typography>
+                    <Button fullWidth color="primary" variant="contained" onClick={onResumeGame}>
+                        <Typography>Resume Game</Typography>
                     </Button>
                 </Toolbar>
             )}

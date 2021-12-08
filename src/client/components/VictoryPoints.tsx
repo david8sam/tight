@@ -44,7 +44,7 @@ function VictoryPoints(props: VictoryPointsProps) {
     }
 
     const player = game.players[playerId];
-    const { publicObjectives: gamePOs } = game;
+    const { publicObjectives: gamePOs, status } = game;
     const { color: playerColor, publicObjectives, secretObjective } = player;
 
     const pc = playerColor || '#fff';
@@ -117,7 +117,7 @@ function VictoryPoints(props: VictoryPointsProps) {
                         backgroundColor={backgroundColor}
                         editable
                         disabled={disabled}
-                        allowShowSecret={allowShowSecret || isCurrentPlayer}
+                        allowShowSecret={allowShowSecret || isCurrentPlayer || secretObjective.cleared || status.ended}
                         objective={secretObjective.objective}
                         checked={secretObjective.cleared}
                         onChange={onSecretObjectiveCheck}

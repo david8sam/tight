@@ -31,7 +31,6 @@ import { Accordion, AccordionDetails, AccordionSummary } from '../components/Acc
 import GameInfoToolbar from '../components/GameInfoToolbar';
 import PlayerSetup from '../components/PlayerSetup';
 import SpeakerSelect from '../components/SpeakerSelect';
-import TextWithTooltip from '../components/TextWithTooltip';
 
 import StrategyPhase from '../components/StrategyPhase';
 import ActionPhase from '../components/ActionPhase';
@@ -90,9 +89,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     appBar: {
         top: HEADER_HEIGHT,
     },
-    divider: {
-        height: 2,
-    },
     speakerToolbar: {
         margin: `${theme.spacing(2)}px 0px`,
     },
@@ -110,12 +106,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
     phaseStepPanel: {
         width: '100%',
-    },
-    phaseActions: {
-        width: '50%',
-    },
-    round: {
-        width: '25%',
     },
     stepper: {
         width: '100%',
@@ -179,7 +169,7 @@ function Game() {
 
     const isSpectator = player.joinStatus === GameJoinStatus.SPECTATOR;
 
-    const { round, phase, turn, pickOrder, pickTurn } = statusState;
+    const { round, phase } = statusState;
     const canBack = round > 1 || (round === 1 && phase > Phase.STRATEGY);
     const { canNext, message } = canNextPhase(game);
 
@@ -217,16 +207,6 @@ function Game() {
         sendData({ type: MessageType.END_GAME, data: { gameId } });
         setPending(true);
     };
-
-    let playerTurn = null;
-    if (phase === Phase.STRATEGY) {
-        playerTurn = pickOrder[pickTurn];
-    } else if (turn === StrategyCardIndex.END) {
-        playerTurn = 'END';
-    } else {
-        const player = getPlayersInGame(game).find(p => p.strategyCard === turn);
-        playerTurn = player ? player.name : null;
-    }
 
     let phaseStatus = null;
     if (message) {
@@ -277,45 +257,31 @@ function Game() {
                 >
                     <AccordionSummary disableMargin classes={{ root: classes.statusSummary }}>
                         <Grid container justifyContent="space-between" alignItems="center">
-                            <TextWithTooltip
-                                text={`Turn: ${playerTurn || ''}`}
-                                title={playerTurn || ''}
-                                width="25%"
-                                onClick={e => e.stopPropagation()}
-                            />
-                            <Grid
-                                container
-                                justifyContent="center"
-                                alignItems="center"
-                                classes={{ root: classes.phaseActions }}
-                            >
-                                <Tooltip title={Phase[prevPhase]}>
-                                    <span>
-                                        <IconButton
-                                            disabled={isSpectator || pending || !canBack || phase === Phase.STRATEGY}
-                                            onClick={e => onPhaseClick(e, false)}
-                                        >
-                                            <NavigateBeforeIcon />
-                                        </IconButton>
-                                    </span>
-                                </Tooltip>
-                                {pending ? (
-                                    <CircularProgress size="24" />
-                                ) : (
-                                    <Typography align="center">{`${Phase[phase]}`}</Typography>
-                                )}
-                                <Tooltip title={Phase[nextPhase]}>
-                                    <span>
-                                        <IconButton
-                                            disabled={isSpectator || pending || !canNext || phase === Phase.AGENDA}
-                                            onClick={e => onPhaseClick(e, true)}
-                                        >
-                                            <NavigateNextIcon />
-                                        </IconButton>
-                                    </span>
-                                </Tooltip>
-                            </Grid>
-                            <Typography align="right" className={classes.round}>{`Round: ${round}`}</Typography>
+                            <Tooltip title={Phase[prevPhase]}>
+                                <span>
+                                    <IconButton
+                                        disabled={isSpectator || pending || !canBack || phase === Phase.STRATEGY}
+                                        onClick={e => onPhaseClick(e, false)}
+                                    >
+                                        <NavigateBeforeIcon />
+                                    </IconButton>
+                                </span>
+                            </Tooltip>
+                            {pending ? (
+                                <CircularProgress size="24" />
+                            ) : (
+                                <Typography align="center">{`${Phase[phase]}`}</Typography>
+                            )}
+                            <Tooltip title={Phase[nextPhase]}>
+                                <span>
+                                    <IconButton
+                                        disabled={isSpectator || pending || !canNext || phase === Phase.AGENDA}
+                                        onClick={e => onPhaseClick(e, true)}
+                                    >
+                                        <NavigateNextIcon />
+                                    </IconButton>
+                                </span>
+                            </Tooltip>
                         </Grid>
                     </AccordionSummary>
                     <AccordionDetails classes={{ root: classes.phaseActionDetails }}>

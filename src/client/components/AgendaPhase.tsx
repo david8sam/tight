@@ -12,7 +12,7 @@ import {
     Typography,
 } from '@material-ui/core';
 
-import { GameJoinStatus } from 'common/Game';
+import { calculateVictoryPoints, GameJoinStatus, GamePlayer, getPlayersInGame } from 'common/Game';
 import { MessageType } from 'common/message';
 import { useAppContext } from '../Context';
 import useAccountInfo from '../hooks/useAccountInfo';
@@ -26,6 +26,8 @@ export default function AgendaPhase() {
     if (!game || !player || !playerId) {
         return null;
     }
+
+    const playersArray = getPlayersInGame(game);
 
     const onCustodiansRemoved = (e: React.ChangeEvent<HTMLInputElement>): void => {
         const data: Record<string, unknown> = { gameId, custodiansRemoved: e.target.checked };
@@ -61,6 +63,9 @@ export default function AgendaPhase() {
 
     const isSpectator = player.joinStatus === GameJoinStatus.SPECTATOR;
     const canEndEarly = round < numRounds && !isSpectator;
+
+    const playersAtVp = playersArray.filter(p => calculateVictoryPoints(game, p.id) >= game.numVictoryPoints);
+    const winners = playersAtVp.length ? playersAtVp.map(p => p.name).join(', ') : '';
 
     return (
         <Grid container direction="column">
@@ -98,21 +103,30 @@ export default function AgendaPhase() {
                     <Toolbar />
                     <Toolbar>
                         <Grid container direction="column" spacing={2}>
-                            <Grid item>
-                                <FormControlLabel
-                                    control={
-                                        <Switch
-                                            checked={endGameEarly}
-                                            onChange={e => setEndGameEarly(e.target.checked)}
-                                            color="primary"
-                                        />
-                                    }
-                                    label="End Game Early?"
-                                />
-                            </Grid>
+                            {winners && (
+                                <Grid item>
+                                    <Typography variant="h5">{`${winners} ${
+                                        playersAtVp.length === 1 ? 'has' : 'have'
+                                    } at least ${game.numVictoryPoints} VPs`}</Typography>
+                                </Grid>
+                            )}
+                            {!winners && (
+                                <Grid item>
+                                    <FormControlLabel
+                                        control={
+                                            <Switch
+                                                checked={endGameEarly}
+                                                onChange={e => setEndGameEarly(e.target.checked)}
+                                                color="primary"
+                                            />
+                                        }
+                                        label="End Game Early?"
+                                    />
+                                </Grid>
+                            )}
                             <Grid item>
                                 <Button
-                                    disabled={!endGameEarly}
+                                    disabled={!endGameEarly && !winners}
                                     color="primary"
                                     variant="contained"
                                     fullWidth

@@ -88,7 +88,9 @@ function Results() {
                                 <VictoryPoints
                                     playerId={player.id}
                                     allowShowSecret
-                                    disabled={currentPlayer.joinStatus === GameJoinStatus.SPECTATOR}
+                                    disabled={
+                                        currentPlayer.joinStatus === GameJoinStatus.SPECTATOR || game.status.ended
+                                    }
                                 />
                             </Grid>
                         </Toolbar>
