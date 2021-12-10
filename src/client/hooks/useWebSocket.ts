@@ -87,7 +87,6 @@ export default function useWebSocket(options: WebSocketOptions) {
     const wsRef = useRef<WebSocket | null>(null);
     const initRef = useRef({ initialized: false, initializing: false });
     const retryRef = useRef(0);
-    const messageQueueRef = useRef<Message[]>([]);
 
     const optionsRef = useRef<WebSocketOptions>(options);
     optionsRef.current = options;
@@ -150,17 +149,6 @@ export default function useWebSocket(options: WebSocketOptions) {
     // These callback functions must use refs for passing data since the callbacks are only attached
     // when opening a new connection.
     const onOpen = useCallback(() => {
-        const ws = wsRef.current;
-
-        // Should always exists at this point.
-        if (!ws) {
-            return;
-        }
-
-        // Send out any queued messages to the server.
-        messageQueueRef.current.forEach(msg => sendData({ ws, ...msg }));
-        messageQueueRef.current.length = 0;
-
         // Trigger initialize callback if first time.
         const { dispatch } = optionsRef.current;
         if (!initRef.current.initialized) {
@@ -192,11 +180,7 @@ export default function useWebSocket(options: WebSocketOptions) {
         const ws = wsRef.current;
         const isOpen = ws && ws.readyState === WebSocket.OPEN;
         if (isOpen) {
-            // If web socket is open, can send message to the server.
             sendData({ ws, type, data });
-        } else {
-            // If web socket is not open anymore, queue the message and reopen the connection.
-            messageQueueRef.current.push({ type, data });
         }
     }, []);
 

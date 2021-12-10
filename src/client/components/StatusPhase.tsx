@@ -41,14 +41,10 @@ function StatusPhase() {
                         <PlayerHeader player={player} />
                     </CardContent>
                     <CardContent classes={{ root: classes.cardContent }}>
-                        <Toolbar disableGutters>
-                            <Grid container direction="row" justifyContent="center" alignItems="center">
-                                <VictoryPoints
-                                    playerId={player.id}
-                                    disabled={currentPlayer.joinStatus === GameJoinStatus.SPECTATOR}
-                                />
-                            </Grid>
-                        </Toolbar>
+                        <VictoryPoints
+                            playerId={player.id}
+                            disabled={currentPlayer.joinStatus === GameJoinStatus.SPECTATOR}
+                        />
                     </CardContent>
                 </Card>
             ))}

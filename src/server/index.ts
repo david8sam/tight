@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import cors from 'cors';
 import express, { Request, Response } from 'express';
 import ip from 'ip';
@@ -23,6 +24,7 @@ app.get('*', (req: Request, res: Response) => {
 });
 
 app.listen(port, () => {
-    console.log(`Server running on: http://${ip.address()}`);
+    const ipAddress = chalk.cyanBright(`http://${ip.address()}/`);
+    console.log(`Server running on: ${ipAddress}`);
     console.log(`App listening on port: ${port}`);
 });
