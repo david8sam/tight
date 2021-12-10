@@ -196,7 +196,14 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             if (canAnyoneJoin || canJoinAsPlayer || canJoinAsNonPlayer) {
                 // Add player to the game
                 GameDB.addPlayer(gameId, playerId, otherData);
-                markGameDirty(gameId, { players: [playerId] });
+
+                let status = false;
+                if (!game.status.speaker) {
+                    status = true;
+                    game.status.speaker = playerId;
+                    game.status.pickOrder[0] = playerId;
+                }
+                markGameDirty(gameId, { players: [playerId], status });
 
                 const account = AccountDB.getAccount(playerId);
                 if (account) {
@@ -219,7 +226,19 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
                 const deletePlayer = data.deletePlayer || !game.status.started || isNonGamePlayer;
 
                 GameDB.removePlayer(gameId, playerId, deletePlayer);
-                markGameDirty(gameId, { players: [playerId] });
+
+                // Update game setup when a player leaves before game starts.
+                let status = false;
+                if (!game.status.started && !isNonGamePlayer) {
+                    status = true;
+
+                    game.status.pickOrder = game.status.pickOrder.filter(id => game.players[id]);
+                    if (gamePlayer.id === game.status.speaker) {
+                        game.status.speaker = game.status.pickOrder[0];
+                    }
+                }
+
+                markGameDirty(gameId, { players: [playerId], status });
             }
 
             const account = AccountDB.getAccount(playerId);

@@ -3,7 +3,10 @@ import { Dispatch, useCallback, useEffect, useRef } from 'react';
 import { LoginStatus } from 'common/Account';
 import { Message, MessageType } from 'common/message';
 
-import { Action, ActionType } from '../reducer';
+import { Action, ActionType, State } from '../reducer';
+
+const RETRY_LIMIT = 5;
+const RETRY_INTERVAL = 3000;
 
 export interface SendDataFunction {
     ({ type, data }: { type: MessageType; data?: any }): void;
@@ -53,70 +56,96 @@ function sendData({ ws, type, data }: { ws: WebSocket; type: MessageType; data?:
 type OpenConnectionParams = {
     url: string;
     onOpen: WebSocket['onopen'];
+    onClose: WebSocket['onclose'];
     onMessage: WebSocket['onmessage'];
+    onError: WebSocket['onerror'];
 };
 
-function openConnection({ url, onOpen, onMessage }: OpenConnectionParams): WebSocket {
+function openConnection({ url, onOpen, onClose, onMessage, onError }: OpenConnectionParams): WebSocket | null {
     // Create new connection to the server
-    const ws = new WebSocket(url);
-    ws.onopen = onOpen;
-    ws.onmessage = onMessage;
+    let ws = null;
+    try {
+        ws = new WebSocket(url);
+        ws.onopen = onOpen;
+        ws.onmessage = onMessage;
+        ws.onclose = onClose;
+        ws.onerror = onError;
+    } catch (e) {
+        console.error(e);
+    }
 
     return ws;
 }
 
-export default function useWebSocket({
-    url,
-    onInitialized,
-    dispatch,
-    accountId,
-}: {
+export interface WebSocketOptions {
     url: string;
-    onInitialized: () => void;
     dispatch: Dispatch<Action>;
-    accountId: string | null;
-}) {
+    state: State;
+}
+
+export default function useWebSocket(options: WebSocketOptions) {
     const wsRef = useRef<WebSocket | null>(null);
+    const initRef = useRef({ initialized: false, initializing: false });
+    const retryRef = useRef(0);
     const messageQueueRef = useRef<Message[]>([]);
 
-    const initializedRef = useRef(false);
-    const onInitializedRef = useRef(onInitialized);
-    onInitializedRef.current = onInitialized;
+    const optionsRef = useRef<WebSocketOptions>(options);
+    optionsRef.current = options;
 
-    const dispatchRef = useRef(dispatch);
-    dispatchRef.current = dispatch;
+    const connect = useCallback(() => {
+        if (document.visibilityState !== 'visible') {
+            return;
+        }
 
-    const accountIdRef = useRef(accountId);
-    accountIdRef.current = accountId;
-
-    // When a device sleeps/moves the browser to the background, it will close web socket connections.
-    // Reconnect when the page becomes visible/active again.
-    useEffect(() => {
-        const reconnect = () => {
-            if (document.visibilityState !== 'visible') {
-                return;
-            }
-
+        const { state, dispatch, url } = optionsRef.current;
+        if (retryRef.current < RETRY_LIMIT) {
             const ws = wsRef.current;
-            if (ws && (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING)) {
-                dispatchRef.current({ type: ActionType.setReconnecting, payload: true });
+            if (!ws || ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
+                dispatch({ type: ActionType.setConnecting, payload: { connecting: true, connectError: false } });
 
-                const acctId = accountIdRef.current;
-                const queryParam = `?reconnect=${acctId ?? 'anonymous'}`;
-                wsRef.current = openConnection({ url: `${url}${queryParam}`, onOpen, onMessage });
+                const queryParam = initRef.current.initialized ? `?reconnect=${state.accountId ?? 'anonymous'}` : '';
+                wsRef.current = openConnection({ url: `${url}${queryParam}`, onOpen, onClose, onMessage, onError });
             }
-        };
+        }
 
-        document.addEventListener('visibilitychange', reconnect);
+        if (wsRef.current?.readyState === WebSocket.OPEN) {
+            retryRef.current = 0;
+        } else {
+            if (retryRef.current < RETRY_LIMIT) {
+                retryRef.current += 1;
+                setTimeout(connect, RETRY_INTERVAL);
+            } else if (retryRef.current === RETRY_LIMIT) {
+                dispatch({ type: ActionType.setConnecting, payload: { connecting: false, connectError: true } });
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        // When a device sleeps/moves the browser to the background, it will close web socket connections.
+        // Reconnect when the page becomes visible/active again.
+        document.addEventListener('visibilitychange', connect);
+
+        if (!initRef.current.initialized && !initRef.current.initializing) {
+            initRef.current.initializing = true;
+            connect();
+        }
 
         return () => {
             if (wsRef.current) {
                 wsRef.current.close();
             }
 
-            document.removeEventListener('visibilitychange', reconnect);
+            document.removeEventListener('visibilitychange', connect);
         };
     }, []);
+
+    useEffect(() => {
+        if (options.state.reconnect) {
+            retryRef.current = 0;
+            options.dispatch({ type: ActionType.setConnecting, payload: { reconnect: false } });
+            connect();
+        }
+    }, [options.state.reconnect]);
 
     // These callback functions must use refs for passing data since the callbacks are only attached
     // when opening a new connection.
@@ -133,19 +162,30 @@ export default function useWebSocket({
         messageQueueRef.current.length = 0;
 
         // Trigger initialize callback if first time.
-        if (!initializedRef.current) {
-            initializedRef.current = true;
-            onInitializedRef.current();
+        const { dispatch } = optionsRef.current;
+        if (!initRef.current.initialized) {
+            initRef.current.initialized = true;
+            initRef.current.initializing = false;
         }
 
-        dispatchRef.current({ type: ActionType.setReconnecting, payload: false });
+        dispatch({ type: ActionType.setConnecting, payload: { connecting: false, connectError: false } });
     }, []);
 
-    const onMessage = useCallback((e: MessageEvent) => onWebSocketMessage(dispatchRef.current, e), []);
+    const onClose = useCallback((e: CloseEvent) => {
+        const { initialized, connecting, connectError } = optionsRef.current.state;
+        if (!e.wasClean && initialized && !connecting && !connectError) {
+            connect();
+        }
+    }, []);
 
-    if (!wsRef.current) {
-        wsRef.current = openConnection({ url, onOpen, onMessage });
-    }
+    const onMessage = useCallback((e: MessageEvent) => onWebSocketMessage(optionsRef.current.dispatch, e), []);
+
+    const onError = useCallback((e: Event) => {
+        const ws = wsRef.current;
+        if (ws?.readyState === WebSocket.CONNECTING) {
+            console.log('Error connecting web socket');
+        }
+    }, []);
 
     // Only generate this function once. Should only rely on refs.
     const sd: SendDataFunction = useCallback(({ type, data }: Message): void => {

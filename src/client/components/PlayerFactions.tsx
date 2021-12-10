@@ -1,8 +1,6 @@
 import React from 'react';
 import { Table, TableHead, TableBody, TableRow, TableCell } from '@material-ui/core';
 
-import { GamePlayer, getPlayersInGame } from 'common/Game';
-
 import useAccountInfo from '../hooks/useAccountInfo';
 import PlayerFactionForm from './PlayerFactionForm';
 
@@ -17,7 +15,7 @@ function PlayerFactions(props: PlayerFactionsProps) {
     }
 
     const { disabled = false } = props;
-    const joinedPlayers = getPlayersInGame(game);
+    const { players, status } = game;
 
     return (
         <Table>
@@ -27,10 +25,10 @@ function PlayerFactions(props: PlayerFactionsProps) {
                 </TableRow>
             </TableHead>
             <TableBody>
-                {joinedPlayers.map((p: GamePlayer) => (
-                    <TableRow key={p.id}>
+                {status.pickOrder.map(id => (
+                    <TableRow key={id}>
                         <TableCell>
-                            <PlayerFactionForm disabled={disabled} player={p} />
+                            <PlayerFactionForm disabled={disabled} player={players[id]} />
                         </TableCell>
                     </TableRow>
                 ))}

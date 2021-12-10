@@ -25,7 +25,7 @@ import { getHomeDir } from '../appData';
 import { Planets } from './planet';
 
 const GAMES_FILE = path.join(getHomeDir(), 'games.json');
-console.log(`games file: ${GAMES_FILE}`);
+// console.log(`games file: ${GAMES_FILE}`);
 
 // Map of all games
 let _games: GameMap = {};

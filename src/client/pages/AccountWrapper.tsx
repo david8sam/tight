@@ -15,7 +15,7 @@ export interface AccountWrapperProps {
 
 function AccountWrapper(props: AccountWrapperProps) {
     const { state, dispatch, sendData } = useAppContext();
-    const { initialized, reconnecting, accountsInfo, loginStatus } = state;
+    const { initialized, accountsInfo, loginStatus } = state;
 
     const navigate = useNavigate();
     const params = useParams();
@@ -23,19 +23,17 @@ function AccountWrapper(props: AccountWrapperProps) {
     const { Page } = props;
     const name = params.id;
 
-    const isValidPlayer = name ? accountsInfo[name] : false;
+    const isValidPlayer = name ? Boolean(accountsInfo[name]) : false;
+
+    const cannotRender =
+        !initialized || loginStatus === LoginStatus.LOGIN_PENDING || loginStatus === LoginStatus.LOGOUT_PENDING;
 
     useEffect(() => {
-        if (
-            !initialized ||
-            reconnecting ||
-            loginStatus === LoginStatus.LOGIN_PENDING ||
-            loginStatus === LoginStatus.LOGOUT_PENDING
-        ) {
+        if (cannotRender) {
             return;
         }
 
-        if (!name || !isValidPlayer) {
+        if (!isValidPlayer) {
             navigate('/');
         } else if (name && loginStatus === LoginStatus.LOGGED_OUT) {
             dispatch({
@@ -44,17 +42,11 @@ function AccountWrapper(props: AccountWrapperProps) {
             });
             sendData({ type: MessageType.ACCOUNT_LOGIN, data: { accountId: name } });
         }
-    }, [initialized, reconnecting, loginStatus, name, isValidPlayer]);
+    }, [initialized, loginStatus, name, isValidPlayer]);
 
     // TDOD: Render something more useful or just nothing at all?
     // Wait for player to log in
-    if (
-        !initialized ||
-        reconnecting ||
-        !isValidPlayer ||
-        loginStatus === LoginStatus.LOGIN_PENDING ||
-        loginStatus === LoginStatus.LOGOUT_PENDING
-    ) {
+    if (cannotRender || !isValidPlayer) {
         return <Skeleton variant="rect" height="100%" />;
     }
 

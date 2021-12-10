@@ -13,23 +13,10 @@ import GameInfoToolbar from './GameInfoToolbar';
 
 type SetupStepType = 0 | 1;
 
-const SETUP_STEPS: React.ComponentType<any>[] = [PlayerFactions, PlayerOrder];
+const SETUP_STEPS: React.ComponentType<any>[] = [PlayerOrder, PlayerFactions];
 
 function canNext(game: Game): boolean {
     if (!game) {
-        return false;
-    }
-
-    // Make sure every player has unique selected a color and faction.
-    const players = getPlayersInGame(game);
-    const colors = uniq(players.filter(p => Boolean(p.color)).map(p => p.color));
-    const factions = uniq(players.filter(p => Boolean(p.faction)).map(p => p.faction));
-
-    return players.length === colors.length && players.length === factions.length;
-}
-
-function canStart(game: Game): boolean {
-    if (!game || !canNext(game)) {
         return false;
     }
 
@@ -39,6 +26,19 @@ function canStart(game: Game): boolean {
     const players = getPlayersInGame(game);
 
     return Boolean(speaker) && po.length === Object.keys(players).length && po.every(p => Boolean(p));
+}
+
+function canStart(game: Game): boolean {
+    if (!game || !canNext(game)) {
+        return false;
+    }
+
+    // Make sure every player has unique selected a color and faction.
+    const players = getPlayersInGame(game);
+    const colors = uniq(players.filter(p => Boolean(p.color)).map(p => p.color));
+    const factions = uniq(players.filter(p => Boolean(p.faction)).map(p => p.faction));
+
+    return players.length === colors.length && players.length === factions.length;
 }
 
 function PlayerSetup() {
@@ -65,7 +65,7 @@ function PlayerSetup() {
     };
 
     const SetupComponent = SETUP_STEPS[step];
-    let nextLabel = step === 0 ? 'Next >' : 'Start';
+    let nextLabel = step === 0 ? 'Next' : 'Start';
     if (starting) {
         nextLabel = 'Cancel';
     }
@@ -78,11 +78,13 @@ function PlayerSetup() {
             <GameInfoToolbar game={game} />
             <Toolbar>
                 <Grid container justifyContent="space-between" alignItems="center" wrap="nowrap">
-                    <Grid container wrap="nowrap">
-                        <Button disabled={step === 0} color="primary" variant="contained" onClick={() => setStep(0)}>
-                            {`< Back`}
-                        </Button>
-                    </Grid>
+                    {step > 0 && (
+                        <Grid container wrap="nowrap">
+                            <Button color="primary" variant="contained" onClick={() => setStep(0)}>
+                                {`Back`}
+                            </Button>
+                        </Grid>
+                    )}
                     <Grid container justifyContent="flex-end" alignItems="center" spacing={1}>
                         {starting ? (
                             <Grid item>

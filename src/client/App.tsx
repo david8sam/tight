@@ -24,20 +24,18 @@ const DARK_THEME = createTheme({
 
 function App() {
     const [state, dispatch] = useReducer(reducer, initialState);
-    const [webSocketInitialized, setWebSocketInitialized] = useState(false);
 
     const { sendData } = useWebSocket({
         url: `ws://${window.location.hostname}:${WSS_PORT}/`,
-        onInitialized: () => setWebSocketInitialized(true),
         dispatch,
-        accountId: state.accountId,
+        state,
     });
 
     return (
         <ThemeProvider theme={state.theme === 'dark' ? DARK_THEME : LIGHT_THEME}>
             <CssBaseline />
             <Context.Provider value={{ state, dispatch, sendData }}>
-                <AppContent loading={!webSocketInitialized || state.reconnecting} />
+                <AppContent />
             </Context.Provider>
         </ThemeProvider>
     );

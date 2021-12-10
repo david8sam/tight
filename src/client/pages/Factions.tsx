@@ -2,8 +2,8 @@ import React, { ChangeEvent, useEffect, useState } from 'react';
 
 import { AppBar, Button, Grid, IconButton, Theme, Toolbar, Tooltip, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
-import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
+import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
+import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 
 import { Faction } from 'common/Faction';
 import { MessageType } from 'common/message';
@@ -94,7 +94,7 @@ function Factions() {
                 <Toolbar classes={{ root: classes.toolbar }} disableGutters>
                     <Tooltip title={prevFaction}>
                         <IconButton onClick={() => onFactionChange(prevFaction)}>
-                            <ArrowBackIcon />
+                            <NavigateBeforeIcon />
                         </IconButton>
                     </Tooltip>
                     <FactionSelect
@@ -105,7 +105,7 @@ function Factions() {
                     />
                     <Tooltip title={nextFaction}>
                         <IconButton onClick={() => onFactionChange(nextFaction)}>
-                            <ArrowForwardIcon />
+                            <NavigateNextIcon />
                         </IconButton>
                     </Tooltip>
                 </Toolbar>

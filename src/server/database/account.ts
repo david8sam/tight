@@ -6,7 +6,7 @@ import { Account, AccountMap, AccountSettings, BaseAccountMap, DEFAULT_SETTINGS 
 import { getHomeDir } from '../appData';
 
 const ACCOUNTS_FILE = path.join(getHomeDir(), 'accounts.json');
-console.log(`accounts file: ${ACCOUNTS_FILE}`);
+// console.log(`accounts file: ${ACCOUNTS_FILE}`);
 
 let _accounts: AccountMap = {};
 

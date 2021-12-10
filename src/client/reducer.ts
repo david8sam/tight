@@ -5,7 +5,7 @@ import { Account, AppTheme, BaseAccountMap, LoginStatus } from 'common/Account';
 import { ChangeData } from 'common/message';
 
 export enum ActionType {
-    setReconnecting,
+    setConnecting,
     setTheme,
     setLoginStatus,
     setState,
@@ -16,7 +16,9 @@ export enum ActionType {
 export interface State {
     // Client Data
     initialized: boolean;
-    reconnecting: boolean;
+    connecting: boolean;
+    connectError: boolean;
+    reconnect: boolean;
     theme: AppTheme;
     accountId: string | null;
     loginStatus: LoginStatus;
@@ -41,7 +43,9 @@ export interface Action {
 export const initialState: State = {
     // Client data
     initialized: false,
-    reconnecting: false,
+    connecting: false,
+    connectError: false,
+    reconnect: false,
     theme: 'light',
     accountId: null,
     loginStatus: LoginStatus.LOGGED_OUT,
@@ -129,14 +133,24 @@ function updateState(state: State, payload: ChangeData): State {
     return newState;
 }
 
+function validateState(state: State): State {
+    const { accountId, accountsInfo } = state;
+    if (accountId && !accountsInfo[accountId]) {
+        state.accountId = null;
+        state.loginStatus = LoginStatus.LOGGED_OUT;
+    }
+
+    return state;
+}
+
 /**
  * Reducer function to handle dispatched actions
  */
 export default function reducer(state: State, action: Action): State {
     const { type, payload } = action;
     switch (type) {
-        case ActionType.setReconnecting:
-            return { ...state, reconnecting: payload };
+        case ActionType.setConnecting:
+            return { ...state, ...payload };
         case ActionType.setTheme:
             return { ...state, theme: payload.theme };
         case ActionType.setLoginStatus:
@@ -147,7 +161,7 @@ export default function reducer(state: State, action: Action): State {
             };
 
         case ActionType.setState:
-            return { ...state, ...payload, initialized: true };
+            return validateState({ ...state, ...payload, initialized: true });
         case ActionType.updateState:
             return updateState(state, payload);
 
