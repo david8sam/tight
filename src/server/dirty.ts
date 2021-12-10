@@ -50,10 +50,48 @@ export function markAccountDirty(id: string) {
 // Helper to mark parts of a Game object to be broadcasted out.
 export function markGameDirty(
     gameId: string,
-    dirtyParts: DirtyGameParts = { created: false, deleted: false, status: true, planets: true, players: true },
+    dirtyParts: DirtyGameParts | undefined = {
+        created: false,
+        deleted: false,
+        status: true,
+        planets: true,
+        players: true,
+        publicObjectives: true,
+    },
 ) {
-    const data = dirty.games[gameId];
-    dirty.games[gameId] = { ...data, ...dirtyParts };
+    const prevDirtyParts = dirty.games[gameId];
+
+    // Game is deleted, don't process any other dirty flags
+    if (prevDirtyParts?.deleted || dirtyParts.deleted) {
+        dirty.games[gameId] = { deleted: true };
+        return;
+    }
+
+    let { planets, players, ...otherDirtyParts } = dirtyParts;
+    if (prevDirtyParts && planets && Array.isArray(planets)) {
+        if (prevDirtyParts.planets === true) {
+            // All planets were dirty, keep them all marked
+            planets = true;
+        } else if (Array.isArray(prevDirtyParts.planets)) {
+            // Some planets were marked dirty, merge with newly marked planets
+            planets = [...prevDirtyParts.planets, ...planets];
+        }
+    } else if (!planets && prevDirtyParts?.planets) {
+        // Keep previous dirty flag
+        planets = prevDirtyParts.planets;
+    }
+
+    if (prevDirtyParts && players && Array.isArray(players)) {
+        if (prevDirtyParts.players === true) {
+            players = true;
+        } else if (Array.isArray(prevDirtyParts.players)) {
+            players = [...prevDirtyParts.players, ...players];
+        }
+    } else if (!players && prevDirtyParts?.players) {
+        players = prevDirtyParts.players;
+    }
+
+    dirty.games[gameId] = { ...prevDirtyParts, ...otherDirtyParts, planets, players };
 }
 
 export function getDirtyGameData(): GameChangeDataMap | null {

@@ -11,6 +11,7 @@ import {
     GamePlanet,
     GamePlanetMap,
     GamePlayerMap,
+    GameSetupStep,
     generateBlankObjective,
     Objective,
     Phase,
@@ -87,6 +88,7 @@ export function createGame({
         planets: cloneDeep(DEFAULT_GAME_PLANETS) as GamePlanetMap,
         publicObjectives,
         status: {
+            setupStep: GameSetupStep.ORDER,
             started: false,
             ended: false,
             round: 1,

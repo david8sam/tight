@@ -255,9 +255,10 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             break;
 
         case MessageType.GAME_STATUS_SET: {
-            const { phase, turn, pickOrder, pickTurn } = data;
+            const { setupStep, phase, turn, pickOrder, pickTurn } = data;
             const { status } = game;
 
+            status.setupStep = !isNil(setupStep) ? setupStep : status.setupStep;
             status.phase = !isNil(phase) ? phase : status.phase;
             status.turn = !isNil(turn) ? turn : status.turn;
 

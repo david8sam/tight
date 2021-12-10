@@ -123,6 +123,7 @@ function Game() {
     const navigate = useNavigate();
 
     const [statusState, setStatusState] = useState<GameStatus>({
+        setupStep: 0,
         started: true,
         ended: false,
         round: 1,

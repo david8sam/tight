@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import uniq from 'lodash/uniq';
 import { Button, CircularProgress, Grid, Toolbar } from '@material-ui/core';
 
-import { Game, GameJoinStatus, getPlayersInGame } from 'common/Game';
+import { Game, GameJoinStatus, GameSetupStep, getPlayersInGame } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
@@ -10,8 +10,6 @@ import useAccountInfo from '../hooks/useAccountInfo';
 import PlayerFactions from './PlayerFactions';
 import PlayerOrder from './PlayerOrder';
 import GameInfoToolbar from './GameInfoToolbar';
-
-type SetupStepType = 0 | 1;
 
 const SETUP_STEPS: React.ComponentType<any>[] = [PlayerOrder, PlayerFactions];
 
@@ -45,12 +43,19 @@ function PlayerSetup() {
     const { sendData } = useAppContext();
     const { gameId, game, player, playerId } = useAccountInfo();
 
-    const [starting, setStarting] = useState(false);
-    const [step, setStep] = useState<SetupStepType>(0);
+    const [pending, setPending] = useState(false);
 
     useEffect(() => {
-        if (starting && game && game.status.started) {
-            setStarting(false);
+        if (!pending || !game) {
+            return;
+        }
+
+        if (!game.status.started && game.status.setupStep === GameSetupStep.FACTION) {
+            // Moved to next step
+            setPending(false);
+        } else if (game.status.started) {
+            // Game has stared
+            setPending(false);
         }
     });
 
@@ -58,19 +63,26 @@ function PlayerSetup() {
         return null;
     }
 
+    const step = game.status.setupStep;
+
+    const onSetupStepChange = (setupStep: GameSetupStep) => {
+        setPending(!pending);
+        sendData({ type: MessageType.GAME_STATUS_SET, data: { gameId, setupStep } });
+    };
+
     const onStartClick = () => {
-        const start = !starting;
-        setStarting(start);
+        const start = !pending;
+        setPending(!pending);
         sendData({ type: start ? MessageType.START_GAME : MessageType.STOP_GAME, data: { gameId } });
     };
 
     const SetupComponent = SETUP_STEPS[step];
     let nextLabel = step === 0 ? 'Next' : 'Start';
-    if (starting) {
+    if (pending && step === 1) {
         nextLabel = 'Cancel';
     }
 
-    const disableNext = step === 0 ? !canNext(game) : starting || !canStart(game);
+    const disableNext = step === 0 ? !canNext(game) : pending || !canStart(game);
     const isSpectator = player.joinStatus === GameJoinStatus.SPECTATOR;
 
     return (
@@ -80,13 +92,13 @@ function PlayerSetup() {
                 <Grid container justifyContent="space-between" alignItems="center" wrap="nowrap">
                     {step > 0 && (
                         <Grid container wrap="nowrap">
-                            <Button color="primary" variant="contained" onClick={() => setStep(0)}>
+                            <Button color="primary" variant="contained" onClick={() => onSetupStepChange(0)}>
                                 {`Back`}
                             </Button>
                         </Grid>
                     )}
                     <Grid container justifyContent="flex-end" alignItems="center" spacing={1}>
-                        {starting ? (
+                        {pending ? (
                             <Grid item>
                                 <CircularProgress size={24} />
                             </Grid>
@@ -95,8 +107,8 @@ function PlayerSetup() {
                             <Button
                                 color="primary"
                                 variant="contained"
-                                disabled={disableNext || (step === 1 && isSpectator)}
-                                onClick={step === 1 ? onStartClick : () => setStep(1)}
+                                disabled={disableNext || (step === 1 && isSpectator) || (pending && step === 0)}
+                                onClick={step === 1 ? onStartClick : () => onSetupStepChange(1)}
                             >
                                 {nextLabel}
                             </Button>
@@ -104,7 +116,7 @@ function PlayerSetup() {
                     </Grid>
                 </Grid>
             </Toolbar>
-            {SetupComponent ? <SetupComponent disabled={starting} /> : null}
+            {SetupComponent ? <SetupComponent disabled={pending} /> : null}
         </>
     );
 }

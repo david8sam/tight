@@ -68,7 +68,13 @@ export const StrategyCardsWithVersions = Object.freeze({
     [StrategyCardIndex.CONSTRUCTION]: [StrategyCardIndex.CONSTRUCTION_2],
 });
 
+export enum GameSetupStep {
+    ORDER = 0,
+    FACTION,
+}
+
 export interface GameStatus {
+    setupStep: GameSetupStep;
     started: boolean;
     ended: boolean;
     round: number;
