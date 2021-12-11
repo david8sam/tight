@@ -32,14 +32,16 @@ export function logWS(
     const typeMsg = chalk.magenta(type);
 
     let logData = '';
-    if (!send) {
-        logData = isDev ? data : chalk.green(JSON.stringify(data));
-    } else if (isDev) {
-        logData = process.env.LOG_LEVEL === 'debug' ? data : Object.keys(data);
-    }
+    if (data) {
+        if (!send) {
+            logData = isDev ? data : chalk.green(JSON.stringify(data));
+        } else if (isDev) {
+            logData = process.env.LOG_LEVEL === 'debug' ? data : Object.keys(data);
+        }
 
-    if (typeof logData !== 'string' && Object.keys(data).length === 0) {
-        logData = '';
+        if (typeof logData !== 'string' && Object.keys(data).length === 0) {
+            logData = '';
+        }
     }
 
     console.log(`${formatTime()} ${message} ${typeMsg}${isDev && logData ? '\n' : ''}`, logData);

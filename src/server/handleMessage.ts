@@ -89,7 +89,11 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             if (account && account.joinedGame) {
                 const game = GameDB.getGame(account.joinedGame);
                 if (game) {
-                    game.players[accountId].joined = false;
+                    if (game.players[accountId].joinStatus === GameJoinStatus.PLAYER) {
+                        game.players[accountId].joined = false;
+                    } else {
+                        GameDB.removePlayer(gameId, accountId, true);
+                    }
                     markGameDirty(game.id, { players: [accountId] });
                 }
             }
