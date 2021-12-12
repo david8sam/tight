@@ -83,7 +83,7 @@ export enum MessageType {
     // data: { publicObjectives: boolean[] }
     PLAYER_SET_PUBLIC_OBJECTIVES = '/player/setPublicObjective',
 
-    // data: { secretObjective: { cleared: boolean; objective: Objective } }
+    // data: { secretObjectives: { cleared: boolean; objective: Objective }[] }
     PLAYER_SET_SECRET_OBJECTIVE = './player/setSecretObjective',
 
     // Fluid victory points that can be gained/lost between game rounds. (i.e markers, agenda, etc...)

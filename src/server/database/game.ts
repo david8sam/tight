@@ -15,7 +15,7 @@ import {
     generateBlankObjective,
     Objective,
     Phase,
-    SECRET_OBJECTIVE_ID,
+    SECRET_OBJECTIVE_IDS,
     StrategyCardIndex,
     Version,
 } from 'common/Game';
@@ -160,7 +160,10 @@ export function addPlayer(gameId: string, playerId: string | string[], options?:
                 passed: false,
                 planets: [],
                 publicObjectives: [],
-                secretObjective: { cleared: false, objective: generateBlankObjective(SECRET_OBJECTIVE_ID) },
+                secretObjectives: SECRET_OBJECTIVE_IDS.map(id => ({
+                    cleared: false,
+                    objective: generateBlankObjective(id),
+                })),
                 victoryPoints: 0,
             };
         } else {

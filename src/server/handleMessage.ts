@@ -432,7 +432,7 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             break;
 
         case MessageType.PLAYER_SET_SECRET_OBJECTIVE:
-            player.secretObjective = data.secretObjective;
+            player.secretObjectives = data.secretObjectives;
             markGameDirty(gameId, { players: [playerId] });
             break;
 

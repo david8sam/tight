@@ -119,7 +119,7 @@ export interface GamePlayer {
     passed: boolean;
 
     planets: string[];
-    secretObjective: { cleared: boolean; objective: Objective };
+    secretObjectives: { cleared: boolean; objective: Objective }[];
     publicObjectives: boolean[]; // index === Objective.id - 1
     victoryPoints: number; // additional from other game mechanics, does not include objectives
 }
@@ -132,7 +132,8 @@ export interface Objective {
     vp: number;
 }
 
-export const SECRET_OBJECTIVE_ID = -999;
+// Each player can have up to 3 secret objectives
+export const SECRET_OBJECTIVE_IDS = [-1, -2, -3];
 
 export interface Game {
     readonly id: string;
@@ -266,10 +267,10 @@ export function strategyCardHasOwner(stratCardOwners: string[], initiative: numb
 export function calculateVictoryPoints(game: Game, playerId: string) {
     const player = game.players[playerId];
     const { publicObjectives: gamePOs } = game;
-    const { publicObjectives, secretObjective, victoryPoints } = player;
+    const { publicObjectives, secretObjectives, victoryPoints } = player;
 
     const povp = publicObjectives.reduce((total, po, i) => total + (po === true ? gamePOs[i].vp : 0), 0);
-    const sovp = secretObjective.cleared === true ? secretObjective.objective.vp : 0;
+    const sovp = secretObjectives.reduce((total, so, i) => total + (so.cleared ? so.objective.vp : 0), 0);
     const totalvp = povp + sovp + victoryPoints;
 
     return totalvp;

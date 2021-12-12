@@ -1,7 +1,7 @@
 import React from 'react';
 import { Grid, Toolbar, Typography } from '@material-ui/core';
 
-import { GameJoinStatus, Objective as ObjectiveType } from 'common/Game';
+import { GameJoinStatus, Objective as ObjectiveType, SECRET_OBJECTIVE_IDS } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
@@ -21,7 +21,7 @@ function StrategyCards() {
         return null;
     }
 
-    const { secretObjective } = player;
+    const { secretObjectives } = player;
 
     const onPublicObjectivesChange = (publicObjectives: ObjectiveType[]) => {
         sendData({
@@ -31,13 +31,14 @@ function StrategyCards() {
     };
 
     const onSecretObjectiveChange = (objective: ObjectiveType) => {
-        const originalObjective = secretObjective.objective;
+        const so = secretObjectives[-objective.id - 1];
+        so.objective = objective;
         sendData({
             type: MessageType.PLAYER_SET_SECRET_OBJECTIVE,
             data: {
                 gameId,
                 playerId,
-                secretObjective: { ...secretObjective, objective: { ...originalObjective, ...objective } },
+                secretObjectives,
             },
         });
     };
@@ -61,15 +62,18 @@ function StrategyCards() {
                 <>
                     <Toolbar>
                         <Grid container justifyContent="center">
-                            <Typography variant="h6">My Secret Objective</Typography>
+                            <Typography variant="h6">My Secret Objectives</Typography>
                         </Grid>
                     </Toolbar>
                     <Grid item>
-                        <Objective
-                            editable={editable}
-                            objective={secretObjective.objective}
-                            onChange={onSecretObjectiveChange}
-                        />
+                        {secretObjectives.map(so => (
+                            <Objective
+                                key={so.objective.id}
+                                editable={editable}
+                                objective={so.objective}
+                                onChange={onSecretObjectiveChange}
+                            />
+                        ))}
                     </Grid>
                 </>
             )}

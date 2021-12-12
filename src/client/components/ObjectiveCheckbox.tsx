@@ -15,7 +15,7 @@ import {
     Typography,
 } from '@material-ui/core';
 
-import { Objective, SECRET_OBJECTIVE_ID } from 'common/Game';
+import { Objective } from 'common/Game';
 import ObjectiveForm from './ObjectiveForm';
 
 interface ObjectiveCheckboxProps {
@@ -46,7 +46,7 @@ function ObjectiveCheckbox(props: ObjectiveCheckboxProps) {
         backgroundColor,
     } = props;
     const { id } = objective;
-    const isSecret = id === SECRET_OBJECTIVE_ID;
+    const isSecret = id < 0;
 
     const [editObjective, setEditObjective] = useState<Objective>({ ...objective });
 
@@ -87,7 +87,7 @@ function ObjectiveCheckbox(props: ObjectiveCheckboxProps) {
                 label={
                     <IconButton ref={buttonRef} onClick={onInfoOpen}>
                         <Avatar style={{ color, backgroundColor }}>
-                            <Typography>{id === SECRET_OBJECTIVE_ID ? 'S' : id}</Typography>
+                            <Typography>{id < 0 ? `S${-id}` : id}</Typography>
                         </Avatar>
                     </IconButton>
                 }

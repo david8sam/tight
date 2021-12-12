@@ -6,7 +6,7 @@ import EditIcon from '@material-ui/icons/Edit';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { makeStyles } from '@material-ui/styles';
 
-import { calculateVictoryPoints, GamePlayer, getPlayersInGame, Objective, SECRET_OBJECTIVE_ID } from 'common/Game';
+import { calculateVictoryPoints, GamePlayer, getPlayersInGame, Objective } from 'common/Game';
 
 import useAccountInfo from '../hooks/useAccountInfo';
 
@@ -64,7 +64,7 @@ export default function Objective(props: ObjectiveProps) {
 
     const { game } = useAccountInfo();
     const players: GamePlayer[] = [];
-    if (showPlayers && game && id !== SECRET_OBJECTIVE_ID) {
+    if (showPlayers && game && id > -1) {
         getPlayersInGame(game).forEach(p => {
             if (p.publicObjectives[id - 1] === true) {
                 players.push(p);
@@ -102,7 +102,7 @@ export default function Objective(props: ObjectiveProps) {
                 >
                     <Grid container direction="column">
                         <Toolbar className={classes.toolbar} disableGutters>
-                            <Typography>{`Objective ${id === SECRET_OBJECTIVE_ID ? 'S' : id} (${vp} VP)`}</Typography>
+                            <Typography>{`Objective ${id < 0 ? `S${-id}` : id} (${vp} VP)`}</Typography>
                             {deletable && (
                                 <Tooltip title="Delete">
                                     <IconButton onClick={onDeleteClick}>

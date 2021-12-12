@@ -45,7 +45,7 @@ function VictoryPoints(props: VictoryPointsProps) {
 
     const player = game.players[playerId];
     const { publicObjectives: gamePOs, status } = game;
-    const { color: playerColor, publicObjectives, secretObjective } = player;
+    const { color: playerColor, publicObjectives, secretObjectives } = player;
 
     const pc = playerColor || '#fff';
     const color = theme.palette.getContrastText(pc);
@@ -71,20 +71,23 @@ function VictoryPoints(props: VictoryPointsProps) {
     };
 
     const onSecretObjectiveCheck = (id: number, cleared: boolean) => {
+        const so = secretObjectives[-id - 1];
+        so.cleared = cleared;
         sendData({
             type: MessageType.PLAYER_SET_SECRET_OBJECTIVE,
-            data: { gameId, playerId, secretObjective: { ...secretObjective, cleared } },
+            data: { gameId, playerId, secretObjectives },
         });
     };
 
     const onSecretObjectiveSave = (objective: Objective) => {
-        const originalObjective = secretObjective.objective;
+        const so = secretObjectives[-objective.id - 1];
+        so.objective = objective;
         sendData({
             type: MessageType.PLAYER_SET_SECRET_OBJECTIVE,
             data: {
                 gameId,
                 playerId,
-                secretObjective: { ...secretObjective, objective: { ...originalObjective, ...objective } },
+                secretObjectives,
             },
         });
     };
@@ -112,17 +115,20 @@ function VictoryPoints(props: VictoryPointsProps) {
                             onSave={onPublicObjectiveSave}
                         />
                     ))}
-                    <ObjectiveCheckbox
-                        color={color}
-                        backgroundColor={backgroundColor}
-                        editable
-                        disabled={disabled}
-                        allowShowSecret={allowShowSecret || isCurrentPlayer || secretObjective.cleared || status.ended}
-                        objective={secretObjective.objective}
-                        checked={secretObjective.cleared}
-                        onChange={onSecretObjectiveCheck}
-                        onSave={onSecretObjectiveSave}
-                    />
+                    {secretObjectives.map(so => (
+                        <ObjectiveCheckbox
+                            key={so.objective.id}
+                            color={color}
+                            backgroundColor={backgroundColor}
+                            editable
+                            disabled={disabled}
+                            allowShowSecret={allowShowSecret || isCurrentPlayer || so.cleared || status.ended}
+                            objective={so.objective}
+                            checked={so.cleared}
+                            onChange={onSecretObjectiveCheck}
+                            onSave={onSecretObjectiveSave}
+                        />
+                    ))}
                     <VictoryPointsExtra playerId={playerId} disabled={disabled} />
                 </Grid>
             </AccordionDetails>
