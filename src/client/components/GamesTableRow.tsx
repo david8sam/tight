@@ -8,6 +8,7 @@ import {
     Divider,
     IconButton,
     ListItemIcon,
+    makeStyles,
     MenuItem,
     MenuList,
     Popover,
@@ -19,7 +20,6 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import SupervisorAccountIcon from '@material-ui/icons/SupervisorAccount';
 import VisibilityIcon from '@material-ui/icons/Visibility';
-import { makeStyles } from '@material-ui/styles';
 
 import { GameJoinStatus, Game } from 'common/Game';
 import { MessageType } from 'common/message';

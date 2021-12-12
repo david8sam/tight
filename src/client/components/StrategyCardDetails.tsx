@@ -1,10 +1,9 @@
 import React from 'react';
 
-import { Grid, TextField, Theme, Typography } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
+import { Grid, TextField, makeStyles, Typography } from '@material-ui/core';
 import { Version, ExpansionVersionNames } from 'common/Game';
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles(theme => ({
     primary: {},
     secondary: { marginTop: theme.spacing(2) },
     notes: { marginTop: theme.spacing(2) },

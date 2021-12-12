@@ -20,7 +20,7 @@ import useAccountInfo from '../hooks/useAccountInfo';
 import useAutoNavigate from '../hooks/useAutoNavigate';
 import { SendDataFunction } from '../hooks/useWebSocket';
 
-const useStyle = makeStyles(theme => ({
+const useStyle = makeStyles(() => ({
     appBar: {
         top: HEADER_HEIGHT,
     },

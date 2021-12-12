@@ -1,7 +1,15 @@
 import React from 'react';
 
-import { FormControl, InputLabel, MenuItem, Select, SelectProps, TextField, Theme } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
+import {
+    FormControl,
+    InputLabel,
+    makeStyles,
+    MenuItem,
+    Select,
+    SelectProps,
+    TextField,
+    Theme,
+} from '@material-ui/core';
 
 import { Objective } from 'common/Game';
 
@@ -15,7 +23,7 @@ export interface ObjectiveFormProps {
     disabled?: boolean;
 }
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles(theme => ({
     formControl: {
         paddingBottom: theme.spacing(2),
     },

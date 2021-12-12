@@ -1,7 +1,6 @@
 import React, { ChangeEvent } from 'react';
 
-import { FormControlLabel, Grid, Switch, Theme, Typography } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
+import { FormControlLabel, Grid, makeStyles, Switch, Typography } from '@material-ui/core';
 
 import { MessageType } from 'common/message';
 import { Traits } from 'common/Planet';
@@ -21,7 +20,7 @@ import {
     Legendary,
 } from './PlanetIcons';
 
-const useStyle = makeStyles((theme: Theme) => ({
+const useStyle = makeStyles(theme => ({
     icon: {
         marginRight: theme.spacing(1),
     },

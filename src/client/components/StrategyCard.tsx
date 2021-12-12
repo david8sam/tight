@@ -1,8 +1,7 @@
 import React from 'react';
 
-import { Button, ButtonProps, Grid, Typography, Theme } from '@material-ui/core';
+import { Button, ButtonProps, Grid, makeStyles, Typography } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { makeStyles } from '@material-ui/styles';
 
 import { StrategyCard } from 'common/Game';
 import {
@@ -25,7 +24,7 @@ export interface StrategyCardProps {
     buttonLabel?: React.ReactNode;
 }
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles(theme => ({
     button: {
         marginRight: theme.spacing(1),
     },

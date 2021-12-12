@@ -100,7 +100,7 @@ export default function initialize(app: Application) {
         });
     }, KEEP_ALIVE_INTERVAL);
 
-    // Broadcast game state on an interval
+    // Broadcast changes on an interval
     setInterval(() => {
         if (!isDirty()) {
             // Nothing changed, don't broadcast.

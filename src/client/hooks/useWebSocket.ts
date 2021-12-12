@@ -53,30 +53,6 @@ function sendData({ ws, type, data }: { ws: WebSocket; type: MessageType; data?:
     ws.send(JSON.stringify({ type, data }));
 }
 
-type OpenConnectionParams = {
-    url: string;
-    onOpen: WebSocket['onopen'];
-    onClose: WebSocket['onclose'];
-    onMessage: WebSocket['onmessage'];
-    onError: WebSocket['onerror'];
-};
-
-function openConnection({ url, onOpen, onClose, onMessage, onError }: OpenConnectionParams): WebSocket | null {
-    // Create new connection to the server
-    let ws = null;
-    try {
-        ws = new WebSocket(url);
-        ws.onopen = onOpen;
-        ws.onmessage = onMessage;
-        ws.onclose = onClose;
-        ws.onerror = onError;
-    } catch (e) {
-        console.error(e);
-    }
-
-    return ws;
-}
-
 export interface WebSocketOptions {
     url: string;
     dispatch: Dispatch<Action>;
@@ -91,6 +67,35 @@ export default function useWebSocket(options: WebSocketOptions) {
     const optionsRef = useRef<WebSocketOptions>(options);
     optionsRef.current = options;
 
+    // These callback functions must use refs for passing data since the callbacks are only attached
+    // when opening a new connection.
+    const onOpen = useCallback(() => {
+        // Trigger initialize callback if first time.
+        const { dispatch } = optionsRef.current;
+        if (!initRef.current.initialized) {
+            initRef.current.initialized = true;
+            initRef.current.initializing = false;
+        }
+
+        dispatch({ type: ActionType.setConnecting, payload: { connecting: false, connectError: false } });
+    }, []);
+
+    const onClose = useCallback((e: CloseEvent) => {
+        const { initialized, connecting, connectError } = optionsRef.current.state;
+        if (!e.wasClean && initialized && !connecting && !connectError) {
+            connect();
+        }
+    }, []);
+
+    const onMessage = useCallback((e: MessageEvent) => onWebSocketMessage(optionsRef.current.dispatch, e), []);
+
+    const onError = useCallback((e: Event) => {
+        const ws = wsRef.current;
+        if (ws?.readyState === WebSocket.CONNECTING) {
+            console.log('Error connecting web socket');
+        }
+    }, []);
+
     const connect = useCallback(() => {
         if (document.visibilityState !== 'visible') {
             return;
@@ -98,12 +103,18 @@ export default function useWebSocket(options: WebSocketOptions) {
 
         const { state, dispatch, url } = optionsRef.current;
         if (retryRef.current < RETRY_LIMIT) {
-            const ws = wsRef.current;
+            let ws = wsRef.current;
             if (!ws || ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
                 dispatch({ type: ActionType.setConnecting, payload: { connecting: true, connectError: false } });
 
+                // Create new connection to the server
                 const queryParam = initRef.current.initialized ? `?reconnect=${state.accountId ?? 'anonymous'}` : '';
-                wsRef.current = openConnection({ url: `${url}${queryParam}`, onOpen, onClose, onMessage, onError });
+                ws = new WebSocket(`${url}${queryParam}`);
+                ws.onopen = onOpen;
+                ws.onmessage = onMessage;
+                ws.onclose = onClose;
+                ws.onerror = onError;
+                wsRef.current = ws;
             }
         }
 
@@ -145,35 +156,6 @@ export default function useWebSocket(options: WebSocketOptions) {
             connect();
         }
     }, [options.state.reconnect]);
-
-    // These callback functions must use refs for passing data since the callbacks are only attached
-    // when opening a new connection.
-    const onOpen = useCallback(() => {
-        // Trigger initialize callback if first time.
-        const { dispatch } = optionsRef.current;
-        if (!initRef.current.initialized) {
-            initRef.current.initialized = true;
-            initRef.current.initializing = false;
-        }
-
-        dispatch({ type: ActionType.setConnecting, payload: { connecting: false, connectError: false } });
-    }, []);
-
-    const onClose = useCallback((e: CloseEvent) => {
-        const { initialized, connecting, connectError } = optionsRef.current.state;
-        if (!e.wasClean && initialized && !connecting && !connectError) {
-            connect();
-        }
-    }, []);
-
-    const onMessage = useCallback((e: MessageEvent) => onWebSocketMessage(optionsRef.current.dispatch, e), []);
-
-    const onError = useCallback((e: Event) => {
-        const ws = wsRef.current;
-        if (ws?.readyState === WebSocket.CONNECTING) {
-            console.log('Error connecting web socket');
-        }
-    }, []);
 
     // Only generate this function once. Should only rely on refs.
     const sd: SendDataFunction = useCallback(({ type, data }: Message): void => {

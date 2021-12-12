@@ -36,10 +36,10 @@ export interface AccordionProps extends MuiAccordionProps {
 }
 
 export function Accordion(props: AccordionProps) {
-    const { disableMargin, ...PanelProps } = props;
-    const Panel = disableMargin ? AccordionNoMargin : MuiAccordion;
+    const { disableMargin, ...AcoordionProps } = props;
+    const Component = disableMargin ? AccordionNoMargin : MuiAccordion;
 
-    return <Panel {...PanelProps} />;
+    return <Component {...AcoordionProps} />;
 }
 
 const AccordionSummaryNoMargin = withStyles({

@@ -6,10 +6,10 @@ import {
     Grid,
     IconButton,
     ListItemIcon,
+    makeStyles,
     MenuItem,
     MenuList,
     Popover,
-    Theme,
     Toolbar,
     Typography,
 } from '@material-ui/core';
@@ -20,9 +20,8 @@ import RotateLeftIcon from '@material-ui/icons/RotateLeft';
 import { generateBlankObjective, generateBlankPublicObjectives, Objective as ObjectiveType } from 'common/Game';
 import EditObjectiveDialog from './EditObjectiveDialog';
 import Objective from './Objective';
-import { makeStyles } from '@material-ui/styles';
 
-const useStyle = makeStyles((theme: Theme) => ({
+const useStyle = makeStyles(theme => ({
     poToolbar: {
         width: '100%',
     },

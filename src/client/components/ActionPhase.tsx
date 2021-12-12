@@ -1,7 +1,6 @@
 import React from 'react';
 
-import { Button, Card, CardContent, Grid, Theme, Toolbar } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
+import { Button, Card, CardContent, Grid, makeStyles, Toolbar } from '@material-ui/core';
 
 import classNames from 'classnames';
 
@@ -13,7 +12,7 @@ import useAccountInfo from '../hooks/useAccountInfo';
 import PlayerHeader from './PlayerHeader';
 import VictoryPointsExtra from './VictoryPointsExtra';
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles(theme => ({
     card: {
         border: `${theme.spacing(0.25)}px solid ${theme.palette.text.primary}`,
         margin: `${theme.spacing(0.5)}px ${theme.spacing(1)}px`,

@@ -1,15 +1,14 @@
 import React from 'react';
 
-import { Grid, Tooltip, IconButton, Theme, Typography } from '@material-ui/core';
+import { Grid, Tooltip, IconButton, makeStyles, Typography } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
 import MinusIcon from '@material-ui/icons/Remove';
-import { makeStyles } from '@material-ui/styles';
 
 import { useAppContext } from '../Context';
 import useAccountInfo from '../hooks/useAccountInfo';
 import { MessageType } from 'common/message';
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles(theme => ({
     grid: {
         width: 'auto',
     },

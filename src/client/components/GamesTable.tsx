@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
 
 import { GameMap } from 'common/Game';
 

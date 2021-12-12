@@ -1,8 +1,7 @@
 import React from 'react';
 
-import { Container, Grid, Theme, Typography } from '@material-ui/core';
+import { Grid, makeStyles, Typography, useTheme } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { makeStyles, useTheme } from '@material-ui/styles';
 
 import { calculateVictoryPoints, Objective } from 'common/Game';
 import { MessageType } from 'common/message';
@@ -14,7 +13,7 @@ import { Accordion, AccordionDetails, AccordionSummary } from './Accordion';
 import ObjectiveCheckbox from './ObjectiveCheckbox';
 import VictoryPointsExtra from './VictoryPointsExtra';
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles(theme => ({
     grid: {
         width: 'auto',
     },
@@ -33,7 +32,7 @@ interface VictoryPointsProps {
 }
 
 function VictoryPoints(props: VictoryPointsProps) {
-    const theme = useTheme<Theme>();
+    const theme = useTheme();
     const classes = useStyles(props);
     const { playerId, allowShowSecret = false, disabled = false } = props;
     const { sendData } = useAppContext();

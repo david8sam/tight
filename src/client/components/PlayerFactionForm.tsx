@@ -1,7 +1,6 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
 
-import { Grid, MenuItem, Select, Theme } from '@material-ui/core';
-import { useTheme } from '@material-ui/styles';
+import { Grid, MenuItem, Select, useTheme } from '@material-ui/core';
 
 import { PlayerColor, PlayerColorValue, GamePlayer } from 'common/Game';
 import { MessageType } from 'common/message';
@@ -27,7 +26,7 @@ const DEFAULT_COLOR = 'COLOR';
 const NoIcon = () => null;
 
 function PlayerFactionForm(props: PlayerSetupFormProps) {
-    const theme: Theme = useTheme();
+    const theme = useTheme();
     const { playerId: accountId, game, gameId } = useAccountInfo();
     const { state, sendData } = useAppContext();
 

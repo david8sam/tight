@@ -1,14 +1,13 @@
 import React from 'react';
 
-import { Grid, Typography, Theme } from '@material-ui/core';
-import { makeStyles, useTheme } from '@material-ui/styles';
+import { Grid, makeStyles, Typography, useTheme } from '@material-ui/core';
 
 import { GamePlayer } from 'common/Game';
 
 import { useAppContext } from '../Context';
 import InitiativeLabel from './InitiativeLabel';
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles(theme => ({
     card: {
         border: `${theme.spacing(0.25)}px solid ${theme.palette.text.primary}`,
         margin: `${theme.spacing(0.5)}px ${theme.spacing(1)}px`,
@@ -31,7 +30,7 @@ export interface PlayerHeaderProps {
 }
 
 function PlayerHeader(props: PlayerHeaderProps) {
-    const theme: Theme = useTheme();
+    const theme = useTheme();
     const classes = useStyles(props);
     const { state } = useAppContext();
 

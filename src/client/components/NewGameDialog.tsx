@@ -9,16 +9,15 @@ import {
     FormControl,
     Grid,
     IconButton,
+    InputLabel,
+    makeStyles,
+    MenuItem,
     Select,
     TextField,
     Toolbar,
     Tooltip,
     Typography,
-    Theme,
-    MenuItem,
-    InputLabel,
 } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
 import CloseIcon from '@material-ui/icons/Close';
 
 import { Game, generateBlankPublicObjectives, Objective } from 'common/Game';
@@ -60,7 +59,7 @@ function generateNextName(games: Game[]) {
     return name;
 }
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles(theme => ({
     appBar: {
         flexDirection: 'row',
         position: 'relative',

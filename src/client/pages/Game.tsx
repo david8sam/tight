@@ -8,10 +8,10 @@ import {
     CircularProgress,
     Grid,
     IconButton,
+    makeStyles,
     Stepper,
     Step,
     StepLabel,
-    Theme,
     Toolbar,
     Typography,
     Tooltip,
@@ -20,7 +20,6 @@ import {
 } from '@material-ui/core';
 import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
-import { makeStyles } from '@material-ui/styles';
 
 import { Game, GameJoinStatus, GameStatus, getPlayersInGame, Phase, StrategyCardIndex } from 'common/Game';
 import { MessageType } from 'common/message';
@@ -85,7 +84,7 @@ function canNextPhase(game: Game): { canNext: boolean; message: string } {
     return { canNext, message };
 }
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles(theme => ({
     appBar: {
         top: HEADER_HEIGHT,
     },

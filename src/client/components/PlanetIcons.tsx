@@ -1,9 +1,8 @@
 import React, { MouseEvent, useRef, useState } from 'react';
-import { colors, Avatar, Theme, AvatarProps, Popover, Typography } from '@material-ui/core';
-import { makeStyles, useTheme } from '@material-ui/styles';
+import { Avatar, AvatarProps, colors, makeStyles, Popover, Typography, useTheme } from '@material-ui/core';
 import LanguageIcon from '@material-ui/icons/Language';
 
-const useStyle = makeStyles((theme: Theme) => ({
+const useStyle = makeStyles(theme => ({
     root: {
         height: 24,
         width: 24,
@@ -80,7 +79,7 @@ function PlanetIcon(props: PlanetIconProps) {
 }
 
 export function Resources(props: PlanetIconProps) {
-    const theme: Theme = useTheme();
+    const theme = useTheme();
     const backgroundColor = colors.deepOrange[500];
     const color = theme.palette.getContrastText(backgroundColor);
     return (
@@ -91,7 +90,7 @@ export function Resources(props: PlanetIconProps) {
 }
 
 export function Influence(props: PlanetIconProps) {
-    const theme: Theme = useTheme();
+    const theme = useTheme();
     const backgroundColor = colors.deepPurple[500];
     const color = theme.palette.getContrastText(backgroundColor);
     return (
@@ -103,7 +102,7 @@ export function Influence(props: PlanetIconProps) {
 
 export function Biotic(props: PlanetIconProps) {
     const src = useIcon('biotic');
-    const theme: Theme = useTheme();
+    const theme = useTheme();
     const backgroundColor = colors.green[500];
     const color = theme.palette.getContrastText(backgroundColor);
     return (
@@ -115,7 +114,7 @@ export function Biotic(props: PlanetIconProps) {
 
 export function Warfare(props: PlanetIconProps) {
     const src = useIcon('warfare');
-    const theme: Theme = useTheme();
+    const theme = useTheme();
     const backgroundColor = colors.red[500];
     const color = theme.palette.getContrastText(backgroundColor);
     return (
@@ -127,7 +126,7 @@ export function Warfare(props: PlanetIconProps) {
 
 export function Propulsion(props: PlanetIconProps) {
     const src = useIcon('propulsion');
-    const theme: Theme = useTheme();
+    const theme = useTheme();
     const backgroundColor = colors.blue[500];
     const color = theme.palette.getContrastText(backgroundColor);
     return (
@@ -139,7 +138,7 @@ export function Propulsion(props: PlanetIconProps) {
 
 export function Cybernetic(props: PlanetIconProps) {
     const src = useIcon('cybernetic');
-    const theme: Theme = useTheme();
+    const theme = useTheme();
     const backgroundColor = colors.yellow[500];
     const color = theme.palette.getContrastText(backgroundColor);
     return (
@@ -151,7 +150,7 @@ export function Cybernetic(props: PlanetIconProps) {
 
 export function Legendary(props: PlanetIconProps) {
     const src = useIcon('legendary');
-    const theme: Theme = useTheme();
+    const theme = useTheme();
     const backgroundColor = colors.red[300];
     const color = theme.palette.getContrastText(backgroundColor);
     return (
@@ -162,7 +161,7 @@ export function Legendary(props: PlanetIconProps) {
 }
 
 export function HomePlanet(props: PlanetIconProps) {
-    const theme: Theme = useTheme();
+    const theme = useTheme();
     const color = colors.yellow[500];
     const backgroundColor = theme.palette.getContrastText(color);
     return (
@@ -174,7 +173,7 @@ export function HomePlanet(props: PlanetIconProps) {
 
 export function Cultural(props: PlanetIconProps) {
     const src = useIcon('cultural');
-    const theme: Theme = useTheme();
+    const theme = useTheme();
     const backgroundColor = colors.cyan[500];
     const color = theme.palette.getContrastText(backgroundColor);
     return (
@@ -186,7 +185,7 @@ export function Cultural(props: PlanetIconProps) {
 
 export function Hazardous(props: PlanetIconProps) {
     const src = useIcon('hazardous');
-    const theme: Theme = useTheme();
+    const theme = useTheme();
     const backgroundColor = colors.red.A700;
     const color = theme.palette.getContrastText(backgroundColor);
     return (
@@ -198,7 +197,7 @@ export function Hazardous(props: PlanetIconProps) {
 
 export function Industrial(props: PlanetIconProps) {
     const src = useIcon('industrial');
-    const theme: Theme = useTheme();
+    const theme = useTheme();
     const backgroundColor = colors.teal[500];
     const color = theme.palette.getContrastText(backgroundColor);
     return (

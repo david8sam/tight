@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Button, CircularProgress, Container, FormControl, TextField, Typography } from '@material-ui/core';
+import { Button, CircularProgress, Container, FormControl, makeStyles, TextField, Typography } from '@material-ui/core';
 import { Theme } from '@material-ui/core/styles/createTheme';
-import { makeStyles } from '@material-ui/styles';
 
 import { LoginStatus } from 'common/Account';
 import { MessageType } from 'common/message';
@@ -13,7 +12,7 @@ import useAccountInfo from '../hooks/useAccountInfo';
 import { useAppContext } from '../Context';
 import { ActionType } from '../reducer';
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles(theme => ({
     root: {
         display: 'flex',
         flexDirection: 'column',

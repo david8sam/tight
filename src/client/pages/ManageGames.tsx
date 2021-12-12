@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 
-import { IconButton, Toolbar, Tooltip, Typography } from '@material-ui/core';
+import { IconButton, makeStyles, Toolbar, Tooltip, Typography } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
-import { makeStyles } from '@material-ui/styles';
 
 import { useAppContext } from '../Context';
 import GamesTable from '../components/GamesTable';
 import NewGameDialog from '../components/NewGameDialog';
 
-const useStyle = makeStyles(theme => ({
+const useStyle = makeStyles(() => ({
     title: {
         flex: '1 1 100%',
     },

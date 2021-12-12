@@ -1,7 +1,6 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
 
-import { AppBar, Button, Grid, IconButton, Theme, Toolbar, Tooltip, Typography } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
+import { AppBar, Button, Grid, IconButton, makeStyles, Toolbar, Tooltip, Typography } from '@material-ui/core';
 import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 
@@ -17,7 +16,7 @@ import useAccountInfo from '../hooks/useAccountInfo';
 // Num accordions
 const COUNT = Object.keys(FactionAccordionIndex).length;
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles(theme => ({
     appBar: {
         top: HEADER_HEIGHT,
     },

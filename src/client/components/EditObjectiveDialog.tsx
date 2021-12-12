@@ -7,12 +7,12 @@ import {
     DialogContent,
     Grid,
     IconButton,
+    makeStyles,
     Toolbar,
     Tooltip,
     Typography,
     Theme,
 } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
 import CloseIcon from '@material-ui/icons/Close';
 
 import { Objective } from 'common/Game';
@@ -26,7 +26,7 @@ export interface EditObjectiveDialogProps {
     onSave: (objective: Objective) => void;
 }
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles(theme => ({
     appBar: {
         flexDirection: 'row',
         position: 'relative',

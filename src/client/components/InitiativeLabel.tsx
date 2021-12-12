@@ -1,14 +1,13 @@
 import React, { MouseEvent, useState } from 'react';
 
-import { Card, CardContent, Grid, Typography, Theme, Tooltip, IconButton, Popover } from '@material-ui/core';
+import { Card, CardContent, Grid, makeStyles, Typography, Tooltip, IconButton, Popover } from '@material-ui/core';
 import InfoIcon from '@material-ui/icons/Info';
-import { makeStyles } from '@material-ui/styles';
 
 import { StrategyCard, StrategyCardIndex } from 'common/Game';
 
 import StrategyCardDetails from '../components/StrategyCardDetails';
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles(theme => ({
     infoIconGrid: {
         width: 'auto',
     },

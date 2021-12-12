@@ -1,6 +1,5 @@
 import React from 'react';
-import { Table, TableBody, TableCell, TableHead, TableRow, TableCellProps } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
+import { makeStyles, Table, TableBody, TableCell, TableHead, TableRow, TableCellProps } from '@material-ui/core';
 
 import { Resources, Influence, Biotic, Warfare, Propulsion, Cybernetic } from './PlanetIcons';
 
@@ -13,7 +12,7 @@ export interface TotalsTableProps {
     cybernetic: number; // yellow
 }
 
-const useStyle = makeStyles(theme => ({
+const useStyle = makeStyles(() => ({
     tableRow: {
         userSelect: 'none',
     },

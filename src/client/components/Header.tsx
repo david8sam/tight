@@ -38,10 +38,9 @@ function Header() {
     const loggedIn = loginStatus === LoginStatus.LOGGED_IN;
 
     const onThemeChange = (theme: AppTheme) => {
+        dispatch({ type: ActionType.setTheme, payload: { theme } });
         if (loggedIn) {
             sendData({ type: MessageType.ACCOUNT_SET_SETTINGS, data: { accountId, settings: { theme } } });
-        } else {
-            dispatch({ type: ActionType.setTheme, payload: { theme } });
         }
     };
 

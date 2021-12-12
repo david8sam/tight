@@ -6,12 +6,12 @@ import {
     Dialog,
     DialogContent,
     IconButton,
+    makeStyles,
     Toolbar,
     Tooltip,
     Typography,
     Theme,
 } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
 import CloseIcon from '@material-ui/icons/Close';
 import { useAppContext } from '../Context';
 import { MessageType } from 'common/message';
@@ -25,7 +25,7 @@ interface AddPlanetDialogProps {
     playerId: string;
 }
 
-const useStyle = makeStyles((theme: Theme) => ({
+const useStyle = makeStyles(theme => ({
     appBar: {
         flexDirection: 'row',
         position: 'relative',

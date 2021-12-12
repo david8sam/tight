@@ -1,10 +1,9 @@
 import React, { MouseEvent, useState } from 'react';
 
-import { Grid, IconButton, TextField, Theme, Toolbar, Tooltip, Typography } from '@material-ui/core';
+import { Grid, IconButton, makeStyles, TextField, Theme, Toolbar, Tooltip, Typography } from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { makeStyles } from '@material-ui/styles';
 
 import { calculateVictoryPoints, GamePlayer, getPlayersInGame, Objective } from 'common/Game';
 
@@ -16,7 +15,7 @@ import PlayerAvatar from './PlayerAvatar';
 
 const AVATAR_SIZE = 30;
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles(theme => ({
     disabledText: {
         color: theme.palette.text.primary,
     },

@@ -2,6 +2,7 @@ import React, { useState, ReactNode } from 'react';
 import {
     Checkbox,
     IconButton,
+    makeStyles,
     Table,
     TableBody,
     TableCell,
@@ -15,7 +16,6 @@ import {
     Theme,
     TableSortLabelProps,
 } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import CloseIcon from '@material-ui/icons/Close';
 
@@ -43,7 +43,7 @@ export interface PlanetsTableProps {
     PlanetNameCellProps?: Omit<PlanetNameCellProps, 'planet'>;
 }
 
-const useStyle = makeStyles((theme: Theme) => ({
+const useStyle = makeStyles(theme => ({
     title: {
         flex: '1 1 100%',
     },

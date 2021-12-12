@@ -1,7 +1,6 @@
 import React from 'react';
 
-import { Avatar, AvatarProps, Theme, Tooltip, Typography } from '@material-ui/core';
-import { makeStyles, useTheme } from '@material-ui/styles';
+import { Avatar, AvatarProps, makeStyles, Tooltip, Typography, useTheme } from '@material-ui/core';
 
 import { GamePlayer } from 'common/Game';
 
@@ -9,7 +8,7 @@ import useTooltipOnClick from '../hooks/useTooltipOnClick';
 
 const AVATAR_SIZE = 30;
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles(() => ({
     avatar: {
         width: AVATAR_SIZE,
         height: AVATAR_SIZE,
@@ -25,7 +24,7 @@ export interface PlayerAvatarProps {
 }
 
 export default function PlayerAvatar(props: PlayerAvatarProps) {
-    const theme = useTheme<Theme>();
+    const theme = useTheme();
     const classes = useStyles(props);
     const { player, title = '', onClick } = props;
 
