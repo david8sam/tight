@@ -11,7 +11,6 @@ import {
     GamePlanet,
     GamePlanetMap,
     GamePlayerMap,
-    GameSetupStep,
     generateBlankObjective,
     Objective,
     Phase,
@@ -68,7 +67,7 @@ export interface CreateGameParams {
 
 export function createGame({
     creator,
-    version = Version.TI4,
+    version = Version.TI4_1,
     name,
     numPlayers = 8,
     numRounds = 10,
@@ -88,7 +87,7 @@ export function createGame({
         planets: cloneDeep(DEFAULT_GAME_PLANETS) as GamePlanetMap,
         publicObjectives,
         status: {
-            setupStep: GameSetupStep.ORDER,
+            setupStep: 0,
             started: false,
             ended: false,
             round: 1,

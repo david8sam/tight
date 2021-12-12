@@ -76,7 +76,7 @@ export default function initialize(app: Application) {
     }
 
     // Create server for websocket connections
-    const server: http.Server = http.createServer(app);
+    const server = http.createServer(app);
 
     wss = new ws.Server({ server });
     wss.on('connection', (ws: WebSocket, request: IncomingMessage) => onConnection({ wss, ws, request }));

@@ -13,8 +13,6 @@ import { Accordion, AccordionDetails, AccordionProps, AccordionSummary } from '.
 import EditObjectiveDialog from './EditObjectiveDialog';
 import PlayerAvatar from './PlayerAvatar';
 
-const AVATAR_SIZE = 30;
-
 const useStyles = makeStyles(theme => ({
     disabledText: {
         color: theme.palette.text.primary,
@@ -28,12 +26,6 @@ const useStyles = makeStyles(theme => ({
     avatarContainer: {
         paddingRight: theme.spacing(),
         paddingBottom: theme.spacing(),
-    },
-    avatar: {
-        width: AVATAR_SIZE,
-        height: AVATAR_SIZE,
-        textTransform: 'uppercase',
-        fontSize: 12,
     },
 }));
 
@@ -120,7 +112,6 @@ export default function Objective(props: ObjectiveProps) {
                         <Toolbar className={classes.toolbar} disableGutters>
                             {players.map(player => (
                                 <div key={player.id} className={classes.avatarContainer}>
-                                    {/* Prevent click from expanding accordion */}
                                     <PlayerAvatar
                                         player={player}
                                         title={
@@ -128,6 +119,7 @@ export default function Objective(props: ObjectiveProps) {
                                                 ? `${player.name} ${calculateVictoryPoints(game, player.id)} VPs`
                                                 : undefined
                                         }
+                                        // Prevent click from expanding accordion
                                         onClick={e => e.stopPropagation()}
                                     />
                                 </div>

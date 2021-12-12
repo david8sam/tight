@@ -127,7 +127,7 @@ export interface GamePlayer {
 export type GamePlayerMap = Record<string, GamePlayer>;
 
 export interface Objective {
-    id: number; // > 0
+    id: number; // > 0 for public, < 0 for secret
     description: string;
     vp: number;
 }
@@ -262,7 +262,7 @@ export function strategyCardHasOwner(stratCardOwners: string[], initiative: numb
 }
 
 /**
- * Calculates VPS from public and secret objectives, as well as any additional victory points held by the player.
+ * Calculates VPs from public and secret objectives, as well as any additional victory points held by the player.
  */
 export function calculateVictoryPoints(game: Game, playerId: string) {
     const player = game.players[playerId];

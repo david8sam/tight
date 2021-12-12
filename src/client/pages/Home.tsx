@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Button, CircularProgress, Container, FormControl, makeStyles, TextField, Typography } from '@material-ui/core';
-import { Theme } from '@material-ui/core/styles/createTheme';
 
 import { LoginStatus } from 'common/Account';
 import { MessageType } from 'common/message';

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Grid, Toolbar, Typography } from '@material-ui/core';
 
-import { GameJoinStatus, Objective as ObjectiveType, SECRET_OBJECTIVE_IDS } from 'common/Game';
+import { GameJoinStatus, Objective as ObjectiveType } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';

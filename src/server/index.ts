@@ -25,6 +25,6 @@ app.get('*', (req: Request, res: Response) => {
 
 app.listen(port, () => {
     const ipAddress = chalk.cyanBright(`http://${ip.address()}/`);
+    console.log(`Server listening on port: ${port}`);
     console.log(`Server running on: ${ipAddress}`);
-    console.log(`App listening on port: ${port}`);
 });
