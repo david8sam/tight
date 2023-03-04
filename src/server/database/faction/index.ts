@@ -1,5 +1,3 @@
-import { Faction } from 'common/Faction';
-
 import FactionsTI4Base from './TI4';
 import FactionsTI4ProphecyOfKings from './TI4ProphecyOfKings';
 

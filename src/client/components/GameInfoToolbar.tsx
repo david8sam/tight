@@ -170,7 +170,7 @@ export default function GameInfoToolbar(props: GameInfoToolbarProps) {
                             {leaderboard.map(p => (
                                 <TextWithTooltip
                                     key={p.id}
-                                    text={`${p.name} ${vpMap[p.id]} VP `}
+                                    text={`${p.name}: ${vpMap[p.id]} VP `}
                                     title={p.name}
                                     style={getPlayerColors(theme, p)}
                                     className={classes.player}

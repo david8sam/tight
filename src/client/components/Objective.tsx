@@ -116,7 +116,7 @@ export default function Objective(props: ObjectiveProps) {
                                         player={player}
                                         title={
                                             game
-                                                ? `${player.name} ${calculateVictoryPoints(game, player.id)} VPs`
+                                                ? `${player.name}: ${calculateVictoryPoints(game, player.id)} VPs`
                                                 : undefined
                                         }
                                         // Prevent click from expanding accordion

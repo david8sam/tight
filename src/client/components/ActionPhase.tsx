@@ -104,7 +104,7 @@ function ActionPhase() {
                                         onClick={() => onPassClick(playerId, !player.passed)}
                                         disabled={isSpectator || !player.stragetyCardFlipped}
                                     >
-                                        {player.passed ? 'PASSED' : 'PASS'}
+                                        {player.passed ? 'UNPASS' : 'PASS'}
                                     </Button>
                                     <Button
                                         classes={{ root: classes.button }}
@@ -113,7 +113,7 @@ function ActionPhase() {
                                         onClick={() => onFlipCardClick(playerId, !player.stragetyCardFlipped)}
                                         disabled={isSpectator}
                                     >
-                                        {player.stragetyCardFlipped ? 'FLIPPED' : 'FLIP'}
+                                        {player.stragetyCardFlipped ? 'UNFLIP' : 'FLIP'}
                                     </Button>
                                     <Button
                                         classes={{ root: classes.button }}
@@ -122,7 +122,7 @@ function ActionPhase() {
                                         disabled={isSpectator || player.passed}
                                         onClick={() => onNextTurn(player, !playerDone)}
                                     >
-                                        {playerDone ? 'DONE-D' : 'DONE'}
+                                        {playerDone ? 'UNDONE' : 'DONE'}
                                     </Button>
                                 </Grid>
                             </Toolbar>

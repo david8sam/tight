@@ -426,7 +426,7 @@ const Factions: Readonly<Faction[]> = [
         abilities: [
             {
                 name: 'MASTERS OF TRADE',
-                description: `You do not hav eto spend a command token to resolve the secondary ability of "Trade" strategy card.`,
+                description: `You do not have to spend a command token to resolve the secondary ability of "Trade" strategy card.`,
             },
             {
                 name: 'GUILD SHIPS',
@@ -911,7 +911,7 @@ const Factions: Readonly<Faction[]> = [
             },
             {
                 name: 'FORESIGHT',
-                description: `After another player moves ships into a system that contains 1 or more of your ships, you may place 1 token from your strategy pool in an adjacent system that does not contain another player's ships; move your ships form the active system into that system.`,
+                description: `After another player moves ships into a system that contains 1 or more of your ships, you may place 1 token from your strategy pool in an adjacent system that does not contain another player's ships; move your ships from the active system into that system.`,
             },
         ],
         promissoryNotes: [
@@ -923,7 +923,7 @@ const Factions: Readonly<Faction[]> = [
         factionTech: [
             {
                 name: 'Neuroglaive',
-                description: `After another player activates a system that contains 1 or more of your ships, that player removes 1 token form this fleet pool and returns it to his reinforcements.`,
+                description: `After another player activates a system that contains 1 or more of your ships, that player removes 1 token from this fleet pool and returns it to his reinforcements.`,
                 prerequisites: {
                     biotic: 3,
                 },

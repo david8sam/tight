@@ -3,28 +3,35 @@ import path from 'path';
 
 import { Account, AccountMap, AccountSettings, BaseAccountMap, DEFAULT_SETTINGS } from 'common/Account';
 
-import { getHomeDir } from '../appData';
-
-const ACCOUNTS_FILE = path.join(getHomeDir(), 'accounts.json');
-// console.log(`accounts file: ${ACCOUNTS_FILE}`);
+import { getAccountsDir, load, save } from '../appData';
 
 let _accounts: AccountMap = {};
 
 export function initialize() {
-    if (_accounts) {
-        return;
+    if (!_accounts) {
+        loadAccounts();
     }
-
-    const accountsData: string = fs.existsSync(ACCOUNTS_FILE)
-        ? fs.readFileSync(ACCOUNTS_FILE, { encoding: 'utf-8' })
-        : '{}';
-
-    _accounts = JSON.parse(accountsData);
 }
 
-function save() {
-    const data = JSON.stringify(_accounts);
-    // fs.writeFileSync(ACCOUNTS_FILE, data);
+export function loadAccounts() {
+    load(getAccountsDir(), _accounts);
+}
+
+export function saveAccounts() {
+    save(getAccountsDir(), _accounts);
+}
+
+export function deleteAccounts(ids: string[] | 'all') {
+    const accountsDir = getAccountsDir();
+    if (ids === 'all') {
+        fs.unlinkSync(accountsDir);
+    } else {
+        ids.forEach(id => {
+            // delete account and file
+            delete _accounts[id];
+            fs.unlinkSync(path.join(accountsDir, id));
+        });
+    }
 }
 
 /**

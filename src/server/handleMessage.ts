@@ -92,7 +92,7 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
                     if (game.players[accountId].joinStatus === GameJoinStatus.PLAYER) {
                         game.players[accountId].joined = false;
                     } else {
-                        GameDB.removePlayer(gameId, accountId, true);
+                        GameDB.removePlayer(game.id, accountId, true);
                     }
                     markGameDirty(game.id, { players: [accountId] });
                 }

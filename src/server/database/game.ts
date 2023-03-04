@@ -21,7 +21,7 @@ import {
 import { Planet } from 'common/Planet';
 import uuidv4 from 'common/uuidv4';
 
-import { getHomeDir } from '../appData';
+import { getGamesDir, getHomeDir, load, save } from '../appData';
 import { Planets } from './planet';
 
 const GAMES_FILE = path.join(getHomeDir(), 'games.json');
@@ -50,9 +50,48 @@ export function initialize() {
     _games = JSON.parse(gameData);
 }
 
-function save() {
-    const data = JSON.stringify(_games);
-    // fs.writeFileSync(GAMES_FILE, data);
+export function loadGames() {
+    const gamesDir = getGamesDir();
+    const dirs = fs.readdirSync(gamesDir, 'utf-8');
+    dirs.forEach(dir => load(dir, _games));
+}
+
+export function saveGames() {
+    const gamesDir = getGamesDir();
+    if (!fs.existsSync(gamesDir)) {
+        fs.mkdirSync(gamesDir);
+    }
+
+    // Sort by creator
+    const gamesByCreator: Map<string, GameMap> = new Map();
+    Object.values(_games).forEach(g => {
+        let games = gamesByCreator.get(g.creator);
+        if (!games) {
+            games = {};
+            gamesByCreator.set(g.creator, games);
+        }
+
+        games[g.id] = g;
+    });
+
+    // Save one directory per creator
+    gamesByCreator.forEach((games, creator) => {
+        const creatorDir = path.join(gamesDir, creator);
+        save(creatorDir, games);
+    });
+}
+
+export function deleteGames(ids: string[] | 'all') {
+    let idArray = ids === 'all' ? Object.keys(_games) : ids;
+    idArray.forEach(id => {
+        delete _games[id];
+
+        // delete file
+    });
+
+    if (idArray.length) {
+        saveGames();
+    }
 }
 
 export interface CreateGameParams {
