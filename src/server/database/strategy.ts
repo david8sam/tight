@@ -11,24 +11,24 @@ const _strategyCards: Readonly<StrategyCardsType> = [
         secondary: ['Spend any amount of influence to gain 1 command token for every 3 influence spent.'],
         version: Version.TI4,
     },
+    // {
+    //     name: 'Diplomacy',
+    //     initiative: 2,
+    //     primary: [
+    //         'Choose 1 system other than the Mecatol Rex system that contains a planet you control; each other player places a command token from their reinforcements in the chosen system.  Then, ready each exhausted planet you control in that system.',
+    //     ],
+    //     secondary: ['Spend 1 token from your strategy pool to ready up to 2 exhausted planets.'],
+    //     notes: ['Primary only allows readying planets from the CHOSEN system.'],
+    //     version: Version.TI4,
+    // },
     {
         name: 'Diplomacy',
         initiative: 2,
         primary: [
-            'Choose 1 system other than the Mecatol Rex system that contains a planet you control; each other player places a command token from their reinforcements in the chosen system.  Then, ready each exhausted planet you control in that system.',
-        ],
-        secondary: ['Spend 1 token from your strategy pool to ready up to 2 exhausted planets.'],
-        notes: ['Primary only allows readying planets from the CHOSEN system.'],
-        version: Version.TI4,
-    },
-    {
-        name: 'Diplomacy II',
-        initiative: 2.1,
-        primary: [
             'Choose 1 system other than the Mecatol Rex system that contains a planet you control; each other player places a command token from their reinforcements in the chosen system. Then, ready up to 2 exhausted planets you control.',
         ],
         secondary: ['Spend 1 token from your strategy pool to ready up to 2 exhausted planets you control.'],
-        notes: ['Primary allows readying ANY 2 planets.'],
+        // notes: ['Primary allows readying ANY 2 planets.'],
         version: Version.TI4_1,
     },
     {
@@ -42,24 +42,24 @@ const _strategyCards: Readonly<StrategyCardsType> = [
         secondary: ['Spend 1 token from your strategy pool to draw 2 action cards.'],
         version: Version.TI4,
     },
+    // {
+    //     name: 'Construction',
+    //     initiative: 4,
+    //     primary: ['Place 1 PDS or 1 space dock on a planet you control.', 'Place 1 PDS on a planet you control.'],
+    //     secondary: [
+    //         'Place 1 token from your strategy pool in any system; you may place either 1 space dock or 1 PDS on a planet you control in that system.',
+    //     ],
+    //     notes: ['Same as Contruction II, but shittier wording.'],
+    //     version: Version.TI4,
+    // },
     {
         name: 'Construction',
         initiative: 4,
         primary: ['Place 1 PDS or 1 space dock on a planet you control.', 'Place 1 PDS on a planet you control.'],
         secondary: [
-            'Place 1 token from your strategy pool in any system; you may place either 1 space dock or 1 PDS on a planet you control in that system.',
-        ],
-        notes: ['Same as Contruction II, but shittier wording.'],
-        version: Version.TI4,
-    },
-    {
-        name: 'Construction II',
-        initiative: 4.1,
-        primary: ['Place 1 PDS or 1 space dock on a planet you control.', 'Place 1 PDS on a planet you control.'],
-        secondary: [
             'Spend 1 token from your strategy pool and place it in any system; you may place either 1 space dock or 1 PDS on a planet you control in that system',
         ],
-        notes: ['Same as Contruction, but better wording.'],
+        // notes: ['Same as Contruction, but better wording.'],
         version: Version.TI4_1,
     },
     {

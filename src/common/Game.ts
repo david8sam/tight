@@ -1,3 +1,4 @@
+import { Theme } from '@material-ui/core';
 import { blue, deepPurple, green, orange, red, yellow } from '@material-ui/core/colors';
 
 export const PlayerColor = {
@@ -181,6 +182,22 @@ export function getNaaluPlayer(game: Game) {
     return getPlayersInGame(game).find(p => p.faction === 'The Naalu Collective');
 }
 
+export function getPlayerTurn(game: Game) {
+    const { phase, turn, pickOrder, pickTurn } = game.status;
+
+    let playerTurn = null;
+    if (phase === Phase.STRATEGY) {
+        playerTurn = pickOrder.find(p => game.players[p].strategyCard === StrategyCardIndex.NONE) ?? 'END';
+    } else if (turn === StrategyCardIndex.END) {
+        playerTurn = 'END';
+    } else {
+        const player = getPlayersInGame(game).find(p => p.strategyCard === turn);
+        playerTurn = player ? player.name : null;
+    }
+
+    return playerTurn;
+}
+
 /**
  * Get the current turn order of players.
  */
@@ -227,6 +244,13 @@ export function getNextPlayer(game: Game, currentPlayerId: string, playerOrder?:
     return nextPlayer || null;
 }
 
+export function getPlayerColors(theme: Theme, player: GamePlayer): { color: string; backgroundColor: string } {
+    const playerColor = player.color || '#fff';
+    const color = theme.palette.getContrastText(playerColor);
+    const backgroundColor = playerColor;
+    return { color, backgroundColor };
+}
+
 /**
  * Map each strategy card to the player that currently owns it.
  */
@@ -246,7 +270,7 @@ export function strategyCardHasOwner(stratCardOwners: string[], initiative: numb
 
     // Check base version first
     const baseInitiative = Math.floor(initiative) as keyof typeof StrategyCardsWithVersions;
-    if (baseInitiative !== initiative) {
+    if (baseInitiative === initiative) {
         hasOwner = Boolean(stratCardOwners[baseInitiative]);
     }
 

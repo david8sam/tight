@@ -1,22 +1,34 @@
 import React from 'react';
 
-import { Table, TableBody, TableCell, TableHead, TableRow } from '@material-ui/core';
+import { makeStyles, Table, TableBody, TableCell, TableHead, TableRow } from '@material-ui/core';
 
 import { UnitCountMap } from 'common/Faction';
+import Typography from '@material-ui/core/Typography';
+
+const useStyle = makeStyles(() => ({
+    headerCell: {
+        fontWeight: 'bold',
+    },
+}));
 
 export interface UnitsCountTableProps {
     unitsCountMap: UnitCountMap;
 }
 
 export default function UnitsCountTable(props: UnitsCountTableProps) {
+    const classes = useStyle();
     const { unitsCountMap } = props;
 
     return (
         <Table>
             <TableHead>
                 <TableRow>
-                    <TableCell>Unit</TableCell>
-                    <TableCell>Count</TableCell>
+                    <TableCell>
+                        <Typography className={classes.headerCell}>Unit</Typography>
+                    </TableCell>
+                    <TableCell>
+                        <Typography className={classes.headerCell}>Count</Typography>
+                    </TableCell>
                 </TableRow>
             </TableHead>
             <TableBody>

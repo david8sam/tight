@@ -10,12 +10,12 @@ import {
     Toolbar,
     Tooltip,
     Typography,
-    Theme,
 } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
-import { useAppContext } from '../Context';
+
 import { MessageType } from 'common/message';
 
+import { useAppContext } from '../Context';
 import PlanetsTable from './PlanetsTable';
 
 interface AddPlanetDialogProps {

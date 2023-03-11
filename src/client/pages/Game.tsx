@@ -1,40 +1,51 @@
-import React, { MouseEvent, useState, useEffect } from 'react';
+import React, { MouseEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import isEqual from 'lodash/isEqual';
 
 import {
+    AppBar,
     Button,
     CircularProgress,
     Grid,
     IconButton,
     makeStyles,
-    Stepper,
+    Paper,
     Step,
     StepLabel,
+    Stepper,
     Toolbar,
-    Typography,
     Tooltip,
-    Paper,
-    AppBar,
+    Typography,
+    useTheme,
 } from '@material-ui/core';
 import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 
-import { Game, GameJoinStatus, GameStatus, getPlayersInGame, Phase, StrategyCardIndex } from 'common/Game';
+import {
+    Game,
+    GameJoinStatus,
+    GameStatus,
+    getPlayerColors,
+    getPlayersInGame,
+    getPlayerTurn,
+    Phase,
+    StrategyCardIndex,
+} from 'common/Game';
 import { MessageType } from 'common/message';
 
-import { HEADER_HEIGHT } from '../constants';
-import { useAppContext } from '../Context';
 import { Accordion, AccordionDetails, AccordionSummary } from '../components/Accordion';
 import GameInfoToolbar from '../components/GameInfoToolbar';
 import PlayerSetup from '../components/PlayerSetup';
 import SpeakerSelect from '../components/SpeakerSelect';
+import TextWithTooltip from '../components/TextWithTooltip';
+import { HEADER_HEIGHT } from '../constants';
+import { useAppContext } from '../Context';
 
-import StrategyPhase from '../components/StrategyPhase';
 import ActionPhase from '../components/ActionPhase';
-import StatusPhase from '../components/StatusPhase';
 import AgendaPhase from '../components/AgendaPhase';
+import StatusPhase from '../components/StatusPhase';
+import StrategyPhase from '../components/StrategyPhase';
 
 import useAccountInfo from '../hooks/useAccountInfo';
 
@@ -88,6 +99,11 @@ const useStyles = makeStyles(theme => ({
     appBar: {
         top: HEADER_HEIGHT,
     },
+    playerTurnText: {
+        padding: theme.spacing(),
+        width: '100%',
+        textAlign: 'center',
+    },
     speakerToolbar: {
         margin: `${theme.spacing(2)}px 0px`,
     },
@@ -116,6 +132,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 function Game() {
+    const theme = useTheme();
     const classes = useStyles();
     const { sendData } = useAppContext();
     const { gameId, game, player, playerId } = useAccountInfo();
@@ -243,6 +260,15 @@ function Game() {
         );
     }
 
+    const playerTurn = getPlayerTurn(game);
+    const currentTurnPlayer = playerTurn && playerTurn !== 'END' ? game.players[playerTurn] : null;
+    const currentTurnPlayerStyle = currentTurnPlayer
+        ? getPlayerColors(theme, currentTurnPlayer)
+        : {
+              backgroundColor: theme.palette.text.primary,
+              color: theme.palette.getContrastText(theme.palette.text.primary),
+          };
+
     return (
         <>
             <AppBar className={classes.appBar} color="inherit" position="sticky">
@@ -270,7 +296,9 @@ function Game() {
                             {pending ? (
                                 <CircularProgress size="24" />
                             ) : (
-                                <Typography align="center">{`${Phase[phase]}`}</Typography>
+                                <Button variant="contained" color="primary">
+                                    <Typography align="center">{`${Phase[phase]}`}</Typography>
+                                </Button>
                             )}
                             <Tooltip title={Phase[nextPhase]}>
                                 <span>
@@ -299,6 +327,14 @@ function Game() {
                 </Accordion>
             </AppBar>
             <Grid container direction="column">
+                <Toolbar>
+                    <TextWithTooltip
+                        text={`Turn: ${playerTurn}`}
+                        className={classes.playerTurnText}
+                        style={currentTurnPlayerStyle}
+                    />
+                </Toolbar>
+                {getPhaseContents(phase)}
                 <Toolbar className={classes.speakerToolbar}>
                     <Grid container alignItems="center" spacing={1}>
                         <Grid item xs={3}>
@@ -309,7 +345,6 @@ function Game() {
                         </Grid>
                     </Grid>
                 </Toolbar>
-                {getPhaseContents(phase)}
             </Grid>
         </>
     );

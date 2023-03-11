@@ -495,7 +495,7 @@ const Factions: Readonly<Faction[]> = [
     },
 
     {
-        name: 'The Titans of UI',
+        name: 'The Titans of Ul',
         startingUnits: {
             [UnitType.Dreadnought]: 1,
             [UnitType.Cruiser]: 2,

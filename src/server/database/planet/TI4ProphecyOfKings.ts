@@ -54,7 +54,7 @@ const Planets: readonly Planet[] = [
     },
     {
         name: 'Elysium',
-        home: 'The Titans of UI',
+        home: 'The Titans of Ul',
         resources: 4,
         influence: 1,
     },
@@ -114,7 +114,7 @@ const Planets: readonly Planet[] = [
         resources: 2,
         influence: 1,
         legendary:
-            'The Atrament: You may exhaust this card at the end of your turn to place up to 2 infantry from your reinforcements on any planet you control.',
+            'The Atrament: You may exhaust the ability card at the end of your turn to place up to 2 infantry from your reinforcements on any planet you control.',
     },
     {
         name: "Hope's End",
@@ -122,7 +122,7 @@ const Planets: readonly Planet[] = [
         resources: 3,
         influence: 0,
         legendary:
-            'Imperial Arms Vault: You may exhaust this card at the end of your turn to place 1 mech from your reinforcements on any planet you control, or draw 1 action card',
+            'Imperial Arms Vault: You may exhaust the ability card at the end of your turn to place 1 mech from your reinforcements on any planet you control, or draw 1 action card',
     },
     {
         name: 'Cormund',
@@ -254,7 +254,7 @@ const Planets: readonly Planet[] = [
         resources: 0,
         influence: 3,
         legendary:
-            'Exterrix Headquarters: You may exhaust this card at the end of your turn to gain 2 trade goods or convert all of your commodities into trade goods.',
+            'Exterrix Headquarters: You may exhaust the ability card at the end of your turn to gain 2 trade goods or convert all of your commodities into trade goods.',
     },
     {
         name: 'Mirage',
@@ -262,7 +262,7 @@ const Planets: readonly Planet[] = [
         resources: 1,
         influence: 2,
         legendary:
-            'Mirage Flight Academy: You may exhaust this card at the end of your turn to place up to 2 fighters from your reinforcements in any system that contains 1 or more of your ships.',
+            'Mirage Flight Academy: You may exhaust the ability card at the end of your turn to place up to 2 fighters from your reinforcements in any system that contains 1 or more of your ships.',
     },
 ];
 

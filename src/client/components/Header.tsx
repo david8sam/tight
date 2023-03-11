@@ -44,7 +44,7 @@ function Header() {
         }
     };
 
-    const accoutnName = loggedIn ? account?.name : '';
+    const accountName = loggedIn ? account?.name : '';
 
     let connectionStatus = null;
     if (connectError) {
@@ -88,7 +88,7 @@ function Header() {
                                 <MenuIcon />
                             </IconButton>
                         </Tooltip>
-                        <TextWithTooltip text={accoutnName ?? ''} width={connectError ? '25%' : '75%'} variant="h6" />
+                        <TextWithTooltip text={accountName ?? ''} width={connectError ? '25%' : '75%'} variant="h6" />
                     </Grid>
                     {connectionStatus}
                     <Tooltip title={theme === 'light' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}>

@@ -1,11 +1,36 @@
 import React from 'react';
 import { Table, TableHead, TableRow, TableCell, TableBody, Select, MenuItem } from '@material-ui/core';
 
-import { GameJoinStatus, GamePlayer, getPlayersInGame, StrategyCard } from 'common/Game';
+import {
+    buildStrategyCardOwners,
+    Game,
+    GameJoinStatus,
+    GamePlayer,
+    getPlayersInGame,
+    StrategyCard,
+    strategyCardHasOwner,
+    StrategyCardIndex,
+} from 'common/Game';
+import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
 import useAccountInfo from '../hooks/useAccountInfo';
-import { MessageType } from 'common/message';
+
+function canSelectStrategyCard(strategyCard: StrategyCard, game: Game, player: GamePlayer) {
+    // Can always select NONE
+    if (strategyCard.initiative === StrategyCardIndex.NONE) {
+        return true;
+    }
+
+    // Can always select the player's currently selected card
+    if (player.strategyCard === strategyCard.initiative) {
+        return true;
+    }
+
+    // Only allow selecting unselected cards
+    const stratCardOwners = buildStrategyCardOwners(game);
+    return !strategyCardHasOwner(stratCardOwners, strategyCard.initiative);
+}
 
 export default function AssignStrategyCardTable() {
     const { state, sendData } = useAppContext();
@@ -45,11 +70,13 @@ export default function AssignStrategyCardTable() {
                                     <MenuItem button key={0} value={0}>
                                         {'NONE'}
                                     </MenuItem>
-                                    {strategyCards.map((s: StrategyCard) => (
-                                        <MenuItem button key={s.initiative} value={s.initiative}>
-                                            {s.name}
-                                        </MenuItem>
-                                    ))}
+                                    {strategyCards
+                                        .filter(s => canSelectStrategyCard(s, game, player))
+                                        .map(s => (
+                                            <MenuItem button key={s.initiative} value={s.initiative}>
+                                                {s.name}
+                                            </MenuItem>
+                                        ))}
                                 </Select>
                             </TableCell>
                         </TableRow>

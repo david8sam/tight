@@ -7,7 +7,6 @@ import {
     IconButtonProps,
     makeStyles,
     Popover,
-    Theme,
     Toolbar,
     Tooltip,
     Typography,
@@ -15,23 +14,8 @@ import {
 } from '@material-ui/core';
 import InfoIcon from '@material-ui/icons/Info';
 
-import {
-    calculateVictoryPoints,
-    Game,
-    GameJoinStatus,
-    GamePlayer,
-    getPlayersInGame,
-    Phase,
-    StrategyCardIndex,
-} from 'common/Game';
+import { calculateVictoryPoints, Game, GameJoinStatus, GamePlayer, getPlayerColors, getPlayerTurn } from 'common/Game';
 import TextWithTooltip from './TextWithTooltip';
-
-function getPlayerColors(theme: Theme, player: GamePlayer): { color: string; backgroundColor: string } {
-    const playerColor = player.color || '#fff';
-    const color = theme.palette.getContrastText(playerColor);
-    const backgroundColor = playerColor;
-    return { color, backgroundColor };
-}
 
 const useStyle = makeStyles(theme => ({
     infoPaper: {
@@ -103,17 +87,8 @@ export default function GameInfoToolbar(props: GameInfoToolbarProps) {
     const [infoOpen, setInfoOpen] = useState(false);
     const infoRef = useRef<HTMLButtonElement>(null);
 
-    const { started, round, phase, turn, pickOrder, pickTurn } = status;
-
-    let playerTurn = null;
-    if (phase === Phase.STRATEGY) {
-        playerTurn = pickOrder[pickTurn];
-    } else if (turn === StrategyCardIndex.END) {
-        playerTurn = 'END';
-    } else {
-        const player = getPlayersInGame(game).find(p => p.strategyCard === turn);
-        playerTurn = player ? player.name : null;
-    }
+    const { started, round } = status;
+    const playerTurn = getPlayerTurn(game);
 
     const onInfoButtonClick: IconButtonProps['onClick'] = e => {
         setInfoOpen(true);
