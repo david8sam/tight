@@ -325,8 +325,6 @@ function Game() {
                         </Grid>
                     </AccordionDetails>
                 </Accordion>
-            </AppBar>
-            <Grid container direction="column">
                 <Toolbar>
                     <TextWithTooltip
                         text={`Turn: ${playerTurn}`}
@@ -334,6 +332,8 @@ function Game() {
                         style={currentTurnPlayerStyle}
                     />
                 </Toolbar>
+            </AppBar>
+            <Grid container direction="column">
                 {getPhaseContents(phase)}
                 <Toolbar className={classes.speakerToolbar}>
                     <Grid container alignItems="center" spacing={1}>

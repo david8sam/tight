@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Grid, makeStyles, Typography, useTheme } from '@material-ui/core';
+import { AccordionProps, Grid, makeStyles, Typography, useTheme } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 import { calculateVictoryPoints, Objective } from 'common/Game';
@@ -26,15 +26,17 @@ const useStyles = makeStyles(theme => ({
 }));
 
 interface VictoryPointsProps {
-    playerId: string;
+    AccordionProps?: Partial<AccordionProps>;
     allowShowSecret?: boolean;
     disabled?: boolean;
+    hideExtraVp?: boolean;
+    playerId: string;
 }
 
 function VictoryPoints(props: VictoryPointsProps) {
     const theme = useTheme();
     const classes = useStyles(props);
-    const { playerId, allowShowSecret = false, disabled = false } = props;
+    const { playerId, allowShowSecret = false, disabled = false, AccordionProps, hideExtraVp } = props;
     const { sendData } = useAppContext();
     const { game, gameId, playerId: currentPlayerId } = useAccountInfo();
 
@@ -95,7 +97,7 @@ function VictoryPoints(props: VictoryPointsProps) {
     const totalvp = calculateVictoryPoints(game, playerId);
 
     return (
-        <Accordion disableMargin>
+        <Accordion disableMargin {...AccordionProps}>
             <AccordionSummary disableMargin expandIcon={<ExpandMoreIcon />}>
                 <Typography>{`${totalvp} Victory Points`}</Typography>
             </AccordionSummary>
@@ -128,7 +130,7 @@ function VictoryPoints(props: VictoryPointsProps) {
                             onSave={onSecretObjectiveSave}
                         />
                     ))}
-                    <VictoryPointsExtra playerId={playerId} disabled={disabled} />
+                    {!hideExtraVp && <VictoryPointsExtra playerId={playerId} disabled={disabled} />}
                 </Grid>
             </AccordionDetails>
         </Accordion>

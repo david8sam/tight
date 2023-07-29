@@ -107,7 +107,7 @@ function PlayerSetup() {
                             <Button
                                 color="primary"
                                 variant="contained"
-                                disabled={disableNext || (step === 1 && isSpectator) || (pending && step === 0)}
+                                disabled={disableNext || isSpectator || (pending && step === 0)}
                                 onClick={step === 1 ? onStartClick : () => onSetupStepChange(1)}
                             >
                                 {nextLabel}

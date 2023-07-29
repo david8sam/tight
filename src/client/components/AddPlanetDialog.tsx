@@ -95,8 +95,6 @@ function AddPlanetDialog(props: AddPlanetDialogProps) {
             <DialogContent classes={{ root: classes.content }}>
                 <PlanetsTable
                     columns={['name', 'owner']}
-                    showFilterByName
-                    showFilterByOwner
                     gameId={gameId}
                     showCheckbox
                     selection={selection}

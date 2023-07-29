@@ -9,7 +9,10 @@ import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
 import useAccountInfo from '../hooks/useAccountInfo';
+
 import PlayerHeader from './PlayerHeader';
+import SpeakerSelect from './SpeakerSelect';
+import VictoryPoints from './VictoryPoints';
 import VictoryPointsExtra from './VictoryPointsExtra';
 
 const useStyles = makeStyles(theme => ({
@@ -28,11 +31,22 @@ const useStyles = makeStyles(theme => ({
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
     toolbarGutters: {
-        paddingLeft: theme.spacing(1),
-        paddingRight: theme.spacing(1),
+        padding: theme.spacing(1),
+    },
+    toolbarRegular: {
+        minHeight: 'auto',
     },
     button: {
         padding: theme.spacing(0.5),
+    },
+    speakerSelect: {
+        marginTop: theme.spacing(1),
+    },
+    vpAccordion: {
+        backgroundColor: 'rgba(0,0,0,0)',
+        '&::before': {
+            backgroundColor: 'rgba(0,0,0,0)',
+        },
     },
 }));
 
@@ -82,6 +96,10 @@ function ActionPhase() {
                 const { id: playerId } = player;
                 const playerIndex = playerOrder.findIndex(p => p.id === playerId);
                 const playerDone = player.passed || currentPlayerIndex > playerIndex;
+                const isPoliticsAndFlipped =
+                    player.strategyCard === StrategyCardIndex.POLITICS && player.stragetyCardFlipped;
+                const isImperialAndFlipped =
+                    player.strategyCard === StrategyCardIndex.IMPERIAL && player.stragetyCardFlipped;
 
                 return (
                     <Card key={playerId} variant="outlined" classes={{ root: classes.card }}>
@@ -93,37 +111,57 @@ function ActionPhase() {
                                 classes={{
                                     root: classNames({ [classes.doneBackground]: playerDone }),
                                     gutters: classes.toolbarGutters,
+                                    regular: classes.toolbarRegular,
                                 }}
                             >
-                                <Grid container direction="row" justifyContent="space-between" alignItems="center">
-                                    <VictoryPointsExtra playerId={playerId} disabled={isSpectator} />
-                                    <Button
-                                        classes={{ root: classes.button }}
-                                        color="primary"
-                                        variant="contained"
-                                        onClick={() => onPassClick(playerId, !player.passed)}
-                                        disabled={isSpectator || !player.stragetyCardFlipped}
-                                    >
-                                        {player.passed ? 'UNPASS' : 'PASS'}
-                                    </Button>
-                                    <Button
-                                        classes={{ root: classes.button }}
-                                        color="primary"
-                                        variant="contained"
-                                        onClick={() => onFlipCardClick(playerId, !player.stragetyCardFlipped)}
-                                        disabled={isSpectator}
-                                    >
-                                        {player.stragetyCardFlipped ? 'UNFLIP' : 'FLIP'}
-                                    </Button>
-                                    <Button
-                                        classes={{ root: classes.button }}
-                                        color="primary"
-                                        variant="contained"
-                                        disabled={isSpectator || player.passed}
-                                        onClick={() => onNextTurn(player, !playerDone)}
-                                    >
-                                        {playerDone ? 'UNDONE' : 'DONE'}
-                                    </Button>
+                                <Grid container direction="column">
+                                    <Grid container direction="row" justifyContent="space-between" alignItems="center">
+                                        <VictoryPointsExtra playerId={playerId} disabled={isSpectator} />
+                                        <Button
+                                            classes={{ root: classes.button }}
+                                            color="primary"
+                                            variant="contained"
+                                            onClick={() => onPassClick(playerId, !player.passed)}
+                                            disabled={isSpectator || !player.stragetyCardFlipped}
+                                        >
+                                            {player.passed ? 'UNPASS' : 'PASS'}
+                                        </Button>
+                                        <Button
+                                            classes={{ root: classes.button }}
+                                            color="primary"
+                                            variant="contained"
+                                            onClick={() => onFlipCardClick(playerId, !player.stragetyCardFlipped)}
+                                            disabled={isSpectator}
+                                        >
+                                            {player.stragetyCardFlipped ? 'UNFLIP' : 'FLIP'}
+                                        </Button>
+                                        <Button
+                                            classes={{ root: classes.button }}
+                                            color="primary"
+                                            variant="contained"
+                                            disabled={isSpectator || player.passed}
+                                            onClick={() => onNextTurn(player, !playerDone)}
+                                        >
+                                            {playerDone ? 'UNDONE' : 'DONE'}
+                                        </Button>
+                                    </Grid>
+                                    {isPoliticsAndFlipped && (
+                                        <SpeakerSelect
+                                            className={classes.speakerSelect}
+                                            fullWidth
+                                            disabled={isSpectator}
+                                        />
+                                    )}
+                                    {isImperialAndFlipped && (
+                                        <VictoryPoints
+                                            playerId={playerId}
+                                            AccordionProps={{
+                                                className: classes.vpAccordion,
+                                                elevation: 0,
+                                            }}
+                                            hideExtraVp
+                                        />
+                                    )}
                                 </Grid>
                             </Toolbar>
                         </CardContent>

@@ -232,7 +232,7 @@ const Planets: readonly Planet[] = [
         propulsion: 1,
     },
     {
-        name: 'Coorneeq',
+        name: 'Corneeq',
         trait: Traits.CULTURAL,
         resources: 1,
         influence: 2,

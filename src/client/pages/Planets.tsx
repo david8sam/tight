@@ -264,7 +264,7 @@ function Planets() {
             </AppBar>
             <PlanetsTable
                 columns={['name', 'resources', 'influence']}
-                showFilterByName
+                filterByPlanetOnly
                 gameId={gameId}
                 playerId={playerId}
                 onPlanetClick={onPlanetClick}

@@ -103,7 +103,8 @@ function GamesTableRow(props: GamesTableRowProps) {
         let joinStatus = player ? player.joinStatus : GameJoinStatus.PLAYER;
 
         // Spectate if player never joined and game has either already started or is full.
-        if (!player && (status.started || Object.keys(game.players).length === game.numPlayers)) {
+        const numPlayers = Object.values(game.players).filter(p => p.joinStatus === GameJoinStatus.PLAYER).length;
+        if (!player && (status.started || numPlayers === game.numPlayers)) {
             joinStatus = GameJoinStatus.SPECTATOR;
         }
 

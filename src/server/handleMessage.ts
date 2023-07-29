@@ -190,12 +190,13 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
 
             // Anyone can join a game not started yet.
             const canAnyoneJoin = !status.started;
+            const isPlayer = joinStatus === GameJoinStatus.PLAYER;
 
             // When a game has started, only previous players can re-join as players.
-            const canJoinAsPlayer = status.started && joinStatus === GameJoinStatus.PLAYER && players[playerId];
+            const canJoinAsPlayer = status.started && isPlayer && players[playerId];
 
             // Admins and specators can join anytime when a game has started. But not if they were a player before.
-            const canJoinAsNonPlayer = status.started && joinStatus !== GameJoinStatus.PLAYER && !players[playerId];
+            const canJoinAsNonPlayer = status.started && !isPlayer && !players[playerId];
 
             if (canAnyoneJoin || canJoinAsPlayer || canJoinAsNonPlayer) {
                 // Add player to the game

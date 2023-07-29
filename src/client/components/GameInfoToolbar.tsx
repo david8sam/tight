@@ -31,9 +31,6 @@ const useStyle = makeStyles(theme => ({
     turn: {
         width: '30%',
     },
-    info: {
-        width: '40%',
-    },
     round: {
         width: '30%',
     },
@@ -99,13 +96,8 @@ export default function GameInfoToolbar(props: GameInfoToolbarProps) {
 
     return (
         <Toolbar>
-            <Grid container justifyContent="center" alignItems="center">
-                {started && (
-                    <Grid item className={classes.turn}>
-                        <TextWithTooltip text={`Turn: ${playerTurn || ''}`} title={playerTurn || ''} />
-                    </Grid>
-                )}
-                <Grid item className={classes.info}>
+            <Grid container justifyContent="space-between" alignItems="center">
+                <Grid item>
                     <Grid container justifyContent="center" alignItems="center">
                         <Typography variant="h6">{game.name}</Typography>
                         <Tooltip title="Game Info">
@@ -117,7 +109,7 @@ export default function GameInfoToolbar(props: GameInfoToolbarProps) {
                 </Grid>
                 {started && (
                     <Grid item className={classes.round}>
-                        <Typography align="right">{`Round: ${round}`}</Typography>
+                        <Typography variant="h6" align="right">{`Round: ${round}`}</Typography>
                     </Grid>
                 )}
             </Grid>

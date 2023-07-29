@@ -13,7 +13,6 @@ import {
     Toolbar,
     Tooltip,
     TextField,
-    Theme,
     TableSortLabelProps,
 } from '@material-ui/core';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
@@ -32,8 +31,7 @@ export interface PlanetsTableProps {
     playerId?: string | null;
     columns?: ColumnType[];
 
-    showFilterByName?: boolean;
-    showFilterByOwner?: boolean;
+    filterByPlanetOnly?: boolean;
 
     showCheckbox?: boolean;
     selection?: string[];
@@ -98,8 +96,7 @@ function PlanetsTable(props: PlanetsTableProps) {
         gameId,
         playerId,
         columns = DEFAULT_COLUMNS,
-        showFilterByName,
-        showFilterByOwner,
+        filterByPlanetOnly,
         showCheckbox = false,
         selection = [],
         onSelectionChange = () => {},
@@ -108,7 +105,6 @@ function PlanetsTable(props: PlanetsTableProps) {
     } = props;
 
     const [nameFilter, setNameFilter] = useState('');
-    const [ownerFilter, setOwnerFilter] = useState('');
     const [sortBy, setSortBy] = useState<{ key: ColumnType; asc: boolean }>({ key: 'name', asc: true });
 
     const { planets = {} } = gameId && games ? games[gameId] : {};
@@ -117,17 +113,19 @@ function PlanetsTable(props: PlanetsTableProps) {
         names = names.filter(n => planets[n] && planets[n].owner === playerId);
     }
 
-    // Apply name filter
+    // Apply owner filter
     if (nameFilter) {
         const filterLower = nameFilter.toLowerCase();
-        names = names.filter(n => n.toLowerCase().includes(filterLower));
-    }
-
-    // Apply owner filter
-    if (ownerFilter) {
-        const filterLower = ownerFilter.toLowerCase();
         const p = planets || {};
         names = names.filter(n => {
+            if (n.toLowerCase().includes(filterLower)) {
+                return true;
+            }
+
+            if (filterByPlanetOnly) {
+                return false;
+            }
+
             const owner = p[n] && p[n].owner;
             if (!owner) {
                 return false;
@@ -164,7 +162,7 @@ function PlanetsTable(props: PlanetsTableProps) {
         });
     }
 
-    const isFiltered = nameFilter || ownerFilter;
+    const isFiltered = Boolean(nameFilter);
     const filteredSelection = isFiltered ? selection.filter(s => names.includes(s)) : selection;
 
     // Handle row click events
@@ -216,62 +214,36 @@ function PlanetsTable(props: PlanetsTableProps) {
         );
     }
 
-    // Add filter by planet names
-    let filterByName = null;
-    if (showFilterByName) {
-        filterByName = (
-            <Toolbar classes={{ root: classes.toolbar }}>
-                <TextField
-                    variant="outlined"
-                    fullWidth
-                    value={nameFilter}
-                    label="Filter By Name"
-                    onChange={e => setNameFilter(e.target.value)}
-                    InputProps={{
-                        endAdornment: (
+    // Add filter by plant or owner names
+    const filterByName = (
+        <Toolbar classes={{ root: classes.toolbar }}>
+            <TextField
+                variant="outlined"
+                fullWidth
+                value={nameFilter}
+                label={`Filter By Name${filterByPlanetOnly ? '' : ' or Owner'}`}
+                onChange={e => setNameFilter(e.target.value)}
+                InputProps={{
+                    endAdornment: (
+                        <>
+                            {!filterByPlanetOnly && (
+                                <Tooltip title="My Planets">
+                                    <IconButton onClick={() => setNameFilter(loggedInPlayer || '')}>
+                                        <AccountCircleIcon />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
                             <Tooltip title="clear">
                                 <IconButton onClick={() => setNameFilter('')}>
                                     <CloseIcon />
                                 </IconButton>
                             </Tooltip>
-                        ),
-                    }}
-                />
-            </Toolbar>
-        );
-    }
-
-    // Add filter by owner names
-    let filterByOwner = null;
-    if (showFilterByOwner) {
-        filterByOwner = (
-            <Toolbar classes={{ root: classes.toolbar }}>
-                <TextField
-                    variant="outlined"
-                    fullWidth
-                    value={ownerFilter}
-                    label="Filter By Owner"
-                    onChange={e => setOwnerFilter(e.target.value)}
-                    InputProps={{
-                        endAdornment: (
-                            <>
-                                <Tooltip title="My Planets">
-                                    <IconButton onClick={() => setOwnerFilter(loggedInPlayer || '')}>
-                                        <AccountCircleIcon />
-                                    </IconButton>
-                                </Tooltip>
-                                <Tooltip title="clear">
-                                    <IconButton onClick={() => setOwnerFilter('')}>
-                                        <CloseIcon />
-                                    </IconButton>
-                                </Tooltip>
-                            </>
-                        ),
-                    }}
-                />
-            </Toolbar>
-        );
-    }
+                        </>
+                    ),
+                }}
+            />
+        </Toolbar>
+    );
 
     // Handle sort when clicking on a table column header
     const onSortBy = (headerKey: ColumnType) => {
@@ -288,7 +260,6 @@ function PlanetsTable(props: PlanetsTableProps) {
     return (
         <>
             {filterByName}
-            {filterByOwner}
             <Table>
                 <TableHead>
                     <TableRow>
