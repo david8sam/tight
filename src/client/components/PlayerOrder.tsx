@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from 'react';
-import { MenuItem, Select, Table, TableHead, TableRow, TableCell, TableBody } from '@material-ui/core';
+import { MenuItem, Select, Table, TableHead, TableRow, TableCell, TableBody } from '@mui/material';
 
 import { GameJoinStatus, getPlayersInGame } from 'common/Game';
 import { MessageType } from 'common/message';
@@ -49,15 +49,13 @@ function PlayerOrder() {
                                     fullWidth
                                     variant="outlined"
                                     value={pickOrder[i] || DEFAULT_PLAYER}
-                                    onChange={(e: ChangeEvent<{ value: unknown }>) =>
-                                        onOrderChange(e.target.value as string, i)
-                                    }
+                                    onChange={e => onOrderChange(e.target.value as string, i)}
                                 >
-                                    <MenuItem key={DEFAULT_PLAYER} value={DEFAULT_PLAYER} button disabled divider>
+                                    <MenuItem key={DEFAULT_PLAYER} value={DEFAULT_PLAYER} disabled divider>
                                         {DEFAULT_PLAYER}
                                     </MenuItem>
                                     {playerNames.map((name: string) => (
-                                        <MenuItem key={name} value={name} button>
+                                        <MenuItem key={name} value={name}>
                                             {name}
                                         </MenuItem>
                                     ))}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 
+import CloseIcon from '@mui/icons-material/Close';
 import {
     AppBar,
     Button,
@@ -10,15 +11,14 @@ import {
     Grid,
     IconButton,
     InputLabel,
-    makeStyles,
     MenuItem,
     Select,
     TextField,
     Toolbar,
     Tooltip,
     Typography,
-} from '@material-ui/core';
-import CloseIcon from '@material-ui/icons/Close';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { Game, generateBlankPublicObjectives, Objective } from 'common/Game';
 import { MessageType } from 'common/message';
@@ -116,7 +116,7 @@ function NewGameDialog(props: NewGameDialogProps) {
             <AppBar classes={{ root: classes.appBar }}>
                 <Toolbar>
                     <Tooltip title="Close">
-                        <IconButton onClick={onCancel}>
+                        <IconButton onClick={onCancel} size="large">
                             <CloseIcon />
                         </IconButton>
                     </Tooltip>
@@ -131,7 +131,7 @@ function NewGameDialog(props: NewGameDialogProps) {
             <DialogContent dividers>
                 <Grid container direction="column" justifyContent="center" alignItems="center" spacing={2}>
                     <Grid item className={classes.gridItem}>
-                        <FormControl fullWidth>
+                        <FormControl variant="standard" fullWidth>
                             <TextField
                                 variant="outlined"
                                 fullWidth
@@ -148,13 +148,14 @@ function NewGameDialog(props: NewGameDialogProps) {
                         <FormControl fullWidth variant="outlined">
                             <InputLabel id="num-players">Number of Players</InputLabel>
                             <Select
+                                variant="standard"
                                 labelId="num-players"
                                 value={numPlayers}
                                 onChange={e => onGameOptionChange({ numPlayers: Number(e?.target?.value) })}
                                 label="Number of Players"
                             >
                                 {NUM_PLAYER_OPTIONS.map(({ label, value }) => (
-                                    <MenuItem button key={value} value={value}>
+                                    <MenuItem key={value} value={value}>
                                         {label}
                                     </MenuItem>
                                 ))}
@@ -165,13 +166,14 @@ function NewGameDialog(props: NewGameDialogProps) {
                         <FormControl fullWidth variant="outlined">
                             <InputLabel id="num-rounds">Number of Rounds</InputLabel>
                             <Select
+                                variant="standard"
                                 labelId="num-rounds"
                                 value={numRounds}
                                 onChange={e => onGameOptionChange({ numRounds: Number(e?.target?.value) })}
                                 label="Number of Players"
                             >
                                 {NUM_ROUNDS_OPTIONS.map(({ label, value }) => (
-                                    <MenuItem button key={value} value={value}>
+                                    <MenuItem key={value} value={value}>
                                         {label}
                                     </MenuItem>
                                 ))}
@@ -182,13 +184,14 @@ function NewGameDialog(props: NewGameDialogProps) {
                         <FormControl fullWidth variant="outlined">
                             <InputLabel id="num-vps">Victory Points To Win</InputLabel>
                             <Select
+                                variant="standard"
                                 labelId="num-vps"
                                 value={numVictoryPoints}
                                 onChange={e => onGameOptionChange({ numVictoryPoints: Number(e?.target?.value) })}
                                 label="Victory Points To Win"
                             >
                                 {NUM_VP_OPTIONS.map(({ label, value }) => (
-                                    <MenuItem button key={value} value={value}>
+                                    <MenuItem key={value} value={value}>
                                         {label}
                                     </MenuItem>
                                 ))}

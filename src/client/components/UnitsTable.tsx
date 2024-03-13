@@ -1,9 +1,10 @@
 import React from 'react';
 
-import { makeStyles, Table, TableBody, TableCell, TableHead, TableRow } from '@material-ui/core';
+import { Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
+import Typography from '@mui/material/Typography';
+import { makeStyles } from '@mui/styles';
 
 import { UnitCountMap } from 'common/Faction';
-import Typography from '@material-ui/core/Typography';
 
 const useStyle = makeStyles(() => ({
     headerCell: {

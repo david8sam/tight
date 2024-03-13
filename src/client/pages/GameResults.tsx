@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Divider, Grid, Toolbar, Typography } from '@material-ui/core';
+import { Button, Divider, Grid, Toolbar, Typography } from '@mui/material';
 
 import { GameJoinStatus } from 'common/Game';
 import { MessageType } from 'common/message';

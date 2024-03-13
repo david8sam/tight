@@ -1,16 +1,16 @@
 import chalk from 'chalk';
-import moment from 'moment';
+import { format } from 'date-fns';
+import util from 'util';
 
-import { MessageType } from 'common/message';
+import { MessageType } from 'common/message.js';
 
-const util = require('util');
 const isDev = process.env.NODE_ENV === 'development';
 if (isDev) {
     util.inspect.defaultOptions.depth = null;
 }
 
 function formatTime() {
-    return chalk.grey(`[${moment(Date.now()).format('HH:mm:ss')}]`);
+    return chalk.grey(`[${format(Date.now(), 'HH:mm:ss')}]`);
 }
 
 /**

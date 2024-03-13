@@ -1,17 +1,8 @@
 import React, { useState } from 'react';
 
-import {
-    AppBar,
-    Button,
-    Dialog,
-    DialogContent,
-    IconButton,
-    makeStyles,
-    Toolbar,
-    Tooltip,
-    Typography,
-} from '@material-ui/core';
-import CloseIcon from '@material-ui/icons/Close';
+import CloseIcon from '@mui/icons-material/Close';
+import { AppBar, Button, Dialog, DialogContent, IconButton, Toolbar, Tooltip, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { MessageType } from 'common/message';
 
@@ -80,7 +71,7 @@ function AddPlanetDialog(props: AddPlanetDialogProps) {
             <AppBar classes={{ root: classes.appBar }}>
                 <Toolbar>
                     <Tooltip title="Close">
-                        <IconButton onClick={onCancel}>
+                        <IconButton onClick={onCancel} size="large">
                             <CloseIcon />
                         </IconButton>
                     </Tooltip>

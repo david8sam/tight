@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 
-import { IconButton, makeStyles, Toolbar, Tooltip, Typography } from '@material-ui/core';
-import AddIcon from '@material-ui/icons/Add';
+import AddIcon from '@mui/icons-material/Add';
+import { IconButton, Toolbar, Tooltip, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { useAppContext } from '../Context';
 import GamesTable from '../components/GamesTable';
@@ -30,7 +31,7 @@ export default function ManageGames() {
                     MANAGE GAMES
                 </Typography>
                 <Tooltip title="Create">
-                    <IconButton onClick={() => setOpenCreateDialog(true)}>
+                    <IconButton onClick={() => setOpenCreateDialog(true)} size="large">
                         <AddIcon />
                     </IconButton>
                 </Tooltip>

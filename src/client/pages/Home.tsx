@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Button, CircularProgress, Container, FormControl, makeStyles, TextField, Typography } from '@material-ui/core';
+import { Button, CircularProgress, Container, FormControl, TextField, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { LoginStatus } from 'common/Account';
 import { MessageType } from 'common/message';
@@ -19,7 +20,7 @@ const useStyles = makeStyles(theme => ({
         justifyContent: 'center',
     },
     loginContainer: {
-        margin: `${theme.spacing(4)}px ${theme.spacing(1)}px`,
+        margin: `${theme.spacing(4)} ${theme.spacing(1)}`,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
@@ -68,7 +69,7 @@ function Home() {
                 (TIGHT)
             </Typography>
             <form className={classes.loginContainer} onSubmit={accountInUse ? e => e.preventDefault() : onLoginClick}>
-                <FormControl>
+                <FormControl variant="standard">
                     <TextField
                         color="primary"
                         variant="outlined"
@@ -78,7 +79,7 @@ function Home() {
                         onChange={e => setName(e.target.value)}
                     />
                 </FormControl>
-                <FormControl>
+                <FormControl variant="standard">
                     <Button
                         disabled={accountInUse || !Boolean(name) || loginStatus === LoginStatus.LOGIN_PENDING}
                         classes={{ root: classes.loginButton }}

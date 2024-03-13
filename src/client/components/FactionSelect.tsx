@@ -1,11 +1,11 @@
 import React from 'react';
-import { Select, MenuItem, SelectProps } from '@material-ui/core';
+import { Select, MenuItem, SelectProps } from '@mui/material';
 
 export const DEFAULT_FACTION_VALUE = 'FACTION';
 
-export interface FactionSelectProps extends SelectProps {
+export type FactionSelectProps = Omit<SelectProps, 'variant'> & {
     factionNames: string[];
-}
+};
 
 function FactionSelect(props: FactionSelectProps) {
     const { factionNames, ...SelectProps } = props;

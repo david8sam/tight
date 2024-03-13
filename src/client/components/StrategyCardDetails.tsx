@@ -1,7 +1,9 @@
 import React from 'react';
 
-import { Grid, TextField, makeStyles, Typography } from '@material-ui/core';
-import { Version, ExpansionVersionNames } from 'common/Game';
+import { Grid, TextField, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+
+import { ExpansionVersionNames, Version } from 'common/Game';
 
 const useStyles = makeStyles(theme => ({
     primary: {},

@@ -1,7 +1,10 @@
 {
     "extends": "./tsconfig.json",
+    "exclude": ["src/server"],
     "compilerOptions": {
-        "outDir": "./dist/"
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "outDir": "./dist/",
+        "target": "ES6",
     },
-    "exclude": ["src/server"]
 }

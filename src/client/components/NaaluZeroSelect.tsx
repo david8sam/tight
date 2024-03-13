@@ -1,13 +1,13 @@
 import React from 'react';
 
-import { MenuItem, Select, SelectProps, Typography } from '@material-ui/core';
+import { MenuItem, Select, SelectProps, Typography } from '@mui/material';
 
 import { getPlayersInGame } from 'common/Game';
 import { MessageType } from 'common/message';
 import { useAppContext } from '../Context';
 import useAccountInfo from '../hooks/useAccountInfo';
 
-export interface NaaluZeroSelectProps extends Omit<SelectProps, 'value' | 'onChange'> {}
+export interface NaaluZeroSelectProps extends Omit<SelectProps, 'value' | 'onChange' | 'variant'> {}
 
 export default function NaaluZeroSelect(props: NaaluZeroSelectProps) {
     const { sendData } = useAppContext();

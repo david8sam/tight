@@ -1,10 +1,11 @@
-import WS from 'ws';
+import { WebSocketServer as WSServer, WebSocket as WS } from 'ws';
 
-import { AccountMap } from 'common/Account';
-import { MessageType, ChangeData } from 'common/message';
-import { logDebug, logWS } from './log';
+import { AccountMap } from 'common/Account.js';
+import { MessageType, ChangeData } from 'common/message.js';
 
-export interface WebSocketServer extends WS.Server {}
+import { logDebug, logWS } from './log.js';
+
+export interface WebSocketServer extends WSServer {}
 
 export interface WebSocket extends WS {
     isAlive: boolean;

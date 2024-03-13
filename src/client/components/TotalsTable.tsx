@@ -1,7 +1,9 @@
 import React from 'react';
-import { makeStyles, Table, TableBody, TableCell, TableHead, TableRow, TableCellProps } from '@material-ui/core';
 
-import { Resources, Influence, Biotic, Warfare, Propulsion, Cybernetic } from './PlanetIcons';
+import { Table, TableBody, TableCell, TableCellProps, TableHead, TableRow } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+
+import { Biotic, Cybernetic, Influence, Propulsion, Resources, Warfare } from './PlanetIcons';
 
 export interface TotalsTableProps {
     resources: number;

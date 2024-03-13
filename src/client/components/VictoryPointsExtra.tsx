@@ -1,12 +1,13 @@
 import React from 'react';
 
-import { Grid, Tooltip, IconButton, makeStyles, Typography } from '@material-ui/core';
-import AddIcon from '@material-ui/icons/Add';
-import MinusIcon from '@material-ui/icons/Remove';
+import AddIcon from '@mui/icons-material/Add';
+import MinusIcon from '@mui/icons-material/Remove';
+import { Grid, IconButton, Tooltip, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
+import { MessageType } from 'common/message';
 import { useAppContext } from '../Context';
 import useAccountInfo from '../hooks/useAccountInfo';
-import { MessageType } from 'common/message';
 
 const useStyles = makeStyles(theme => ({
     grid: {
@@ -47,6 +48,7 @@ function VictoryPointsExtra(props: VictoryPointsExtraProps) {
                         classes={{ root: classes.iconButton }}
                         disabled={disabled || victoryPoints < 1}
                         onClick={() => onVictoryPointsChange(victoryPoints - 1)}
+                        size="large"
                     >
                         <MinusIcon />
                     </IconButton>
@@ -67,6 +69,7 @@ function VictoryPointsExtra(props: VictoryPointsExtraProps) {
                         classes={{ root: classes.iconButton }}
                         onClick={() => onVictoryPointsChange(victoryPoints + 1)}
                         disabled={disabled}
+                        size="large"
                     >
                         <AddIcon />
                     </IconButton>

@@ -1,7 +1,7 @@
 import React, { MouseEvent, useState } from 'react';
 
-import { IconButton, Popover, Tooltip, List, ListItem, ListItemAvatar, ListItemText } from '@material-ui/core';
-import InfoIcon from '@material-ui/icons/Info';
+import { IconButton, Popover, Tooltip, List, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
+import InfoIcon from '@mui/icons-material/Info';
 import {
     Resources,
     Influence,
@@ -79,7 +79,7 @@ function PlanetIconInfoButton() {
     return (
         <>
             <Tooltip title="Planet Icon Info">
-                <IconButton onClick={onButtonClick}>
+                <IconButton onClick={onButtonClick} size="large">
                     <InfoIcon />
                 </IconButton>
             </Tooltip>

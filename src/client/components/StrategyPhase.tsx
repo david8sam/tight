@@ -1,7 +1,7 @@
 import React, { MouseEvent } from 'react';
 
-import { Grid, Toolbar, Typography } from '@material-ui/core';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import { Grid, Toolbar, Typography } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 import {
     buildStrategyCardOwners,

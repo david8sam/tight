@@ -1,6 +1,6 @@
 import React from 'react';
-import { Typography } from '@material-ui/core';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import { Typography } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 import { UnitCountMap } from 'common/Faction';
 

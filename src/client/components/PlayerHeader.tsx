@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { Grid, makeStyles, Typography, useTheme } from '@material-ui/core';
+import { Grid, Typography, useTheme } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { GamePlayer } from 'common/Game';
 
@@ -9,8 +10,8 @@ import InitiativeLabel from './InitiativeLabel';
 
 const useStyles = makeStyles(theme => ({
     card: {
-        border: `${theme.spacing(0.25)}px solid ${theme.palette.text.primary}`,
-        margin: `${theme.spacing(0.5)}px ${theme.spacing(1)}px`,
+        border: `${theme.spacing(0.25)} solid ${theme.palette.text.primary}`,
+        margin: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
         position: 'relative',
     },
     cardContent: {
@@ -20,7 +21,7 @@ const useStyles = makeStyles(theme => ({
         },
     },
     playerInfo: {
-        padding: `0px ${theme.spacing(1)}px`,
+        padding: `0px ${theme.spacing(1)}`,
     },
 }));
 

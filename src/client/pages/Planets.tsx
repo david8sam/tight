@@ -1,21 +1,22 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { AppBar, Divider, IconButton, makeStyles, Toolbar, Tooltip, Typography } from '@material-ui/core';
-import EditIcon from '@material-ui/icons/Edit';
-import SyncIcon from '@material-ui/icons/Sync';
-import SyncDisabledIcon from '@material-ui/icons/SyncDisabled';
 
-import debounce from 'lodash/debounce';
-import isEmpty from 'lodash/isEmpty';
+import EditIcon from '@mui/icons-material/Edit';
+import SyncIcon from '@mui/icons-material/Sync';
+import SyncDisabledIcon from '@mui/icons-material/SyncDisabled';
+import { AppBar, Divider, IconButton, Toolbar, Tooltip, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+
+import { debounce, isEmpty } from 'lodash-es';
 
 import { GamePlanetMap } from 'common/Game';
 import { MessageType } from 'common/message';
 
-import { HEADER_HEIGHT } from '../constants';
 import { useAppContext } from '../Context';
 import AddPlanetDialog from '../components/AddPlanetDialog';
 import PlanetIconInfoButton from '../components/PlanetIconInfoButton';
 import PlanetsTable from '../components/PlanetsTable';
 import TotalsTable, { TotalsTableProps } from '../components/TotalsTable';
+import { HEADER_HEIGHT } from '../constants';
 import useAccountInfo from '../hooks/useAccountInfo';
 import useAutoNavigate from '../hooks/useAutoNavigate';
 import { SendDataFunction } from '../hooks/useWebSocket';
@@ -234,6 +235,7 @@ function Planets() {
                             <IconButton
                                 disabled={exhaustedPlanets.length === 0 || playerPlanetNames.length === 0}
                                 onClick={() => onRefreshAll(true)}
+                                size="large"
                             >
                                 <SyncIcon />
                             </IconButton>
@@ -244,6 +246,7 @@ function Planets() {
                             <IconButton
                                 disabled={exhaustedPlanets.length === playerPlanetNames.length}
                                 onClick={() => onRefreshAll(false)}
+                                size="large"
                             >
                                 <SyncDisabledIcon />
                             </IconButton>
@@ -254,7 +257,11 @@ function Planets() {
                     <Divider orientation="vertical" />
                     <Tooltip title="Add/Remove Planets">
                         <span>
-                            <IconButton disabled={!gameId || !playerId} onClick={() => setOpenAddDialog(true)}>
+                            <IconButton
+                                disabled={!gameId || !playerId}
+                                onClick={() => setOpenAddDialog(true)}
+                                size="large"
+                            >
                                 <EditIcon />
                             </IconButton>
                         </span>

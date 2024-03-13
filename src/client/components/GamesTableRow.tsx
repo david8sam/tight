@@ -1,6 +1,10 @@
 import React, { useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
+import DeleteIcon from '@mui/icons-material/Delete';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import {
     Button,
     ButtonProps,
@@ -8,20 +12,16 @@ import {
     Divider,
     IconButton,
     ListItemIcon,
-    makeStyles,
     MenuItem,
     MenuList,
     Popover,
     TableCell,
     TableRow,
     Typography,
-} from '@material-ui/core';
-import DeleteIcon from '@material-ui/icons/Delete';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
-import SupervisorAccountIcon from '@material-ui/icons/SupervisorAccount';
-import VisibilityIcon from '@material-ui/icons/Visibility';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
-import { GameJoinStatus, Game } from 'common/Game';
+import { Game, GameJoinStatus } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
@@ -151,7 +151,7 @@ function GamesTableRow(props: GamesTableRowProps) {
             </TableCell>
             <TableCell width="20%">{button}</TableCell>
             <TableCell width="10%">
-                <IconButton ref={rowOptionsRef} onClick={() => setRowOptionsOpen(true)}>
+                <IconButton ref={rowOptionsRef} onClick={() => setRowOptionsOpen(true)} size="large">
                     <MoreVertIcon />
                 </IconButton>
                 <Popover

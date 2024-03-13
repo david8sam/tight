@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { Avatar, AvatarProps, makeStyles, Tooltip, Typography, useTheme } from '@material-ui/core';
+import { Avatar, AvatarProps, Tooltip, Typography, useTheme } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { GamePlayer } from 'common/Game';
 

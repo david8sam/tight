@@ -1,8 +1,10 @@
-import React, { useState, ReactNode } from 'react';
+import React, { ReactNode, useState } from 'react';
+
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import CloseIcon from '@mui/icons-material/Close';
 import {
     Checkbox,
     IconButton,
-    makeStyles,
     Table,
     TableBody,
     TableCell,
@@ -10,17 +12,16 @@ import {
     TableHead,
     TableRow,
     TableSortLabel,
+    TableSortLabelProps,
+    TextField,
     Toolbar,
     Tooltip,
-    TextField,
-    TableSortLabelProps,
-} from '@material-ui/core';
-import AccountCircleIcon from '@material-ui/icons/AccountCircle';
-import CloseIcon from '@material-ui/icons/Close';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { useAppContext } from '../Context';
 import { PlanetData } from '../types';
-import { Resources, Influence } from './PlanetIcons';
+import { Influence, Resources } from './PlanetIcons';
 import PlanetNameCell, { PlanetNameCellProps } from './PlanetNameCell';
 
 export type ColumnType = keyof PlanetData;
@@ -46,7 +47,7 @@ const useStyle = makeStyles(theme => ({
         flex: '1 1 100%',
     },
     toolbar: {
-        margin: `${theme.spacing(2)}px 0px`,
+        margin: `${theme.spacing(2)} 0px`,
     },
     tableBody: {},
     tableHeaderSmall: {
@@ -228,13 +229,13 @@ function PlanetsTable(props: PlanetsTableProps) {
                         <>
                             {!filterByPlanetOnly && (
                                 <Tooltip title="My Planets">
-                                    <IconButton onClick={() => setNameFilter(loggedInPlayer || '')}>
+                                    <IconButton onClick={() => setNameFilter(loggedInPlayer || '')} size="large">
                                         <AccountCircleIcon />
                                     </IconButton>
                                 </Tooltip>
                             )}
                             <Tooltip title="clear">
-                                <IconButton onClick={() => setNameFilter('')}>
+                                <IconButton onClick={() => setNameFilter('')} size="large">
                                     <CloseIcon />
                                 </IconButton>
                             </Tooltip>

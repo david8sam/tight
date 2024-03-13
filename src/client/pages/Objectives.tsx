@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Toolbar, Typography } from '@material-ui/core';
+import { Grid, Toolbar, Typography } from '@mui/material';
 
 import { GameJoinStatus, Objective as ObjectiveType } from 'common/Game';
 import { MessageType } from 'common/message';

@@ -1,4 +1,9 @@
 {
     "extends": "./tsconfig.json",
-    "exclude": ["src/client"]
+    "exclude": ["src/client"],
+    "compilerOptions": {
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "target": "ESNext",
+    }
 }

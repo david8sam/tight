@@ -1,7 +1,8 @@
 import React, { MouseEvent, useState } from 'react';
 
-import { Card, CardContent, Grid, makeStyles, Typography, Tooltip, IconButton, Popover } from '@material-ui/core';
-import InfoIcon from '@material-ui/icons/Info';
+import InfoIcon from '@mui/icons-material/Info';
+import { Card, CardContent, Grid, IconButton, Popover, Tooltip, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { StrategyCard, StrategyCardIndex } from 'common/Game';
 
@@ -44,7 +45,7 @@ function InitiativeLabel(props: InitiativeLabelProps) {
         <Grid classes={{ root: classes.infoIconGrid }} container justifyContent="flex-start" alignItems="center">
             <Typography>{`${initiative} - ${name}`}</Typography>
             <Tooltip title="Strategy Card Details">
-                <IconButton classes={{ root: classes.infoIcon }} onClick={e => onCardInfoClick(e, card)}>
+                <IconButton classes={{ root: classes.infoIcon }} onClick={e => onCardInfoClick(e, card)} size="large">
                     <InfoIcon style={{ color: infoIconColor }} />
                 </IconButton>
             </Tooltip>

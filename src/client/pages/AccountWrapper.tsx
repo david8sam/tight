@@ -1,7 +1,7 @@
 import React, { ElementType, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
-import { Skeleton } from '@material-ui/lab';
+import { Skeleton } from '@mui/lab';
 
 import { MessageType } from 'common/message';
 import { LoginStatus } from 'common/Account';
@@ -47,7 +47,7 @@ function AccountWrapper(props: AccountWrapperProps) {
     // TDOD: Render something more useful or just nothing at all?
     // Wait for player to log in
     if (cannotRender || !isValidPlayer) {
-        return <Skeleton variant="rect" height="100%" />;
+        return <Skeleton variant="rectangular" height="100%" />;
     }
 
     return <Page />;

@@ -1,21 +1,3 @@
-import { Theme } from '@material-ui/core';
-import { blue, deepPurple, green, orange, red, yellow } from '@material-ui/core/colors';
-
-export const PlayerColor = {
-    RED: red.A700,
-    YELLOW: yellow[500],
-    GREEN: green[500],
-    BLUE: blue.A700,
-    PURPLE: deepPurple[500],
-    BLACK: '#000',
-    // Prophecy of Kings
-    ORANGE: orange[500],
-    MAGENTA: '#D80073',
-};
-
-export type PlayerColorKey = keyof typeof PlayerColor;
-export type PlayerColorValue = typeof PlayerColor[PlayerColorKey];
-
 export enum Version {
     TI3 = '3',
     TI4 = '4',
@@ -110,7 +92,7 @@ export interface GamePlayer {
     joined: boolean;
     joinStatus: GameJoinStatus;
 
-    color?: PlayerColorValue | null;
+    color?: string | null;
     faction?: string | null;
 
     hasNaaluZeroToken: boolean;
@@ -242,13 +224,6 @@ export function getNextPlayer(game: Game, currentPlayerId: string, playerOrder?:
     }
 
     return nextPlayer || null;
-}
-
-export function getPlayerColors(theme: Theme, player: GamePlayer): { color: string; backgroundColor: string } {
-    const playerColor = player.color || '#fff';
-    const color = theme.palette.getContrastText(playerColor);
-    const backgroundColor = playerColor;
-    return { color, backgroundColor };
 }
 
 /**

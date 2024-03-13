@@ -1,4 +1,4 @@
-import { StrategyCardsType, Version } from 'common/Game';
+import { StrategyCardsType, Version } from 'common/Game.js';
 
 const _strategyCards: Readonly<StrategyCardsType> = [
     {

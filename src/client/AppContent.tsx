@@ -1,9 +1,10 @@
 import React from 'react';
 
-import { Button, CircularProgress, Grid, makeStyles, Toolbar, Typography } from '@material-ui/core';
+import { Button, CircularProgress, Grid, Toolbar, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
-import Router from './Router';
 import { useAppContext } from './Context';
+import Router from './Router';
 import { ActionType } from './reducer';
 
 const useStyle = makeStyles(() => ({

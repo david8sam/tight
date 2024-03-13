@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { Card, CardContent, Divider, Grid, makeStyles, Toolbar, Typography } from '@material-ui/core';
+import { Card, CardContent, Divider, Grid, Toolbar, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { calculateVictoryPoints, GameJoinStatus, GamePlayer, getPlayersInGame } from 'common/Game';
 
@@ -12,8 +13,8 @@ const EMOJI_PARTY_POPPER = String.fromCodePoint(0x1f389);
 
 const useStyles = makeStyles(theme => ({
     card: {
-        border: `${theme.spacing(0.25)}px solid ${theme.palette.text.primary}`,
-        margin: `${theme.spacing(0.5)}px ${theme.spacing(1)}px`,
+        border: `${theme.spacing(0.25)} solid ${theme.palette.text.primary}`,
+        margin: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
         position: 'relative',
     },
     cardContent: {

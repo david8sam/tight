@@ -1,4 +1,4 @@
-import { Planet, Traits } from 'common/Planet';
+import { Planet, Traits } from 'common/Planet.js';
 
 const Planets: readonly Planet[] = [
     //

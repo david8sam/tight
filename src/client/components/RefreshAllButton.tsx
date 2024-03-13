@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Button, Toolbar, Typography } from '@material-ui/core';
+import { Button, Toolbar, Typography } from '@mui/material';
 
 import { GameJoinStatus, getPlayersInGame } from 'common/Game';
 import { MessageType } from 'common/message';

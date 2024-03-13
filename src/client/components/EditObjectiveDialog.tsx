@@ -1,19 +1,8 @@
 import React, { useState } from 'react';
 
-import {
-    AppBar,
-    Button,
-    Dialog,
-    DialogContent,
-    Grid,
-    IconButton,
-    makeStyles,
-    Toolbar,
-    Tooltip,
-    Typography,
-    Theme,
-} from '@material-ui/core';
-import CloseIcon from '@material-ui/icons/Close';
+import CloseIcon from '@mui/icons-material/Close';
+import { AppBar, Button, Dialog, DialogContent, Grid, IconButton, Toolbar, Tooltip, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { Objective } from 'common/Game';
 
@@ -60,7 +49,7 @@ function EditObjectiveDialog(props: EditObjectiveDialogProps) {
             <AppBar classes={{ root: classes.appBar }}>
                 <Toolbar>
                     <Tooltip title="Close">
-                        <IconButton onClick={onClose}>
+                        <IconButton onClick={onClose} size="large">
                             <CloseIcon />
                         </IconButton>
                     </Tooltip>
