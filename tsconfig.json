@@ -6,6 +6,8 @@
         "forceConsistentCasingInFileNames": true,
         "jsx": "react",
         "lib": ["ESNext", "DOM"],
+        "module": "ESNext",
+        "moduleResolution": "Node",
         "noImplicitAny": true,
         "noImplicitReturns": true,
         "paths": { "common/*": ["common/*"] },

@@ -12,7 +12,7 @@ const cwd = process.cwd();
 const clientDir = path.resolve(cwd, './src/client');
 const serverDir = path.resolve(cwd, './src/server');
 
-const tsconfigFile = web ? path.resolve(cwd, 'tsconfig.webpack.json') : path.resolve(cwd, 'tsconfig.server.json');
+const tsconfigFile = web ? path.resolve(cwd, 'tsconfig.web.json') : path.resolve(cwd, 'tsconfig.server.json');
 
 let config: Configuration = {
     target,
@@ -73,10 +73,6 @@ if (web) {
     config = {
         ...config,
         entry: path.resolve(serverDir, 'index.ts'),
-        node: {
-            __dirname: false,
-            __filename: false,
-        },
         output: {
             filename: dev ? 'server-dev.js' : 'server.js',
             library: {
@@ -113,9 +109,12 @@ if (dev) {
                 directory: path.resolve(cwd, 'dist'),
             },
             hot: true,
-            proxy: {
-                '*': 'http://localhost',
-            },
+            proxy: [
+                {
+                    context: '*',
+                    target: 'http://localhost',
+                },
+            ],
         };
     }
 }
