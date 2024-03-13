@@ -1,6 +1,6 @@
-import isNil from 'lodash/isNil';
+import { isNil } from 'lodash-es';
 
-import { ErrorType } from 'common/error';
+import { ErrorType } from 'common/error.js';
 import {
     buildStrategyCardOwners,
     GameJoinStatus,
@@ -10,17 +10,17 @@ import {
     Phase,
     strategyCardHasOwner,
     StrategyCardIndex,
-} from 'common/Game';
-import { MessageType } from 'common/message';
+} from 'common/Game.js';
+import { MessageType } from 'common/message.js';
 
-import * as AccountDB from './database/account';
-import * as FactionDB from './database/faction';
-import * as GameDB from './database/game';
-import * as PlanetDB from './database/planet';
+import * as AccountDB from './database/account.js';
+import * as FactionDB from './database/faction/index.js';
+import * as GameDB from './database/game.js';
+import * as PlanetDB from './database/planet/index.js';
 
-import { dirty, formatChangePlanets, markAccountDirty, markGameDirty } from './dirty';
-import { logWS } from './log';
-import { sendData, WebSocketServer, WebSocket } from './WebSocket';
+import { dirty, formatChangePlanets, markAccountDirty, markGameDirty } from './dirty.js';
+import { logWS } from './log.js';
+import { sendData, WebSocketServer, WebSocket } from './WebSocket.js';
 
 export interface handleMessageParams {
     wss: WebSocketServer;

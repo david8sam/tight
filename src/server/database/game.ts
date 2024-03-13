@@ -1,8 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import cloneDeep from 'lodash/cloneDeep';
-import uniqueId from 'lodash/uniqueId';
+import { cloneDeep, uniqueId } from 'lodash-es';
 
 import {
     Game,
@@ -17,12 +16,12 @@ import {
     SECRET_OBJECTIVE_IDS,
     StrategyCardIndex,
     Version,
-} from 'common/Game';
-import { Planet } from 'common/Planet';
-import uuidv4 from 'common/uuidv4';
+} from 'common/Game.js';
+import { Planet } from 'common/Planet.js';
+import uuidv4 from 'common/uuidv4.js';
 
-import { getGamesDir, getHomeDir, load, save } from '../appData';
-import { Planets } from './planet';
+import { getGamesDir, getHomeDir, load, save } from '../appData.js';
+import { Planets } from './planet/index.js';
 
 const GAMES_FILE = path.join(getHomeDir(), 'games.json');
 // console.log(`games file: ${GAMES_FILE}`);

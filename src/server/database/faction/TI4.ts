@@ -1,4 +1,4 @@
-import { Faction, LeaderType, UnitType } from 'common/Faction';
+import { Faction, LeaderType, UnitType } from 'common/Faction.js';
 
 const Factions: Readonly<Faction[]> = [
     {

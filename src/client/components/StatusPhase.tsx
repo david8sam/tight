@@ -1,18 +1,19 @@
 import React from 'react';
 
-import { Card, CardContent, Grid, makeStyles, Toolbar } from '@material-ui/core';
+import { Card, CardContent, Grid, Toolbar } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { GameJoinStatus, GamePlayer, getPlayerOrder } from 'common/Game';
 
 import useAccountInfo from '../hooks/useAccountInfo';
 import PlayerHeader from './PlayerHeader';
-import RefreshAllbutton from './RefreshAllbutton';
+import RefreshAllbutton from './RefreshAllButton';
 import VictoryPoints from './VictoryPoints';
 
 const useStyles = makeStyles(theme => ({
     card: {
-        border: `${theme.spacing(0.25)}px solid ${theme.palette.text.primary}`,
-        margin: `${theme.spacing(0.5)}px ${theme.spacing(1)}px`,
+        border: `${theme.spacing(0.25)} solid ${theme.palette.text.primary}`,
+        margin: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
         position: 'relative',
     },
     cardContent: {

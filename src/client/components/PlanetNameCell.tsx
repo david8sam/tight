@@ -1,23 +1,24 @@
 import React, { ChangeEvent } from 'react';
 
-import { FormControlLabel, Grid, makeStyles, Switch, Typography } from '@material-ui/core';
+import { FormControlLabel, Grid, Switch, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { MessageType } from 'common/message';
 import { Traits } from 'common/Planet';
 
 import { useAppContext } from '../Context';
-import { PlanetData } from '../types';
 import useAccountInfo from '../hooks/useAccountInfo';
+import { PlanetData } from '../types';
 import {
-    HomePlanet,
     Biotic,
-    Warfare,
-    Propulsion,
-    Cybernetic,
     Cultural,
+    Cybernetic,
     Hazardous,
+    HomePlanet,
     Industrial,
     Legendary,
+    Propulsion,
+    Warfare,
 } from './PlanetIcons';
 
 const useStyle = makeStyles(theme => ({

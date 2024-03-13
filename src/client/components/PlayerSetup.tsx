@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import uniq from 'lodash/uniq';
-import { Button, CircularProgress, Grid, Toolbar } from '@material-ui/core';
+import { uniq } from 'lodash-es';
+import { Button, CircularProgress, Grid, Toolbar } from '@mui/material';
 
 import { Game, GameJoinStatus, GameSetupStep, getPlayersInGame } from 'common/Game';
 import { MessageType } from 'common/message';

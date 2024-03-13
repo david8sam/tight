@@ -1,15 +1,7 @@
 import React from 'react';
 
-import {
-    FormControl,
-    InputLabel,
-    makeStyles,
-    MenuItem,
-    Select,
-    SelectProps,
-    TextField,
-    Theme,
-} from '@material-ui/core';
+import { FormControl, InputLabel, MenuItem, Select, SelectProps, TextField } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { Objective } from 'common/Game';
 
@@ -37,7 +29,7 @@ function ObjectiveForm(props: ObjectiveFormProps) {
 
     return (
         <>
-            <FormControl className={classes.formControl} fullWidth>
+            <FormControl variant="standard" className={classes.formControl} fullWidth>
                 <TextField
                     disabled={disabled}
                     variant="outlined"
@@ -51,6 +43,7 @@ function ObjectiveForm(props: ObjectiveFormProps) {
             <FormControl fullWidth variant="outlined">
                 <InputLabel id="num-vps">Victory Points</InputLabel>
                 <Select
+                    variant="standard"
                     labelId="num-vps"
                     value={objective.vp}
                     onChange={onVpChange}
@@ -58,7 +51,7 @@ function ObjectiveForm(props: ObjectiveFormProps) {
                     disabled={disabled}
                 >
                     {NUM_VP_OPTIONS.map(({ label, value }) => (
-                        <MenuItem button key={value} value={value}>
+                        <MenuItem key={value} value={value}>
                             {label}
                         </MenuItem>
                     ))}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { TooltipProps } from '@material-ui/core';
+import { TooltipProps } from '@mui/material';
 
 export default function useTooltipOnClick(options?: {
     onTooltipOpen?: (...params: any) => any;

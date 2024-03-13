@@ -1,7 +1,7 @@
-import React, { useReducer, useState } from 'react';
+import React, { useReducer, StrictMode } from 'react';
 
-import { CssBaseline } from '@material-ui/core';
-import { createTheme, ThemeProvider } from '@material-ui/core/styles';
+import { CssBaseline } from '@mui/material';
+import { createTheme, ThemeProvider, Theme, StyledEngineProvider } from '@mui/material/styles';
 
 import { WSS_PORT } from 'common/constants';
 
@@ -10,15 +10,20 @@ import AppContent from './AppContent';
 import reducer, { initialState } from './reducer';
 import useWebSocket from './hooks/useWebSocket';
 
+declare module '@mui/styles/defaultTheme' {
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface DefaultTheme extends Theme {}
+}
+
 const LIGHT_THEME = createTheme({
     palette: {
-        type: 'light',
+        mode: 'light',
     },
 });
 
 const DARK_THEME = createTheme({
     palette: {
-        type: 'dark',
+        mode: 'dark',
     },
 });
 
@@ -32,12 +37,16 @@ function App() {
     });
 
     return (
-        <ThemeProvider theme={state.theme === 'dark' ? DARK_THEME : LIGHT_THEME}>
-            <CssBaseline />
-            <Context.Provider value={{ state, dispatch, sendData }}>
-                <AppContent />
-            </Context.Provider>
-        </ThemeProvider>
+        <StrictMode>
+            <StyledEngineProvider injectFirst>
+                <ThemeProvider theme={state.theme === 'dark' ? DARK_THEME : LIGHT_THEME}>
+                    <CssBaseline />
+                    <Context.Provider value={{ state, dispatch, sendData }}>
+                        <AppContent />
+                    </Context.Provider>
+                </ThemeProvider>
+            </StyledEngineProvider>
+        </StrictMode>
     );
 }
 

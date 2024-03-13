@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Tooltip, Typography, TypographyProps } from '@material-ui/core';
+import { Tooltip, Typography, TypographyProps } from '@mui/material';
 
 import useTooltipOnClick from '../hooks/useTooltipOnClick';
 

@@ -1,7 +1,7 @@
-import { Planet, PlanetMap } from 'common/Planet';
+import { Planet, PlanetMap } from 'common/Planet.js';
 
-import PlanetsTI4 from './TI4';
-import PlanetsTI4ProphecyOfKings from './TI4ProphecyOfKings';
+import PlanetsTI4 from './TI4.js';
+import PlanetsTI4ProphecyOfKings from './TI4ProphecyOfKings.js';
 
 export const Planets: readonly Planet[] = [...PlanetsTI4, ...PlanetsTI4ProphecyOfKings].sort((aa, bb) => {
     // Sort alphabetically

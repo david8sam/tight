@@ -1,20 +1,22 @@
 import React, { useRef, useState } from 'react';
 
+import InfoIcon from '@mui/icons-material/Info';
 import {
     Divider,
     Grid,
     IconButton,
     IconButtonProps,
-    makeStyles,
     Popover,
     Toolbar,
     Tooltip,
     Typography,
     useTheme,
-} from '@material-ui/core';
-import InfoIcon from '@material-ui/icons/Info';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
-import { calculateVictoryPoints, Game, GameJoinStatus, GamePlayer, getPlayerColors, getPlayerTurn } from 'common/Game';
+import { calculateVictoryPoints, Game, GameJoinStatus, GamePlayer, getPlayerTurn } from 'common/Game';
+
+import { getPlayerColors } from '../utils/player';
 import TextWithTooltip from './TextWithTooltip';
 
 const useStyle = makeStyles(theme => ({
@@ -101,7 +103,7 @@ export default function GameInfoToolbar(props: GameInfoToolbarProps) {
                     <Grid container justifyContent="center" alignItems="center">
                         <Typography variant="h6">{game.name}</Typography>
                         <Tooltip title="Game Info">
-                            <IconButton ref={infoRef} onClick={onInfoButtonClick}>
+                            <IconButton ref={infoRef} onClick={onInfoButtonClick} size="large">
                                 <InfoIcon />
                             </IconButton>
                         </Tooltip>

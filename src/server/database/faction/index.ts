@@ -1,5 +1,5 @@
-import FactionsTI4Base from './TI4';
-import FactionsTI4ProphecyOfKings from './TI4ProphecyOfKings';
+import FactionsTI4Base from './TI4.js';
+import FactionsTI4ProphecyOfKings from './TI4ProphecyOfKings.js';
 
 const _factions = [...FactionsTI4Base, ...FactionsTI4ProphecyOfKings] as const;
 

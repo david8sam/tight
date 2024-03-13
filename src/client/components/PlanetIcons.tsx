@@ -1,6 +1,8 @@
 import React, { MouseEvent, useRef, useState } from 'react';
-import { Avatar, AvatarProps, colors, makeStyles, Popover, Typography, useTheme } from '@material-ui/core';
-import LanguageIcon from '@material-ui/icons/Language';
+
+import LanguageIcon from '@mui/icons-material/Language';
+import { Avatar, AvatarProps, Popover, Typography, colors, useTheme } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 const useStyle = makeStyles(theme => ({
     root: {

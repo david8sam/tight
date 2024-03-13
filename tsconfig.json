@@ -1,19 +1,24 @@
 {
     "compilerOptions": {
         "allowSyntheticDefaultImports": true,
-        "allowJs": true,
         "baseUrl": "src",
         "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
         "jsx": "react",
-        "lib": ["es6", "dom"],
-        "moduleResolution": "node",
-        "module": "esnext",
+        "lib": ["ESNext", "DOM"],
+        "noImplicitAny": true,
         "noImplicitReturns": true,
         "paths": { "common/*": ["common/*"] },
         "rootDir": ".",
         "sourceMap": true,
         "strict": true,
-        "target": "es6"
     },
-    "include": ["src"]
+    "include": ["src"],
+    // Compile webpack.config.ts to cjs
+    "ts-node": {
+        "transpileOnly": true,
+        "moduleTypes": {
+            "webpack.config.ts": "cjs",
+        }
+    },
 }

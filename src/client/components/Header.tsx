@@ -10,11 +10,11 @@ import {
     Tooltip,
     Typography,
     useTheme,
-} from '@material-ui/core';
-import Brightness6 from '@material-ui/icons/Brightness6';
-import Brightness6Outlined from '@material-ui/icons/Brightness6Outlined';
-import ErroIcon from '@material-ui/icons/Error';
-import MenuIcon from '@material-ui/icons/Menu';
+} from '@mui/material';
+import Brightness6 from '@mui/icons-material/Brightness6';
+import Brightness6Outlined from '@mui/icons-material/Brightness6Outlined';
+import ErroIcon from '@mui/icons-material/Error';
+import MenuIcon from '@mui/icons-material/Menu';
 
 import { AppTheme, LoginStatus } from 'common/Account';
 import { MessageType } from 'common/message';
@@ -84,7 +84,7 @@ function Header() {
                 <Toolbar>
                     <Grid container alignItems="center">
                         <Tooltip title="Menu">
-                            <IconButton edge="start" onClick={() => setDrawerOpen(open => !open)}>
+                            <IconButton edge="start" onClick={() => setDrawerOpen(open => !open)} size="large">
                                 <MenuIcon />
                             </IconButton>
                         </Tooltip>
@@ -92,7 +92,7 @@ function Header() {
                     </Grid>
                     {connectionStatus}
                     <Tooltip title={theme === 'light' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}>
-                        <IconButton onClick={() => onThemeChange(theme === 'dark' ? 'light' : 'dark')}>
+                        <IconButton onClick={() => onThemeChange(theme === 'dark' ? 'light' : 'dark')} size="large">
                             {theme === 'dark' ? <Brightness6Outlined /> : <Brightness6 />}
                         </IconButton>
                     </Tooltip>

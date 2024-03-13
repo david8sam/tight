@@ -1,9 +1,9 @@
-import isEmpty from 'lodash/isEmpty';
+import { isEmpty } from 'lodash-es';
 
-import { GameChangeDataMap, GameChangeData, GamePlanet, GamePlanetMap, GamePlayerMap } from 'common/Game';
+import { GameChangeDataMap, GameChangeData, GamePlanet, GamePlanetMap, GamePlayerMap } from 'common/Game.js';
 
-import { listAccounts } from './database/account';
-import { getGame, listGames } from './database/game';
+import { listAccounts } from './database/account.js';
+import { getGame, listGames } from './database/game.js';
 
 export interface DirtyGameParts {
     created?: boolean;

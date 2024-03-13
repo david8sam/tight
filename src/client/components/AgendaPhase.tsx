@@ -10,13 +10,14 @@ import {
     Switch,
     Toolbar,
     Typography,
-} from '@material-ui/core';
+} from '@mui/material';
 
-import { calculateVictoryPoints, GameJoinStatus, GamePlayer, getPlayersInGame } from 'common/Game';
+import { calculateVictoryPoints, GameJoinStatus, getPlayersInGame } from 'common/Game';
 import { MessageType } from 'common/message';
+
 import { useAppContext } from '../Context';
 import useAccountInfo from '../hooks/useAccountInfo';
-import RefreshAllbutton from './RefreshAllbutton';
+import RefreshAllbutton from './RefreshAllButton';
 
 export default function AgendaPhase() {
     const { sendData } = useAppContext();

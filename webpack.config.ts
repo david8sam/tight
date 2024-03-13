@@ -1,6 +1,7 @@
-const HtmlWebPackPlugin = require('html-webpack-plugin');
-const path = require('path');
-const nodeExternals = require('webpack-node-externals');
+import HtmlWebPackPlugin from 'html-webpack-plugin';
+import path from 'path';
+import { Configuration } from 'webpack';
+import nodeExternals from 'webpack-node-externals';
 
 const dev = process.env.NODE_ENV === 'development';
 const web = process.env.TARGET === 'web';
@@ -13,7 +14,7 @@ const serverDir = path.resolve(cwd, './src/server');
 
 const tsconfigFile = web ? path.resolve(cwd, 'tsconfig.webpack.json') : path.resolve(cwd, 'tsconfig.server.json');
 
-let config = {
+let config: Configuration = {
     target,
     mode,
     module: {
@@ -41,7 +42,11 @@ let config = {
         alias: {
             common: path.resolve(cwd, 'src/common'),
         },
-        extensions: ['*', '.ts', '.tsx', '.js', '.jsx'],
+        extensions: ['.*', '.ts', '.tsx', '.js', '.jsx'],
+        extensionAlias: {
+            '.js': ['.ts', '.js'],
+            '.mjs': ['.mts', '.mjs'],
+        },
     },
     plugins: [],
     performance: { hints: false },
@@ -74,10 +79,18 @@ if (web) {
         },
         output: {
             filename: dev ? 'server-dev.js' : 'server.js',
+            library: {
+                type: 'module',
+            },
             publicPath: '/',
             path: path.resolve(cwd, 'build'),
+            module: true,
+            chunkFormat: 'module',
         },
-        externals: [nodeExternals()],
+        experiments: {
+            outputModule: true,
+        },
+        externals: [nodeExternals({ importType: 'module' })],
         watch: dev,
     };
 }
@@ -107,4 +120,4 @@ if (dev) {
     }
 }
 
-module.exports = config;
+export default config;

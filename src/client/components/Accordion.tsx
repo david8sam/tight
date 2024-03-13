@@ -9,8 +9,8 @@ import {
     AccordionDetailsProps as MuiAccordionDetailsProps,
     AccordionSummary as MuiAccordionSummary,
     AccordionSummaryProps as MuiAccordionSummaryProps,
-} from '@material-ui/core';
-import { withStyles } from '@material-ui/styles';
+} from '@mui/material';
+import { withStyles } from '@mui/styles';
 
 // Re-export all other unmodified accordion related components
 export {
@@ -22,7 +22,7 @@ export {
 
 const AccordionNoMargin = withStyles({
     root: {
-        '&$expanded': {
+        '&.Mui-expanded': {
             margin: 0,
         },
     },
@@ -49,7 +49,7 @@ const AccordionSummaryNoMargin = withStyles({
     disabled: {},
     content: {
         margin: 0,
-        '&$expanded': {
+        '&Mui-expanded': {
             margin: 0,
         },
     },

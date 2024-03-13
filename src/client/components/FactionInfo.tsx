@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from 'react';
-import { AccordionProps, Grid } from '@material-ui/core';
+import { AccordionProps, Grid } from '@mui/material';
 
 import { Faction } from 'common/Faction';
 

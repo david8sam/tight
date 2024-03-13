@@ -1,16 +1,17 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
 
-import { AppBar, Button, Grid, IconButton, makeStyles, Toolbar, Tooltip, Typography } from '@material-ui/core';
-import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
-import NavigateNextIcon from '@material-ui/icons/NavigateNext';
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import { AppBar, Button, Grid, IconButton, Toolbar, Tooltip, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { Faction } from 'common/Faction';
 import { MessageType } from 'common/message';
 
-import { HEADER_HEIGHT } from '../constants';
 import { useAppContext } from '../Context';
-import FactionInfo, { FactionInfoProps, FactionAccordionIndex } from '../components/FactionInfo';
+import FactionInfo, { FactionAccordionIndex, FactionInfoProps } from '../components/FactionInfo';
 import FactionSelect from '../components/FactionSelect';
+import { HEADER_HEIGHT } from '../constants';
 import useAccountInfo from '../hooks/useAccountInfo';
 
 // Num accordions
@@ -22,7 +23,7 @@ const useStyles = makeStyles(theme => ({
     },
     toolbar: {
         width: '100%',
-        margin: `${theme.spacing(1)}px 0px`,
+        margin: `${theme.spacing(1)} 0px`,
     },
 }));
 
@@ -92,7 +93,7 @@ function Factions() {
             <AppBar className={classes.appBar} color="inherit" position="sticky">
                 <Toolbar classes={{ root: classes.toolbar }} disableGutters>
                     <Tooltip title={prevFaction}>
-                        <IconButton onClick={() => onFactionChange(prevFaction)}>
+                        <IconButton onClick={() => onFactionChange(prevFaction)} size="large">
                             <NavigateBeforeIcon />
                         </IconButton>
                     </Tooltip>
@@ -100,10 +101,10 @@ function Factions() {
                         fullWidth
                         factionNames={factionNames}
                         value={factionName}
-                        onChange={(e: ChangeEvent<{ value: unknown }>) => onFactionChange(e.target.value as string)}
+                        onChange={e => onFactionChange(e.target.value as string)}
                     />
                     <Tooltip title={nextFaction}>
-                        <IconButton onClick={() => onFactionChange(nextFaction)}>
+                        <IconButton onClick={() => onFactionChange(nextFaction)} size="large">
                             <NavigateNextIcon />
                         </IconButton>
                     </Tooltip>

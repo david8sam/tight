@@ -1,15 +1,16 @@
 import React, { MouseEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import isEqual from 'lodash/isEqual';
+import { isEqual } from 'lodash-es';
 
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import {
     AppBar,
     Button,
     CircularProgress,
     Grid,
     IconButton,
-    makeStyles,
     Paper,
     Step,
     StepLabel,
@@ -18,15 +19,13 @@ import {
     Tooltip,
     Typography,
     useTheme,
-} from '@material-ui/core';
-import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
-import NavigateNextIcon from '@material-ui/icons/NavigateNext';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import {
     Game,
     GameJoinStatus,
     GameStatus,
-    getPlayerColors,
     getPlayersInGame,
     getPlayerTurn,
     Phase,
@@ -48,6 +47,7 @@ import StatusPhase from '../components/StatusPhase';
 import StrategyPhase from '../components/StrategyPhase';
 
 import useAccountInfo from '../hooks/useAccountInfo';
+import { getPlayerColors } from '../utils/player';
 
 const PHASE_KEYS = Object.keys(Phase);
 const STEPS = PHASE_KEYS.slice(PHASE_KEYS.length / 2);
@@ -105,7 +105,7 @@ const useStyles = makeStyles(theme => ({
         textAlign: 'center',
     },
     speakerToolbar: {
-        margin: `${theme.spacing(2)}px 0px`,
+        margin: `${theme.spacing(2)} 0px`,
     },
     statusAccordion: {
         width: '100%', // TODO: Why is this necessary? Pixel width doesn't actually change...
@@ -288,6 +288,7 @@ function Game() {
                                     <IconButton
                                         disabled={isSpectator || pending || !canBack || phase === Phase.STRATEGY}
                                         onClick={e => onPhaseClick(e, false)}
+                                        size="large"
                                     >
                                         <NavigateBeforeIcon />
                                     </IconButton>
@@ -305,6 +306,7 @@ function Game() {
                                     <IconButton
                                         disabled={isSpectator || pending || !canNext || phase === Phase.AGENDA}
                                         onClick={e => onPhaseClick(e, true)}
+                                        size="large"
                                     >
                                         <NavigateNextIcon />
                                     </IconButton>

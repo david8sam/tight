@@ -1,14 +1,15 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
-import { Grid, MenuItem, Select, useTheme } from '@material-ui/core';
+import { Grid, MenuItem, Select, useTheme } from '@mui/material';
 
-import { PlayerColor, PlayerColorValue, GamePlayer, GameJoinStatus } from 'common/Game';
+import { GamePlayer, GameJoinStatus } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
 import useAccountInfo from '../hooks/useAccountInfo';
+import { PlayerColor, PlayerColorValue } from '../utils/player';
 import FactionSelect, { DEFAULT_FACTION_VALUE } from './FactionSelect';
 
-type ColorChangeOptions = { gameId: string; playerId: string; color: PlayerColorValue };
+type ColorChangeOptions = { gameId: string; playerId: string; color: PlayerColorValue | 'COLOR' };
 type FactionChangeOptions = { gameId: string; playerId: string; factionName: string };
 
 export interface PlayerSetupFormProps {
@@ -98,8 +99,8 @@ function PlayerFactionForm(props: PlayerSetupFormProps) {
                         variant="outlined"
                         style={selectStyle}
                         value={color || DEFAULT_COLOR}
-                        onChange={(e: ChangeEvent<{ value: unknown }>) =>
-                            onColorChange({ gameId, playerId: id, color: e.target.value as PlayerColorValue })
+                        onChange={e =>
+                            onColorChange({ gameId, playerId: id, color: e.target.value as PlayerColorValue | 'COLOR' })
                         }
                     >
                         <MenuItem divider disabled key={DEFAULT_COLOR} value={DEFAULT_COLOR}>
@@ -123,9 +124,7 @@ function PlayerFactionForm(props: PlayerSetupFormProps) {
                         IconComponent={disabled ? NoIcon : undefined}
                         fullWidth
                         value={faction || DEFAULT_FACTION_VALUE}
-                        onChange={(e: ChangeEvent<{ value: unknown }>) =>
-                            onFactionChange({ gameId, playerId: id, factionName: e.target.value as string })
-                        }
+                        onChange={e => onFactionChange({ gameId, playerId: id, factionName: e.target.value as string })}
                     />
                 </Grid>
             </Grid>

@@ -1,15 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import {
-    Divider,
-    List,
-    ListItem,
-    ListItemText,
-    makeStyles,
-    SwipeableDrawer,
-    SwipeableDrawerProps,
-} from '@material-ui/core';
+import { Divider, List, ListItem, ListItemText, SwipeableDrawer, SwipeableDrawerProps } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { LoginStatus } from 'common/Account';
 import { MessageType } from 'common/message';

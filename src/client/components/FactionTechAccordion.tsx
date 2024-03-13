@@ -1,12 +1,12 @@
-import React from 'react';
-import { makeStyles } from '@material-ui/core';
+import { makeStyles } from '@mui/styles';
 import { FactionTech } from 'common/Faction';
+import React from 'react';
 import AccordionTextFields, { AccordionTextFieldsProps } from './AccordionTextFields';
 import TechPrerequisites from './TechPrerequisites';
 
 const useStyles = makeStyles(theme => ({
     divider: {
-        margin: `${theme.spacing(1)}px 0px`,
+        margin: `${theme.spacing(1)} 0px`,
     },
 }));
 

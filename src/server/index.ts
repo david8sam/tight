@@ -3,13 +3,17 @@ import cors from 'cors';
 import express, { Request, Response } from 'express';
 import ip from 'ip';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
-import initializeAppData from './appData';
-import initializeWebSocketServer from './WebSocketServer';
+import initializeAppData from './appData.js';
+import initializeWebSocketServer from './WebSocketServer.js';
+
+// workaround for import.meta.dirname being undefined in node 20
+const dirname = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const app = express();
 const port = process.env.PORT || 80;
-const distDir = path.join(__dirname, '../dist');
+const distDir = path.join(dirname, '../dist');
 const html = path.join(distDir, 'index.html');
 
 initializeAppData();

@@ -1,6 +1,8 @@
 import React, { ReactNode } from 'react';
-import { Divider, Grid, makeStyles, TextField, TextFieldProps, Typography } from '@material-ui/core';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { Divider, Grid, TextField, TextFieldProps, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { Accordion, AccordionDetails, AccordionProps, AccordionSummary } from './Accordion';
 

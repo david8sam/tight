@@ -1,14 +1,15 @@
 import React from 'react';
 
-import { Button, ButtonProps, Grid, makeStyles, Typography } from '@material-ui/core';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { Button, ButtonProps, Grid, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { StrategyCard } from 'common/Game';
 import {
     Accordion,
-    AccordionProps,
     AccordionDetails,
     AccordionDetailsProps,
+    AccordionProps,
     AccordionSummary,
     AccordionSummaryProps,
 } from '../components/Accordion';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, TableHead, TableRow, TableCell, TableBody, Select, MenuItem } from '@material-ui/core';
+import { Table, TableHead, TableRow, TableCell, TableBody, Select, MenuItem } from '@mui/material';
 
 import {
     buildStrategyCardOwners,
@@ -67,13 +67,13 @@ export default function AssignStrategyCardTable() {
                                     onChange={e => onTakeCardClick(player.id, Number(e.target.value))}
                                     disabled={currentPlayer.joinStatus === GameJoinStatus.SPECTATOR}
                                 >
-                                    <MenuItem button key={0} value={0}>
+                                    <MenuItem key={0} value={0}>
                                         {'NONE'}
                                     </MenuItem>
                                     {strategyCards
                                         .filter(s => canSelectStrategyCard(s, game, player))
                                         .map(s => (
-                                            <MenuItem button key={s.initiative} value={s.initiative}>
+                                            <MenuItem key={s.initiative} value={s.initiative}>
                                                 {s.name}
                                             </MenuItem>
                                         ))}

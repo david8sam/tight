@@ -1,6 +1,6 @@
-import { GameChangeDataMap, GameMap, StrategyCardsType } from './Game';
-import { PlanetMap } from 'common/Planet';
-import { Account, BaseAccountMap } from 'common/Account';
+import { Account, BaseAccountMap } from './Account.js';
+import { GameChangeDataMap, GameMap, StrategyCardsType } from './Game.js';
+import { PlanetMap } from './Planet.js';
 
 export interface AllData {
     games: GameMap;

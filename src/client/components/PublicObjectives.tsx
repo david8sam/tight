@@ -1,21 +1,21 @@
 import React, { useRef, useState } from 'react';
 
+import AddIcon from '@mui/icons-material/Add';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import RotateLeftIcon from '@mui/icons-material/RotateLeft';
 import {
     Button,
     Divider,
     Grid,
     IconButton,
     ListItemIcon,
-    makeStyles,
     MenuItem,
     MenuList,
     Popover,
     Toolbar,
     Typography,
-} from '@material-ui/core';
-import AddIcon from '@material-ui/icons/Add';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
-import RotateLeftIcon from '@material-ui/icons/RotateLeft';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { generateBlankObjective, generateBlankPublicObjectives, Objective as ObjectiveType } from 'common/Game';
 import EditObjectiveDialog from './EditObjectiveDialog';
@@ -142,7 +142,7 @@ function PublicObjectives(props: PublicObjectivesProps) {
                         </Grid>
                         {(creatable || deletable) && (
                             <Grid item>
-                                <IconButton ref={optionsRef} onClick={() => setOptionsOpen(true)}>
+                                <IconButton ref={optionsRef} onClick={() => setOptionsOpen(true)} size="large">
                                     <MoreVertIcon />
                                 </IconButton>
                             </Grid>

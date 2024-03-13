@@ -1,13 +1,14 @@
 import React from 'react';
 
-import { AccordionProps, Grid, makeStyles, Typography, useTheme } from '@material-ui/core';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { AccordionProps, Grid, Typography, useTheme } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { calculateVictoryPoints, Objective } from 'common/Game';
 import { MessageType } from 'common/message';
 
-import useAccountInfo from '../hooks/useAccountInfo';
 import { useAppContext } from '../Context';
+import useAccountInfo from '../hooks/useAccountInfo';
 
 import { Accordion, AccordionDetails, AccordionSummary } from './Accordion';
 import ObjectiveCheckbox from './ObjectiveCheckbox';

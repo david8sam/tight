@@ -1,9 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 
-import { Account, AccountMap, AccountSettings, BaseAccountMap, DEFAULT_SETTINGS } from 'common/Account';
+import { Account, AccountMap, AccountSettings, BaseAccountMap, DEFAULT_SETTINGS } from 'common/Account.js';
 
-import { getAccountsDir, load, save } from '../appData';
+import { getAccountsDir, load, save } from '../appData.js';
 
 let _accounts: AccountMap = {};
 

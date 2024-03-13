@@ -1,4 +1,4 @@
-import isEqual from 'lodash/isEqual';
+import { isEqual } from 'lodash-es';
 import React, { useEffect, useRef, useState } from 'react';
 
 import {
@@ -13,7 +13,7 @@ import {
     IconButton,
     Popover,
     Typography,
-} from '@material-ui/core';
+} from '@mui/material';
 
 import { Objective } from 'common/Game';
 import ObjectiveForm from './ObjectiveForm';
@@ -85,7 +85,7 @@ function ObjectiveCheckbox(props: ObjectiveCheckboxProps) {
                     />
                 }
                 label={
-                    <IconButton ref={buttonRef} onClick={onInfoOpen}>
+                    <IconButton ref={buttonRef} onClick={onInfoOpen} size="large">
                         <Avatar style={{ color, backgroundColor }}>
                             <Typography>{id < 0 ? `S${-id}` : id}</Typography>
                         </Avatar>

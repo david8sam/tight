@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Typography } from '@material-ui/core';
+import { Grid, Typography } from '@mui/material';
 import { TechPrereq } from 'common/Faction';
 import { Biotic, Cybernetic, Propulsion, Warfare } from './PlanetIcons';
 

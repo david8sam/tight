@@ -1,9 +1,10 @@
 import React, { MouseEvent, useState } from 'react';
 
-import { Grid, IconButton, makeStyles, TextField, Theme, Toolbar, Tooltip, Typography } from '@material-ui/core';
-import DeleteIcon from '@material-ui/icons/Delete';
-import EditIcon from '@material-ui/icons/Edit';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { Grid, IconButton, TextField, Toolbar, Tooltip, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { calculateVictoryPoints, GamePlayer, getPlayersInGame, Objective } from 'common/Game';
 
@@ -96,14 +97,14 @@ export default function Objective(props: ObjectiveProps) {
                             <Typography>{`Objective ${id < 0 ? `S${-id}` : id} (${vp} VP)`}</Typography>
                             {deletable && (
                                 <Tooltip title="Delete">
-                                    <IconButton onClick={onDeleteClick}>
+                                    <IconButton onClick={onDeleteClick} size="large">
                                         <DeleteIcon />
                                     </IconButton>
                                 </Tooltip>
                             )}
                             {editable && (
                                 <Tooltip title="Edit">
-                                    <IconButton onClick={onEditOpenClick}>
+                                    <IconButton onClick={onEditOpenClick} size="large">
                                         <EditIcon />
                                     </IconButton>
                                 </Tooltip>
