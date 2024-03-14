@@ -1,6 +1,7 @@
 import HtmlWebPackPlugin from 'html-webpack-plugin';
 import path from 'path';
 import { Configuration } from 'webpack';
+import { Configuration as ConfigurationDev } from 'webpack-dev-server';
 import nodeExternals from 'webpack-node-externals';
 
 const dev = process.env.NODE_ENV === 'development';
@@ -14,7 +15,7 @@ const serverDir = path.resolve(cwd, './src/server');
 
 const tsconfigFile = web ? path.resolve(cwd, 'tsconfig.web.json') : path.resolve(cwd, 'tsconfig.server.json');
 
-let config: Configuration = {
+let config: Configuration | ConfigurationDev = {
     target,
     mode,
     module: {
