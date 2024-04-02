@@ -1,16 +1,20 @@
 import { isEmpty } from 'lodash-es';
 
-import { GameChangeDataMap, GameChangeData, GamePlanet, GamePlanetMap, GamePlayerMap } from 'common/Game.js';
+import { GameChangeData, GameChangeDataMap, GameFaction, GamePlanet, GamePlanetMap } from 'common/Game.js';
 
-import { listAccounts } from './database/account.js';
-import { getGame, listGames } from './database/game.js';
+import { getGame, listGames, deleteGame } from './database/game.js';
+import log from './log.js';
+
+const REMOVE_GAME_TIME_THRESHOLD = 1000 * 60 * 60 * 4; // 4 hours
+const _gameTimestampMap = new Map<string, number>();
 
 export interface DirtyGameParts {
     created?: boolean;
     deleted?: boolean;
     status?: boolean;
+    players?: boolean;
     planets?: boolean | string[];
-    players?: boolean | string[];
+    factions?: boolean | string[];
     publicObjectives?: boolean;
 }
 
@@ -19,32 +23,19 @@ export type DirtyGamePartsMap = Record<string, DirtyGameParts>;
 // Keep track what data needs to be broadcasted to everyone.
 export const dirty = {
     games: {} as DirtyGamePartsMap,
-    accounts: [] as string[],
-    accountsInfo: false,
 };
 
 export function setDirty(value: boolean = true) {
-    dirty.accountsInfo = value;
-    dirty.accounts.length = 0;
     dirty.games = {};
 
     if (value) {
-        const allAccounts = listAccounts();
-        Object.keys(allAccounts).forEach(accountId => markAccountDirty(accountId));
-
         const allGames = listGames();
         Object.keys(allGames).forEach(gameId => markGameDirty(gameId));
     }
 }
 
 export function isDirty(): boolean {
-    return dirty.accounts.length > 0 || dirty.accountsInfo || !isEmpty(dirty.games);
-}
-
-export function markAccountDirty(id: string) {
-    if (!dirty.accounts.includes(id)) {
-        dirty.accounts.push(id);
-    }
+    return !isEmpty(dirty.games);
 }
 
 // Helper to mark parts of a Game object to be broadcasted out.
@@ -56,9 +47,16 @@ export function markGameDirty(
         status: true,
         planets: true,
         players: true,
+        factions: true,
         publicObjectives: true,
     },
 ) {
+    if (!getGame(gameId)) {
+        return;
+    }
+
+    _gameTimestampMap.set(gameId, Date.now());
+
     const prevDirtyParts = dirty.games[gameId];
 
     // Game is deleted, don't process any other dirty flags
@@ -67,7 +65,7 @@ export function markGameDirty(
         return;
     }
 
-    let { planets, players, ...otherDirtyParts } = dirtyParts;
+    let { planets, factions, ...otherDirtyParts } = dirtyParts;
     if (prevDirtyParts && planets && Array.isArray(planets)) {
         if (prevDirtyParts.planets === true) {
             // All planets were dirty, keep them all marked
@@ -81,17 +79,17 @@ export function markGameDirty(
         planets = prevDirtyParts.planets;
     }
 
-    if (prevDirtyParts && players && Array.isArray(players)) {
-        if (prevDirtyParts.players === true) {
-            players = true;
-        } else if (Array.isArray(prevDirtyParts.players)) {
-            players = [...prevDirtyParts.players, ...players];
+    if (prevDirtyParts && factions && Array.isArray(factions)) {
+        if (prevDirtyParts.factions === true) {
+            factions = true;
+        } else if (Array.isArray(prevDirtyParts.factions)) {
+            factions = [...prevDirtyParts.factions, ...factions];
         }
-    } else if (!players && prevDirtyParts?.players) {
-        players = prevDirtyParts.players;
+    } else if (!factions && prevDirtyParts?.factions) {
+        factions = prevDirtyParts.factions;
     }
 
-    dirty.games[gameId] = { ...prevDirtyParts, ...otherDirtyParts, planets, players };
+    dirty.games[gameId] = { ...prevDirtyParts, ...otherDirtyParts, planets, factions };
 }
 
 export function getDirtyGameData(): GameChangeDataMap | null {
@@ -100,8 +98,10 @@ export function getDirtyGameData(): GameChangeDataMap | null {
     dirtyArray.forEach(([gameId, dirtyParts]) => {
         // Build data for each dirty game
         const gameData: GameChangeData = { id: gameId };
-        const { created, deleted, status, planets, players, publicObjectives } = dirtyParts;
+        const { created, deleted, status, planets, players, factions, publicObjectives } = dirtyParts;
         if (deleted) {
+            log(`Removing old game: ${gameId}`);
+            deleteGame(gameId);
             gameData.deleted = true;
             gameDataMap[gameId] = gameData;
             return;
@@ -114,7 +114,7 @@ export function getDirtyGameData(): GameChangeDataMap | null {
 
         if (created) {
             // Send back full game info
-            gameData.created = game;
+            gameData.created = { ...game, players: Object.keys(game.players) };
             gameDataMap[gameId] = gameData;
         }
 
@@ -135,14 +135,20 @@ export function getDirtyGameData(): GameChangeDataMap | null {
         }
 
         if (players) {
-            if (Array.isArray(players)) {
-                gameData.players = players.reduce((p, id) => {
-                    // Set null for deleted player so it will be sent
-                    p[id] = game.players[id] ?? null;
-                    return p;
-                }, {} as GamePlayerMap);
+            gameData.players = Object.keys(game.players);
+        }
+
+        if (factions) {
+            if (Array.isArray(factions)) {
+                gameData.factions = factions.reduce((f, name) => {
+                    const factionIndex = game.factions?.findIndex(fact => fact.name === name);
+                    if (factionIndex > -1) {
+                        f[factionIndex] = game.factions[factionIndex];
+                    }
+                    return f;
+                }, [] as GameFaction[]);
             } else {
-                gameData.players = game.players;
+                gameData.factions = game.factions;
             }
         }
 
@@ -158,16 +164,26 @@ export function getDirtyGameData(): GameChangeDataMap | null {
 
 export function formatChangePlanets(
     planets: GamePlanet[],
-    playerId?: string, // Optional player that is changing the planets
-): { changedPlanets: string[]; changedPlayers: string[] } {
-    const changedPlayersSet = new Set<string>(playerId ? [playerId] : undefined);
+    factionName?: string, // Optional faction that is changing the planets
+): { changedPlanets: string[]; changedFactions: string[] } {
+    const changedFactionsSet = new Set<string>(factionName ? [factionName] : undefined);
     const changedPlanets = planets.map(p => {
         if (p.owner) {
-            changedPlayersSet.add(p.owner);
+            changedFactionsSet.add(p.owner);
         }
         return p.name;
     });
-    const changedPlayers = [...changedPlayersSet.values()];
+    const changedFactions = [...changedFactionsSet.values()];
 
-    return { changedPlanets, changedPlayers };
+    return { changedPlanets, changedFactions };
+}
+
+export function removeOldGames() {
+    const now = Date.now();
+    _gameTimestampMap.forEach((timestamp, gameId) => {
+        if (now - timestamp > REMOVE_GAME_TIME_THRESHOLD) {
+            _gameTimestampMap.delete(gameId);
+            markGameDirty(gameId, { deleted: true });
+        }
+    });
 }

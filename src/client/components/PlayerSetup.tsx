@@ -1,47 +1,38 @@
-import React, { useState, useEffect } from 'react';
-import { uniq } from 'lodash-es';
 import { Button, CircularProgress, Grid, Toolbar } from '@mui/material';
+import React, { useEffect, useState } from 'react';
 
-import { Game, GameJoinStatus, GameSetupStep, getPlayersInGame } from 'common/Game';
+import { GameClientData } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
-import useAccountInfo from '../hooks/useAccountInfo';
-import PlayerFactions from './PlayerFactions';
-import PlayerOrder from './PlayerOrder';
+import useGameInfo from '../hooks/useGameInfo';
+
+import { COLOR_NONE } from './ColorSelect';
+import { FACTION_NONE } from './FactionSelect';
+import FactionsSetup from './FactionsSetup';
 import GameInfoToolbar from './GameInfoToolbar';
 
-const SETUP_STEPS: React.ComponentType<any>[] = [PlayerOrder, PlayerFactions];
+function canStart(game: GameClientData): boolean {
+    const { numPlayers } = game;
 
-function canNext(game: Game): boolean {
-    if (!game) {
+    // Make sure all factions are set and every faction and color is unique.
+    const factions = game.factions;
+    const factionsSet = new Set(factions.map(f => f.name));
+    if (factionsSet.has(FACTION_NONE) || factionsSet.size !== numPlayers) {
         return false;
     }
 
-    const { status } = game;
-    const { speaker, pickOrder } = status;
-    const po = uniq(pickOrder);
-    const players = getPlayersInGame(game);
-
-    return Boolean(speaker) && po.length === Object.keys(players).length && po.every(p => Boolean(p));
-}
-
-function canStart(game: Game): boolean {
-    if (!game || !canNext(game)) {
+    const colorSet = new Set(factions.map(f => f.color));
+    if (colorSet.has(COLOR_NONE) || colorSet.size !== numPlayers) {
         return false;
     }
 
-    // Make sure every player has unique selected a color and faction.
-    const players = getPlayersInGame(game);
-    const colors = uniq(players.filter(p => Boolean(p.color)).map(p => p.color));
-    const factions = uniq(players.filter(p => Boolean(p.faction)).map(p => p.faction));
-
-    return players.length === colors.length && players.length === factions.length;
+    return true;
 }
 
 function PlayerSetup() {
     const { sendData } = useAppContext();
-    const { gameId, game, player, playerId } = useAccountInfo();
+    const { gameId, game } = useGameInfo();
 
     const [pending, setPending] = useState(false);
 
@@ -50,53 +41,36 @@ function PlayerSetup() {
             return;
         }
 
-        if (!game.status.started && game.status.setupStep === GameSetupStep.FACTION) {
-            // Moved to next step
-            setPending(false);
-        } else if (game.status.started) {
-            // Game has stared
+        if (game.status.started) {
+            // Reset pending when game has started
             setPending(false);
         }
     });
 
-    if (!game || !player || !playerId) {
+    if (!game) {
         return null;
     }
-
-    const step = game.status.setupStep;
-
-    const onSetupStepChange = (setupStep: GameSetupStep) => {
-        setPending(!pending);
-        sendData({ type: MessageType.GAME_STATUS_SET, data: { gameId, setupStep } });
-    };
 
     const onStartClick = () => {
         const start = !pending;
         setPending(!pending);
+
+        if (start) {
+            const speaker = game.factions[0].name;
+            const pickOrder = game.factions.map(f => f.name);
+            sendData({ type: MessageType.GAME_STATUS_SET, data: { gameId, pickOrder, speaker } });
+        }
+
         sendData({ type: start ? MessageType.START_GAME : MessageType.STOP_GAME, data: { gameId } });
     };
 
-    const SetupComponent = SETUP_STEPS[step];
-    let nextLabel = step === 0 ? 'Next' : 'Start';
-    if (pending && step === 1) {
-        nextLabel = 'Cancel';
-    }
-
-    const disableNext = step === 0 ? !canNext(game) : pending || !canStart(game);
-    const isSpectator = player.joinStatus === GameJoinStatus.SPECTATOR;
+    const isSpectator = false;
 
     return (
         <>
             <GameInfoToolbar game={game} />
             <Toolbar>
-                <Grid container justifyContent="space-between" alignItems="center" wrap="nowrap">
-                    {step > 0 && (
-                        <Grid container wrap="nowrap">
-                            <Button color="primary" variant="contained" onClick={() => onSetupStepChange(0)}>
-                                {`Back`}
-                            </Button>
-                        </Grid>
-                    )}
+                <Grid container flexDirection="column" alignItems="center">
                     <Grid container justifyContent="flex-end" alignItems="center" spacing={1}>
                         {pending ? (
                             <Grid item>
@@ -107,16 +81,16 @@ function PlayerSetup() {
                             <Button
                                 color="primary"
                                 variant="contained"
-                                disabled={disableNext || isSpectator || (pending && step === 0)}
-                                onClick={step === 1 ? onStartClick : () => onSetupStepChange(1)}
+                                disabled={isSpectator || pending || !canStart(game)}
+                                onClick={onStartClick}
                             >
-                                {nextLabel}
+                                Start
                             </Button>
                         </Grid>
                     </Grid>
                 </Grid>
             </Toolbar>
-            {SetupComponent ? <SetupComponent disabled={pending} /> : null}
+            {!pending ? <FactionsSetup /> : null}
         </>
     );
 }

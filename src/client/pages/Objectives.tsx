@@ -1,27 +1,39 @@
-import React from 'react';
-import { Grid, Toolbar, Typography } from '@mui/material';
+import { Grid, MenuItem, TextField, Toolbar } from '@mui/material';
+import React, { useMemo, useState } from 'react';
 
-import { GameJoinStatus, Objective as ObjectiveType } from 'common/Game';
+import { Objective as ObjectiveType } from 'common/Game';
 import { MessageType } from 'common/message';
 
-import { useAppContext } from '../Context';
 import GameInfoToolbar from '../components/GameInfoToolbar';
 import Objective from '../components/Objective';
 import PublicObjectives from '../components/PublicObjectives';
-import useAccountInfo from '../hooks/useAccountInfo';
 import useAutoNavigate from '../hooks/useAutoNavigate';
+import useGameInfo from '../hooks/useGameInfo';
+
+import { useAppContext } from '../Context';
 
 function StrategyCards() {
-    const { game, gameId, player, playerId } = useAccountInfo();
+    const { game, gameId, playerId } = useGameInfo();
     const { sendData } = useAppContext();
+    const [factionName, setFactionName] = useState(() => {
+        const faction = playerId && game ? game.factions.find(f => f.playerIds.includes(playerId)) : null;
+        return faction?.name || '';
+    });
 
-    useAutoNavigate({ to: `/player/${playerId}/manage-games`, condition: () => !gameId, deps: [gameId] });
+    const factionNameOptions = useMemo(() => {
+        const factionsArray = playerId && game ? game.factions.filter(f => f.playerIds.includes(playerId)) : [];
+        return factionsArray.map(f => f.name);
+    }, [game, playerId]);
 
-    if (!game || !player || !playerId) {
+    useAutoNavigate({ to: '/', condition: () => !game || !playerId, deps: [game, playerId] });
+
+    if (!game || !playerId) {
         return null;
     }
 
-    const { secretObjectives } = player;
+    const { factions } = game;
+    const faction = factions.find(f => f.name === factionName);
+    const { secretObjectives } = faction || {};
 
     const onPublicObjectivesChange = (publicObjectives: ObjectiveType[]) => {
         sendData({
@@ -31,20 +43,24 @@ function StrategyCards() {
     };
 
     const onSecretObjectiveChange = (objective: ObjectiveType) => {
+        if (!secretObjectives || !factionName) {
+            return;
+        }
+
         const so = secretObjectives[-objective.id - 1];
         so.objective = objective;
         sendData({
-            type: MessageType.PLAYER_SET_SECRET_OBJECTIVE,
+            type: MessageType.SET_SECRET_OBJECTIVE,
             data: {
                 gameId,
-                playerId,
+                factionName,
                 secretObjectives,
             },
         });
     };
 
-    const isPlayer = player.joinStatus === GameJoinStatus.PLAYER;
-    const editable = player.joinStatus !== GameJoinStatus.SPECTATOR;
+    const isPlayer = factions.some(f => f.playerIds.includes(playerId));
+    const editable = isPlayer;
 
     return (
         <Grid container direction="column">
@@ -54,7 +70,7 @@ function StrategyCards() {
                     editable={editable}
                     publicObjectives={game.publicObjectives}
                     onChange={onPublicObjectivesChange}
-                    showPlayers
+                    showFactions
                 />
             </Grid>
             {/* Only players have a secret objective */}
@@ -62,11 +78,24 @@ function StrategyCards() {
                 <>
                     <Toolbar>
                         <Grid container justifyContent="center">
-                            <Typography variant="h6">My Secret Objectives</Typography>
+                            <TextField
+                                sx={{ marginTop: 2 }}
+                                fullWidth
+                                select
+                                label="My Secret Objectives"
+                                value={factionName}
+                                onChange={e => setFactionName(e.target.value)}
+                            >
+                                {factionNameOptions.map(name => (
+                                    <MenuItem key={name} value={name}>
+                                        {name}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
                         </Grid>
                     </Toolbar>
                     <Grid item>
-                        {secretObjectives.map(so => (
+                        {secretObjectives?.map(so => (
                             <Objective
                                 key={so.objective.id}
                                 editable={editable}

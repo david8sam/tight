@@ -2,54 +2,41 @@ import React from 'react';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { AccordionProps, Grid, Typography, useTheme } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 
 import { calculateVictoryPoints, Objective } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
-import useAccountInfo from '../hooks/useAccountInfo';
+import useGameInfo from '../hooks/useGameInfo';
 
 import { Accordion, AccordionDetails, AccordionSummary } from './Accordion';
 import ObjectiveCheckbox from './ObjectiveCheckbox';
 import VictoryPointsExtra from './VictoryPointsExtra';
-
-const useStyles = makeStyles(theme => ({
-    grid: {
-        width: 'auto',
-    },
-    iconButton: {
-        padding: theme.spacing(0.5),
-    },
-    details: {
-        padding: `0px ${theme.spacing()}px`,
-    },
-}));
 
 interface VictoryPointsProps {
     AccordionProps?: Partial<AccordionProps>;
     allowShowSecret?: boolean;
     disabled?: boolean;
     hideExtraVp?: boolean;
-    playerId: string;
+    factionName: string;
 }
 
 function VictoryPoints(props: VictoryPointsProps) {
     const theme = useTheme();
-    const classes = useStyles(props);
-    const { playerId, allowShowSecret = false, disabled = false, AccordionProps, hideExtraVp } = props;
+    // const classes = useStyles(props);
+    const { factionName, allowShowSecret = false, disabled = false, AccordionProps, hideExtraVp } = props;
     const { sendData } = useAppContext();
-    const { game, gameId, playerId: currentPlayerId } = useAccountInfo();
+    const { game, gameId, playerId } = useGameInfo();
 
-    if (!game) {
+    const faction = game?.factions.find(f => f.name === factionName);
+    if (!game || !faction) {
         return null;
     }
 
-    const player = game.players[playerId];
     const { publicObjectives: gamePOs, status } = game;
-    const { color: playerColor, publicObjectives, secretObjectives } = player;
+    const { color: factionColor, publicObjectives, secretObjectives } = faction;
 
-    const pc = playerColor || '#fff';
+    const pc = factionColor || '#fff';
     const color = theme.palette.getContrastText(pc);
     const backgroundColor = pc;
 
@@ -57,8 +44,8 @@ function VictoryPoints(props: VictoryPointsProps) {
         const newPublicObjectives = [...publicObjectives];
         newPublicObjectives[id - 1] = cleared;
         sendData({
-            type: MessageType.PLAYER_SET_PUBLIC_OBJECTIVES,
-            data: { gameId, playerId, publicObjectives: newPublicObjectives },
+            type: MessageType.SET_PUBLIC_OBJECTIVES,
+            data: { gameId, factionName, publicObjectives: newPublicObjectives },
         });
     };
 
@@ -76,8 +63,8 @@ function VictoryPoints(props: VictoryPointsProps) {
         const so = secretObjectives[-id - 1];
         so.cleared = cleared;
         sendData({
-            type: MessageType.PLAYER_SET_SECRET_OBJECTIVE,
-            data: { gameId, playerId, secretObjectives },
+            type: MessageType.SET_SECRET_OBJECTIVE,
+            data: { gameId, factionName, secretObjectives },
         });
     };
 
@@ -85,25 +72,25 @@ function VictoryPoints(props: VictoryPointsProps) {
         const so = secretObjectives[-objective.id - 1];
         so.objective = objective;
         sendData({
-            type: MessageType.PLAYER_SET_SECRET_OBJECTIVE,
+            type: MessageType.SET_SECRET_OBJECTIVE,
             data: {
                 gameId,
-                playerId,
+                factionName,
                 secretObjectives,
             },
         });
     };
 
-    const isCurrentPlayer = Boolean(playerId && currentPlayerId && playerId === currentPlayerId);
-    const totalvp = calculateVictoryPoints(game, playerId);
+    const isCurrentFaction = playerId ? faction.playerIds.includes(playerId) : false;
+    const totalvp = calculateVictoryPoints(game, factionName);
 
     return (
         <Accordion disableMargin {...AccordionProps}>
             <AccordionSummary disableMargin expandIcon={<ExpandMoreIcon />}>
                 <Typography>{`${totalvp} Victory Points`}</Typography>
             </AccordionSummary>
-            <AccordionDetails className={classes.details}>
-                <Grid container justifyContent="flex-start" alignItems="center" classes={{ root: classes.grid }}>
+            <AccordionDetails sx={{ padding: `0px ${theme.spacing()}` }}>
+                <Grid container justifyContent="flex-start" alignItems="center" sx={{ width: 'auto' }}>
                     {gamePOs.map(po => (
                         <ObjectiveCheckbox
                             key={po.id}
@@ -124,14 +111,14 @@ function VictoryPoints(props: VictoryPointsProps) {
                             backgroundColor={backgroundColor}
                             editable
                             disabled={disabled}
-                            allowShowSecret={allowShowSecret || isCurrentPlayer || so.cleared || status.ended}
+                            allowShowSecret={allowShowSecret || isCurrentFaction || so.cleared || status.ended}
                             objective={so.objective}
                             checked={so.cleared}
                             onChange={onSecretObjectiveCheck}
                             onSave={onSecretObjectiveSave}
                         />
                     ))}
-                    {!hideExtraVp && <VictoryPointsExtra playerId={playerId} disabled={disabled} />}
+                    {!hideExtraVp && <VictoryPointsExtra factionName={factionName} disabled={disabled} />}
                 </Grid>
             </AccordionDetails>
         </Accordion>

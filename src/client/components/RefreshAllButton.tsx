@@ -2,34 +2,28 @@ import React from 'react';
 
 import { Button, Toolbar, Typography } from '@mui/material';
 
-import { GameJoinStatus, getPlayersInGame } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
-import useAccountInfo from '../hooks/useAccountInfo';
+import useGameInfo from '../hooks/useGameInfo';
 
 export default function RefreshAllbutton() {
     const { sendData } = useAppContext();
-    const { game, gameId, player, playerId } = useAccountInfo();
+    const { game, gameId } = useGameInfo();
 
-    if (!game || !player || !playerId) {
+    if (!game) {
         return null;
     }
 
     const onRefreshAll = () => {
-        const players = getPlayersInGame(game);
-        players.forEach(p => {
-            const { id: playerId, planets } = p;
+        game.factions.forEach(f => {
+            const { name: factionName, planets } = f;
             sendData({
-                type: MessageType.PLAYER_REFRESH_PLANET,
-                data: { gameId, playerId, planetId: planets, ability: true },
+                type: MessageType.REFRESH_PLANET,
+                data: { gameId, factionName, planetId: planets, ability: true },
             });
         });
     };
-
-    if (player.joinStatus === GameJoinStatus.SPECTATOR) {
-        return null;
-    }
 
     return (
         <Toolbar>

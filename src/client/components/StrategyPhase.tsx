@@ -1,50 +1,54 @@
-import React, { MouseEvent } from 'react';
+import React, { MouseEvent, useEffect, useState } from 'react';
 
-import { Grid, Toolbar, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { Grid, Toolbar, Typography } from '@mui/material';
 
 import {
-    buildStrategyCardOwners,
-    GameJoinStatus,
-    getNaaluPlayer,
-    StrategyCard as StrategyCardType,
-    strategyCardHasOwner,
     StrategyCardIndex,
+    StrategyCard as StrategyCardType,
+    buildStrategyCardOwners,
+    getFactionTurn,
+    getNaalu,
 } from 'common/Game';
 import { MessageType } from 'common/message';
 
-import { useAppContext } from '../Context';
 import AssignStrategyCardTable from '../components/AssignStrategyCardTable';
-import useAccountInfo from '../hooks/useAccountInfo';
+import useGameInfo from '../hooks/useGameInfo';
+import api from '../utils/api';
+
+import { useAppContext } from '../Context';
 import { Accordion, AccordionDetails, AccordionSummary } from './Accordion';
 import NaaluZeroSelect from './NaaluZeroSelect';
-import StrategyCard from './StrategyCard';
+import StrategyCard, { StrategyCardProps } from './StrategyCard';
 
 function StrategyPhase() {
-    const { state, sendData } = useAppContext();
-    const { strategyCards } = state;
+    const { sendData } = useAppContext();
+    const [strategyCards, setStrategryCards] = useState<StrategyCardType[]>([]);
 
-    const { game, gameId, player, playerId } = useAccountInfo();
-    if (!game || !player) {
+    useEffect(() => {
+        api.strategyCardList().then(cards => setStrategryCards(cards));
+    }, []);
+
+    const { game, gameId } = useGameInfo();
+    if (!game) {
         return null;
     }
 
+    const factionName = getFactionTurn(game);
     const stratCardOwners = buildStrategyCardOwners(game);
 
     const onTakeCardClick = (e: MouseEvent<HTMLButtonElement>, strategyCard: StrategyCardIndex) => {
         e.stopPropagation();
 
-        const take = stratCardOwners[strategyCard] !== playerId;
-        const type = take ? MessageType.PLAYER_TAKE_STRATEGY_CARD : MessageType.PLAYER_RETURN_STRATEGY_CARD;
+        const owner = stratCardOwners[strategyCard];
+        const take = !Boolean(owner);
+        const type = take ? MessageType.TAKE_STRATEGY_CARD : MessageType.RETURN_STRATEGY_CARD;
 
-        sendData({ type, data: { gameId, playerId, strategyCard } });
+        sendData({ type, data: { gameId, factionName: take ? factionName : owner, strategyCard } });
     };
 
-    const isAdmin = player.joinStatus === GameJoinStatus.ADMIN;
-    const isSpectator = player.joinStatus === GameJoinStatus.SPECTATOR;
-
     let naaluZeroSelect = null;
-    if (!isSpectator && getNaaluPlayer(game)) {
+    if (getNaalu(game)) {
         naaluZeroSelect = (
             <>
                 <Toolbar />
@@ -71,39 +75,33 @@ function StrategyPhase() {
 
                 const { initiative, name } = card;
                 const cardOwner = stratCardOwners[initiative];
-                let buttonLabel = cardOwner === playerId ? 'Return' : cardOwner || 'Take';
+                let buttonLabel = cardOwner ? 'Return' : 'Take';
 
-                // Admins can't take/return cards with buttons, should the Assign UI instead.
-                let disabled =
-                    isAdmin ||
-                    isSpectator ||
-                    (Boolean(player.strategyCard) && cardOwner !== playerId) ||
-                    (Boolean(cardOwner) && cardOwner !== playerId);
-
-                if (!cardOwner && strategyCardHasOwner(stratCardOwners, initiative)) {
-                    buttonLabel = 'Nope';
-                    disabled = true;
-                }
-
-                const ButtonProps = {
-                    disabled,
+                const ButtonProps: NonNullable<StrategyCardProps['ButtonProps']> = {
+                    disabled: factionName === 'END' && !Boolean(cardOwner),
                     onClick: (e: MouseEvent<HTMLButtonElement>) => onTakeCardClick(e, initiative),
                 };
 
-                return <StrategyCard key={name} card={card} ButtonProps={ButtonProps} buttonLabel={buttonLabel} />;
+                return (
+                    <StrategyCard
+                        key={name}
+                        card={card}
+                        owner={cardOwner}
+                        ButtonProps={ButtonProps}
+                        buttonLabel={buttonLabel}
+                    />
+                );
             })}
             {naaluZeroSelect}
             <Toolbar />
-            {!isSpectator && (
-                <Accordion disableMargin>
-                    <AccordionSummary disableMargin expandIcon={<ExpandMoreIcon />}>
-                        <Typography>Assign Cards</Typography>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                        <AssignStrategyCardTable />
-                    </AccordionDetails>
-                </Accordion>
-            )}
+            <Accordion disableMargin>
+                <AccordionSummary disableMargin expandIcon={<ExpandMoreIcon />}>
+                    <Typography>Assign Cards</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                    <AssignStrategyCardTable />
+                </AccordionDetails>
+            </Accordion>
         </Grid>
     );
 }

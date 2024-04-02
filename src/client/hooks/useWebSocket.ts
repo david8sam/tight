@@ -1,6 +1,5 @@
 import { Dispatch, useCallback, useEffect, useRef } from 'react';
 
-import { LoginStatus } from 'common/Account';
 import { Message, MessageType } from 'common/message';
 
 import { Action, ActionType, State } from '../reducer';
@@ -14,36 +13,15 @@ export interface SendDataFunction {
 
 function onWebSocketMessage(dispatch: React.Dispatch<Action>, e: MessageEvent) {
     const msg = JSON.parse(e.data);
-    const { type, data, error } = msg || {};
+    const { type, data } = msg || {};
 
     switch (type) {
-        case MessageType.ACCOUNT_LOGIN:
-            dispatch({
-                type: ActionType.setLoginStatus,
-                payload: { status: LoginStatus.LOGGED_IN, accountId: data, loginError: null },
-            });
-            break;
-        case MessageType.ACCOUNT_LOGOUT:
-            dispatch({
-                type: ActionType.setLoginStatus,
-                payload: { status: LoginStatus.LOGGED_OUT, accountId: null },
-            });
-            break;
-
         case MessageType.BROADCAST_INITIALIZE:
-            dispatch({ type: ActionType.setState, payload: data });
-            break;
-        case MessageType.BROADCAST_RECONNECT:
             dispatch({ type: ActionType.setState, payload: data });
             break;
         case MessageType.BROADCAST_CHANGE:
             dispatch({ type: ActionType.updateState, payload: data });
             break;
-
-        case MessageType.FACTION_GET:
-            dispatch({ type: ActionType.setFactionInfo, payload: data });
-            break;
-
         default:
             break;
     }
@@ -81,8 +59,8 @@ export default function useWebSocket(options: WebSocketOptions) {
     }, []);
 
     const onClose = useCallback((e: CloseEvent) => {
-        const { initialized, connecting, connectError } = optionsRef.current.state;
-        if (!e.wasClean && initialized && !connecting && !connectError) {
+        const { connecting, connectError } = optionsRef.current.state;
+        if (!e.wasClean && !connecting && !connectError) {
             connect();
         }
     }, []);
@@ -108,8 +86,10 @@ export default function useWebSocket(options: WebSocketOptions) {
                 dispatch({ type: ActionType.setConnecting, payload: { connecting: true, connectError: false } });
 
                 // Create new connection to the server
-                const queryParam = initRef.current.initialized ? `?reconnect=${state.accountId ?? 'anonymous'}` : '';
-                ws = new WebSocket(`${url}${queryParam}`);
+                const gameId = state.game?.id || sessionStorage.getItem('gameId');
+                const playerId = state.playerId || sessionStorage.getItem('playerId');
+                const queryParams = `${gameId ? `?gameId=${gameId}` : ''}${playerId ? `&playerId=${playerId}` : ''}`;
+                ws = new WebSocket(`${url}${queryParams}`);
                 ws.onopen = onOpen;
                 ws.onmessage = onMessage;
                 ws.onclose = onClose;

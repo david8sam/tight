@@ -12,23 +12,21 @@ import {
     Typography,
 } from '@mui/material';
 
-import { calculateVictoryPoints, GameJoinStatus, getPlayersInGame } from 'common/Game';
+import { calculateVictoryPoints } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
-import useAccountInfo from '../hooks/useAccountInfo';
+import useGameInfo from '../hooks/useGameInfo';
 import RefreshAllbutton from './RefreshAllButton';
 
 export default function AgendaPhase() {
     const { sendData } = useAppContext();
-    const { game, gameId, player, playerId } = useAccountInfo();
     const [endGameEarly, setEndGameEarly] = useState(false);
+    const { game, gameId } = useGameInfo();
 
-    if (!game || !player || !playerId) {
+    if (!game) {
         return null;
     }
-
-    const playersArray = getPlayersInGame(game);
 
     const onCustodiansRemoved = (e: React.ChangeEvent<HTMLInputElement>): void => {
         const data: Record<string, unknown> = { gameId, custodiansRemoved: e.target.checked };
@@ -58,15 +56,16 @@ export default function AgendaPhase() {
     };
 
     const {
+        factions,
         status: { custodiansRemoved, agenda1Voted, agenda2Voted, round },
         numRounds,
     } = game;
 
-    const isSpectator = player.joinStatus === GameJoinStatus.SPECTATOR;
+    const isSpectator = false;
     const canEndEarly = round < numRounds && !isSpectator;
 
-    const playersAtVp = playersArray.filter(p => calculateVictoryPoints(game, p.id) >= game.numVictoryPoints);
-    const winners = playersAtVp.length ? playersAtVp.map(p => p.name).join(', ') : '';
+    const factionsAtVp = factions.filter(f => calculateVictoryPoints(game, f.name) >= game.numVictoryPoints);
+    const winners = factionsAtVp.length ? factionsAtVp.map(f => f.name).join(', ') : '';
 
     return (
         <Grid container direction="column">
@@ -107,7 +106,7 @@ export default function AgendaPhase() {
                             {winners && (
                                 <Grid item>
                                     <Typography variant="h5">{`${winners} ${
-                                        playersAtVp.length === 1 ? 'has' : 'have'
+                                        factionsAtVp.length === 1 ? 'has' : 'have'
                                     } at least ${game.numVictoryPoints} VPs`}</Typography>
                                 </Grid>
                             )}
@@ -140,7 +139,6 @@ export default function AgendaPhase() {
                     </Toolbar>
                 </>
             )}
-            <Toolbar />
         </Grid>
     );
 }

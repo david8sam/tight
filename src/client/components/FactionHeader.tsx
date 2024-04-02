@@ -3,9 +3,10 @@ import React from 'react';
 import { Grid, Typography, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import { GamePlayer } from 'common/Game';
+import { GameFaction, formatFactionName } from 'common/Game';
 
-import { useAppContext } from '../Context';
+import useGameInfo from '../hooks/useGameInfo';
+
 import InitiativeLabel from './InitiativeLabel';
 
 const useStyles = makeStyles(theme => ({
@@ -20,42 +21,47 @@ const useStyles = makeStyles(theme => ({
             paddingBottom: 0,
         },
     },
-    playerInfo: {
+    factionInfo: {
         padding: `0px ${theme.spacing(1)}`,
     },
 }));
 
-export interface PlayerHeaderProps {
-    player: GamePlayer;
+export interface FactionHeaderProps {
+    faction: GameFaction;
     hideInitiative?: boolean;
 }
 
-function PlayerHeader(props: PlayerHeaderProps) {
+function FactionHeader(props: FactionHeaderProps) {
     const theme = useTheme();
     const classes = useStyles(props);
-    const { state } = useAppContext();
+    const { game, strategyCards } = useGameInfo();
 
-    const { strategyCards } = state;
-    const { player, hideInitiative = false } = props;
-    const { name, faction, strategyCard } = player;
+    if (!game) {
+        return null;
+    }
+
+    const { faction, hideInitiative = false } = props;
+    const { strategyCard } = faction;
 
     const card = hideInitiative ? null : strategyCards.find(s => s.initiative === strategyCard);
-    const playerColor = player.color || '#fff';
-    const color = theme.palette.getContrastText(playerColor);
-    const backgroundColor = playerColor;
+    const factionColor = faction.color || '#fff';
+    const color = theme.palette.getContrastText(factionColor);
+    const backgroundColor = factionColor;
+
+    const title = formatFactionName(game, faction.name);
 
     return (
         <Grid
             container
             justifyContent="space-between"
             alignItems="center"
-            classes={{ root: classes.playerInfo }}
+            classes={{ root: classes.factionInfo }}
             style={{ color, backgroundColor }}
         >
             {card ? <InitiativeLabel card={card} infoIconColor={color} /> : null}
-            <Typography>{`${name} (${faction})`}</Typography>
+            <Typography>{title}</Typography>
         </Grid>
     );
 }
 
-export default PlayerHeader;
+export default FactionHeader;

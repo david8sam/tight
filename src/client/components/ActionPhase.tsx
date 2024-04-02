@@ -5,13 +5,12 @@ import { makeStyles } from '@mui/styles';
 
 import classNames from 'classnames';
 
-import { GameJoinStatus, GamePlayer, StrategyCardIndex, getNextPlayer, getPlayerOrder } from 'common/Game';
+import { GameFaction, StrategyCardIndex, getFactionOrder, getNextFaction } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
-import useAccountInfo from '../hooks/useAccountInfo';
-
-import PlayerHeader from './PlayerHeader';
+import useGameInfo from '../hooks/useGameInfo';
+import FactionHeader from './FactionHeader';
 import SpeakerSelect from './SpeakerSelect';
 import VictoryPoints from './VictoryPoints';
 import VictoryPointsExtra from './VictoryPointsExtra';
@@ -54,96 +53,95 @@ const useStyles = makeStyles(theme => ({
 function ActionPhase() {
     const classes = useStyles();
     const { sendData } = useAppContext();
-
-    const { game, gameId, player: currentPlayer } = useAccountInfo();
-    if (!game || !currentPlayer) {
+    const { game, gameId } = useGameInfo();
+    if (!game) {
         return null;
     }
 
     const { status } = game;
     const { turn } = status;
-    const playerOrder = getPlayerOrder(game);
+    const factionOrder = getFactionOrder(game);
 
-    const onFlipCardClick = (playerId: string, flipped: boolean) => {
-        sendData({ type: MessageType.PLAYER_FLIP_STRATEGY_CARD, data: { gameId, playerId, flipped } });
+    const onFlipCardClick = (factionName: string, flipped: boolean) => {
+        sendData({ type: MessageType.FLIP_STRATEGY_CARD, data: { gameId, factionName, flipped } });
     };
 
-    const onPassClick = (playerId: string, passed: boolean) => {
-        sendData({ type: MessageType.PLAYER_PASS_TURN, data: { gameId, playerId, passed } });
+    const onPassClick = (factionName: string, passed: boolean) => {
+        sendData({ type: MessageType.PASS_TURN, data: { gameId, factionName, passed } });
     };
 
-    const onNextTurn = (player: GamePlayer, done: boolean) => {
+    const onNextTurn = (faction: GameFaction, done: boolean) => {
         if (done) {
-            const nextPlayer = getNextPlayer(game, player.id, playerOrder);
+            const nextFaction = getNextFaction(game, faction.name, factionOrder);
             sendData({
                 type: MessageType.GAME_STATUS_SET,
-                data: { gameId, turn: nextPlayer ? nextPlayer.strategyCard : StrategyCardIndex.END },
+                data: { gameId, turn: nextFaction ? nextFaction.strategyCard : StrategyCardIndex.END },
             });
         } else {
             sendData({
                 type: MessageType.GAME_STATUS_SET,
-                data: { gameId, turn: player.strategyCard },
+                data: { gameId, turn: faction.strategyCard },
             });
         }
     };
 
-    const isSpectator = currentPlayer.joinStatus === GameJoinStatus.SPECTATOR;
-    const currentPlayerIndex =
-        turn === StrategyCardIndex.END ? playerOrder.length : playerOrder.findIndex(p => p.strategyCard === turn);
+    const isSpectator = false;
+    const currentFactionIndex =
+        turn === StrategyCardIndex.END ? factionOrder.length : factionOrder.findIndex(f => f.strategyCard === turn);
 
     return (
         <Grid container direction="column">
-            {playerOrder.map((player: GamePlayer) => {
-                const { id: playerId } = player;
-                const playerIndex = playerOrder.findIndex(p => p.id === playerId);
-                const playerDone = player.passed || currentPlayerIndex > playerIndex;
+            {factionOrder.map((faction: GameFaction) => {
+                const { name: factionName } = faction;
+                const factionIndex = factionOrder.findIndex(f => f.name === factionName);
+                const factionDone = faction.passed || currentFactionIndex > factionIndex;
                 const isPoliticsAndFlipped =
-                    player.strategyCard === StrategyCardIndex.POLITICS && player.stragetyCardFlipped;
+                    faction.strategyCard === StrategyCardIndex.POLITICS && faction.stragetyCardFlipped;
                 const isImperialAndFlipped =
-                    player.strategyCard === StrategyCardIndex.IMPERIAL && player.stragetyCardFlipped;
+                    faction.strategyCard === StrategyCardIndex.IMPERIAL && faction.stragetyCardFlipped;
 
                 return (
-                    <Card key={playerId} variant="outlined" classes={{ root: classes.card }}>
+                    <Card key={factionName} variant="outlined" classes={{ root: classes.card }}>
                         <CardContent classes={{ root: classes.cardContent }}>
-                            <PlayerHeader player={player} />
+                            <FactionHeader faction={faction} />
                         </CardContent>
                         <CardContent classes={{ root: classes.cardContent }}>
                             <Toolbar
                                 classes={{
-                                    root: classNames({ [classes.doneBackground]: playerDone }),
+                                    root: classNames({ [classes.doneBackground]: factionDone }),
                                     gutters: classes.toolbarGutters,
                                     regular: classes.toolbarRegular,
                                 }}
                             >
                                 <Grid container direction="column">
                                     <Grid container direction="row" justifyContent="space-between" alignItems="center">
-                                        <VictoryPointsExtra playerId={playerId} disabled={isSpectator} />
+                                        <VictoryPointsExtra factionName={factionName} disabled={isSpectator} />
                                         <Button
                                             classes={{ root: classes.button }}
                                             color="primary"
                                             variant="contained"
-                                            onClick={() => onPassClick(playerId, !player.passed)}
-                                            disabled={isSpectator || !player.stragetyCardFlipped}
+                                            onClick={() => onPassClick(factionName, !faction.passed)}
+                                            disabled={isSpectator || !faction.stragetyCardFlipped}
                                         >
-                                            {player.passed ? 'UNPASS' : 'PASS'}
+                                            {faction.passed ? 'UNPASS' : 'PASS'}
                                         </Button>
                                         <Button
                                             classes={{ root: classes.button }}
                                             color="primary"
                                             variant="contained"
-                                            onClick={() => onFlipCardClick(playerId, !player.stragetyCardFlipped)}
+                                            onClick={() => onFlipCardClick(factionName, !faction.stragetyCardFlipped)}
                                             disabled={isSpectator}
                                         >
-                                            {player.stragetyCardFlipped ? 'UNFLIP' : 'FLIP'}
+                                            {faction.stragetyCardFlipped ? 'UNFLIP' : 'FLIP'}
                                         </Button>
                                         <Button
                                             classes={{ root: classes.button }}
                                             color="primary"
                                             variant="contained"
-                                            disabled={isSpectator || player.passed}
-                                            onClick={() => onNextTurn(player, !playerDone)}
+                                            disabled={isSpectator || faction.passed}
+                                            onClick={() => onNextTurn(faction, !factionDone)}
                                         >
-                                            {playerDone ? 'UNDONE' : 'DONE'}
+                                            {factionDone ? 'UNDONE' : 'DONE'}
                                         </Button>
                                     </Grid>
                                     {isPoliticsAndFlipped && (
@@ -155,7 +153,7 @@ function ActionPhase() {
                                     )}
                                     {isImperialAndFlipped && (
                                         <VictoryPoints
-                                            playerId={playerId}
+                                            factionName={factionName}
                                             AccordionProps={{
                                                 className: classes.vpAccordion,
                                                 elevation: 0,
@@ -173,12 +171,12 @@ function ActionPhase() {
             {!isSpectator && (
                 <Toolbar>
                     <Button
-                        disabled={playerOrder.every(p => p.passed) || turn !== StrategyCardIndex.END}
+                        disabled={factionOrder.every(p => p.passed) || turn !== StrategyCardIndex.END}
                         color="primary"
                         variant="contained"
                         fullWidth
-                        // Will always be a player, otherwise the button is disabled and not clickable.
-                        onClick={() => onNextTurn(playerOrder.find(p => !p.passed) as GamePlayer, false)}
+                        // Will always be a faction, otherwise the button is disabled and not clickable.
+                        onClick={() => onNextTurn(factionOrder.find(p => !p.passed) as GameFaction, false)}
                     >
                         Next Turn
                     </Button>

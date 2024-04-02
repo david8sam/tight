@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router';
 
 import CloseIcon from '@mui/icons-material/Close';
 import {
@@ -13,21 +14,24 @@ import {
     InputLabel,
     MenuItem,
     Select,
-    TextField,
+    SxProps,
+    Theme,
     Toolbar,
     Tooltip,
     Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import { Game, generateBlankPublicObjectives, Objective } from 'common/Game';
-import { MessageType } from 'common/message';
+import { generateBlankPublicObjectives, Objective } from 'common/Game';
 
 import { useAppContext } from '../Context';
+import { ActionType } from '../reducer';
+
+import api from '../utils/api';
+
 import PublicObjectives from './PublicObjectives';
 
 type GameOptions = {
-    name: string;
     numPlayers: number;
     numRounds: number;
     numVictoryPoints: number;
@@ -49,16 +53,6 @@ export interface NewGameDialogProps {
     onClose: () => void;
 }
 
-function generateNextName(games: Game[]) {
-    let suffix = 1;
-    let name = `Game${suffix}`;
-    while (games.find(g => g.name === name)) {
-        name = `Game${++suffix}`;
-    }
-
-    return name;
-}
-
 const useStyles = makeStyles(theme => ({
     appBar: {
         flexDirection: 'row',
@@ -75,45 +69,62 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-function NewGameDialog(props: NewGameDialogProps) {
-    const classes = useStyles(props);
-    const { open, onClose } = props;
-    const {
-        state: { games, account },
-        sendData,
-    } = useAppContext();
+const styles: Record<string, SxProps<Theme>> = {
+    appBar: {
+        flexDirection: 'row',
+        position: 'relative',
+        alignItems: 'center',
+        paddingRight: 2,
+    },
+    title: {
+        marginLeft: 2,
+        flex: 1,
+    },
+    gridItem: {
+        width: '100%',
+    },
+};
 
-    const accountId = account?.id;
-    const playerGames = Object.values(games).filter(g => g.creator === accountId);
+function NewGameDialog(props: NewGameDialogProps) {
+    const { dispatch } = useAppContext();
+    const { open, onClose } = props;
 
     const [gameOptions, setGameOptions] = useState<GameOptions>(() => ({
-        name: generateNextName(playerGames),
         numPlayers: 8,
         numRounds: 10,
         numVictoryPoints: 10,
         publicObjectives: generateBlankPublicObjectives(),
     }));
 
+    const [creatingGame, setCreatingGame] = useState(false);
+
+    const navigate = useNavigate();
+
     const onCancel = () => {
         onClose();
     };
 
     const onSave = () => {
-        sendData({ type: MessageType.CREATE_GAME, data: { playerId: accountId, ...gameOptions } });
-        onClose();
+        setCreatingGame(true);
+        api.gameCreate(gameOptions).then(gameCode => {
+            if (gameCode) {
+                dispatch({ type: ActionType.setPlayerId, payload: null });
+                navigate(`/${gameCode}`);
+            }
+
+            setCreatingGame(false);
+            onClose();
+        });
     };
 
     const onGameOptionChange = (options: Partial<GameOptions>) => setGameOptions(v => ({ ...v, ...options }));
 
-    const { name, numPlayers, numRounds, numVictoryPoints, publicObjectives } = gameOptions;
-    const gameExists = Boolean(playerGames.find(g => g.name === gameOptions.name));
-    const nameError = !name || gameExists;
-    const poError = !publicObjectives?.length;
-    const hasError = nameError || poError;
+    const { numPlayers, numRounds, numVictoryPoints, publicObjectives } = gameOptions;
+    const hasError = !publicObjectives?.length;
 
     return (
         <Dialog open={open} fullScreen>
-            <AppBar classes={{ root: classes.appBar }}>
+            <AppBar sx={styles.appBar}>
                 <Toolbar>
                     <Tooltip title="Close">
                         <IconButton onClick={onCancel} size="large">
@@ -121,30 +132,16 @@ function NewGameDialog(props: NewGameDialogProps) {
                         </IconButton>
                     </Tooltip>
                 </Toolbar>
-                <Typography variant="h6" className={classes.title}>
+                <Typography variant="h6" sx={styles.title}>
                     Create New Game
                 </Typography>
-                <Button disabled={hasError} autoFocus color="inherit" onClick={onSave}>
+                <Button disabled={hasError || creatingGame} autoFocus color="inherit" onClick={onSave}>
                     Save
                 </Button>
             </AppBar>
             <DialogContent dividers>
                 <Grid container direction="column" justifyContent="center" alignItems="center" spacing={2}>
-                    <Grid item className={classes.gridItem}>
-                        <FormControl variant="standard" fullWidth>
-                            <TextField
-                                variant="outlined"
-                                fullWidth
-                                value={name}
-                                onChange={e => onGameOptionChange({ name: e?.target?.value })}
-                                required
-                                error={nameError}
-                                helperText={gameExists ? 'Name already exists' : ''}
-                                label="Name"
-                            />
-                        </FormControl>
-                    </Grid>
-                    <Grid item className={classes.gridItem}>
+                    <Grid item sx={styles.gridItem}>
                         <FormControl fullWidth variant="outlined">
                             <InputLabel id="num-players">Number of Players</InputLabel>
                             <Select
@@ -162,7 +159,7 @@ function NewGameDialog(props: NewGameDialogProps) {
                             </Select>
                         </FormControl>
                     </Grid>
-                    <Grid item className={classes.gridItem}>
+                    <Grid item sx={styles.gridItem}>
                         <FormControl fullWidth variant="outlined">
                             <InputLabel id="num-rounds">Number of Rounds</InputLabel>
                             <Select
@@ -180,7 +177,7 @@ function NewGameDialog(props: NewGameDialogProps) {
                             </Select>
                         </FormControl>
                     </Grid>
-                    <Grid item className={classes.gridItem}>
+                    <Grid item sx={styles.gridItem}>
                         <FormControl fullWidth variant="outlined">
                             <InputLabel id="num-vps">Victory Points To Win</InputLabel>
                             <Select
@@ -198,10 +195,10 @@ function NewGameDialog(props: NewGameDialogProps) {
                             </Select>
                         </FormControl>
                     </Grid>
-                    <Grid item className={classes.gridItem}>
+                    <Grid item sx={styles.gridItem}>
                         <Divider variant="fullWidth" orientation="horizontal" />
                     </Grid>
-                    <Grid item className={classes.gridItem}>
+                    <Grid item sx={styles.gridItem}>
                         <PublicObjectives
                             creatable
                             deletable

@@ -5,6 +5,9 @@ import { AppBar, Button, Dialog, DialogContent, IconButton, Toolbar, Tooltip, Ty
 import { makeStyles } from '@mui/styles';
 
 import { MessageType } from 'common/message';
+import { PlanetMap } from 'common/Planet';
+
+import useGameInfo from '../hooks/useGameInfo';
 
 import { useAppContext } from '../Context';
 import PlanetsTable from './PlanetsTable';
@@ -12,8 +15,8 @@ import PlanetsTable from './PlanetsTable';
 interface AddPlanetDialogProps {
     open: boolean;
     onClose: () => void;
-    gameId: string;
-    playerId: string;
+    planetMap: PlanetMap;
+    factionName: string;
 }
 
 const useStyle = makeStyles(theme => ({
@@ -34,19 +37,14 @@ const useStyle = makeStyles(theme => ({
 
 function AddPlanetDialog(props: AddPlanetDialogProps) {
     const classes = useStyle(props);
-    const { open, onClose } = props;
-    const {
-        state: { games = {} },
-        sendData,
-    } = useAppContext();
+    const { open, onClose, planetMap, factionName } = props;
+    const { sendData } = useAppContext();
+    const { game, gameId } = useGameInfo();
 
-    const { gameId, playerId } = props;
+    const faction = game?.factions.find(f => f.name === factionName);
 
-    const game = games[gameId];
-    const player = game?.players && game.players[playerId];
-    const planetNames = player && player.planets;
-
-    const [selection, setSelection] = useState(planetNames || []);
+    const planetNames = faction?.planets || [];
+    const [selection, setSelection] = useState(planetNames);
 
     const onCancel = () => {
         onClose();
@@ -55,12 +53,12 @@ function AddPlanetDialog(props: AddPlanetDialogProps) {
     const onSave = () => {
         const lostPlanets = planetNames.filter(n => !selection.includes(n));
         if (lostPlanets.length) {
-            sendData({ type: MessageType.PLAYER_LOST_PLANET, data: { gameId, playerId, planetId: lostPlanets } });
+            sendData({ type: MessageType.LOST_PLANET, data: { gameId, factionName, planetId: lostPlanets } });
         }
 
         const takenPlanets = selection.filter(s => !planetNames.includes(s));
         if (takenPlanets.length) {
-            sendData({ type: MessageType.PLAYER_TAKE_PLANET, data: { gameId, playerId, planetId: takenPlanets } });
+            sendData({ type: MessageType.TAKE_PLANET, data: { gameId, factionName, planetId: takenPlanets } });
         }
 
         onClose();
@@ -85,8 +83,9 @@ function AddPlanetDialog(props: AddPlanetDialogProps) {
             </AppBar>
             <DialogContent classes={{ root: classes.content }}>
                 <PlanetsTable
+                    ownerFactionName={factionName}
+                    planetMap={planetMap}
                     columns={['name', 'owner']}
-                    gameId={gameId}
                     showCheckbox
                     selection={selection}
                     onSelectionChange={setSelection}

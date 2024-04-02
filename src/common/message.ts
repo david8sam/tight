@@ -1,21 +1,17 @@
-import { Account, BaseAccountMap } from './Account.js';
-import { GameChangeDataMap, GameMap, StrategyCardsType } from './Game.js';
-import { PlanetMap } from './Planet.js';
+import { GameChangeData, GameClientData, GamePlayer, StrategyCard } from './Game.js';
 
 export interface AllData {
-    games: GameMap;
-    accountsInfo: BaseAccountMap;
-    planets: PlanetMap;
-    strategyCards: StrategyCardsType;
-    factionNames: readonly string[];
+    socketId: string;
+    game: GameClientData | null;
+    playerId: string | null;
+    strategyCards: StrategyCard[];
 }
 
 export interface PartialData extends Partial<AllData> {}
 
 export interface ChangeData {
-    games?: GameChangeDataMap;
-    account?: Account;
-    accountsInfo?: BaseAccountMap;
+    game: GameChangeData;
+    playerId?: string;
 }
 
 // TODO: Type per message type.
@@ -24,81 +20,65 @@ export interface Message {
     data?: any;
 }
 
+// TODO: Convert/simplify to numerical squential enum
 export enum MessageType {
     // Messages from the server
-    BROADCAST_INITIALIZE = '/broadcast/initialize',
-    BROADCAST_RECONNECT = '/broadcast/reconnect',
-    BROADCAST_CHANGE = '/broadcast/change',
-
-    // Account actions
-    // data: { accountId }
-    LIST_ACCOUNTS = '/account/list',
-    ACCOUNT_LOGIN = '/account/login',
-    ACCOUNT_LOGOUT = '/account/logout',
-    ACCOUNT_ADD = '/account/add',
-    ACCOUNT_DELETE = '/account/delete',
-    ACCOUNT_SET_SETTINGS = '/account/setSettings',
-
-    // Manage games actions
-    LIST_GAMES = '/game/list',
+    BROADCAST_INITIALIZE = 0,
+    BROADCAST_CHANGE,
 
     // data: { gameId }
-    CREATE_GAME = '/game/create',
-    DELETE_GAME = '/game/delete',
-    START_GAME = '/game/start',
-    STOP_GAME = '/game/stop',
-    END_GAME = '/game/end',
+    CREATE_GAME,
+    DELETE_GAME,
+    START_GAME,
+    STOP_GAME,
+    END_GAME,
 
-    GAME_SET_PUBLIC_OBJECTIVES = '/game/setPublicObjectives',
-    GAME_STATUS_SET = '/game/setStatus',
-    GAME_NEXT_ROUND = '/game/nextRound',
-    GAME_SET_SPEAKER = '/game/setSpeaker',
-    GAME_SET_CUSTODIANS_REMOVED = '/game/setCustoidansRemoved',
-    GAME_SET_AGENDA_VOTED = '/game/setAgendaVoted',
+    GAME_SET_PUBLIC_OBJECTIVES,
+    GAME_STATUS_SET,
+    GAME_NEXT_ROUND,
+    GAME_SET_SPEAKER,
+    GAME_SET_CUSTODIANS_REMOVED,
+    GAME_SET_AGENDA_VOTED,
 
-    // Faction actions
-    FACTION_LIST_NAMES = '/faction/listNames',
-    // data: { factionName }
-    FACTION_GET = '/faction/get',
+    // data: { gameId, playerId }
+    GAME_LOAD,
+    GAME_ADD_PLAYER,
+
+    // data: { gameId, factionName }
+    GAME_UPDATE_FACTION,
 
     // Player actions
     // data: { gameId, playerId }
-    PLAYER_JOIN_GAME = '/player/joinGame',
-    PLAYER_LEAVE_GAME = '/player/leaveGame',
-
-    PLAYER_SET_COLOR = '/player/setColor',
-    PLAYER_SET_FACTION = '/player/setFaction',
 
     // Strategy Card actions
     // data: { gameId: string, round: number, playerId: string, strategyCard: number }
-    PLAYER_TAKE_STRATEGY_CARD = '/player/takeStrategyCard',
-    PLAYER_RETURN_STRATEGY_CARD = '/player/returnStrategyCard',
-    PLAYER_FLIP_STRATEGY_CARD = '/player/filpStrategyCard',
-    PLAYER_RESET_STRATEGY_CARDS = '/player/resetStrategyCards',
-    PLAYER_TAKE_NAALU_ZERO_TOKEN = '/player/takeNaaluZeroToken',
+    TAKE_STRATEGY_CARD,
+    RETURN_STRATEGY_CARD,
+    FLIP_STRATEGY_CARD,
+    RESET_STRATEGY_CARDS,
+    TAKE_NAALU_ZERO_TOKEN,
 
     // data: { passed: boolean }
-    PLAYER_PASS_TURN = '/player/passTurn',
+    PASS_TURN,
 
     // data: { publicObjectives: boolean[] }
-    PLAYER_SET_PUBLIC_OBJECTIVES = '/player/setPublicObjective',
+    SET_PUBLIC_OBJECTIVES,
 
     // data: { secretObjectives: { cleared: boolean; objective: Objective }[] }
-    PLAYER_SET_SECRET_OBJECTIVE = './player/setSecretObjective',
+    SET_SECRET_OBJECTIVE,
 
     // Fluid victory points that can be gained/lost between game rounds. (i.e markers, agenda, etc...)
     // data: { victoryPoints }
-    PLAYER_SET_VICTORY_POINTS = '/player/setVictoryPoints',
+    SET_VICTORY_POINTS,
 
     // Planet actions
     // data: { gameId, playerId, planetId }
-    PLAYER_TAKE_PLANET = '/player/takePlanet', // Player has taken new planet(s)
-    PLAYER_LOST_PLANET = '/player/lostPlanet', // Player has lost planet(s)
-    PLAYER_EXHAUST_PLANET = '/player/exhaustPlanet',
-    PLAYER_REFRESH_PLANET = '/player/refreshPlanet',
-    PLAYER_EXHAUST_PLANET_ABILITY = '/player/exhaustPlanetAbility',
-    PLAYER_REFRESH_PLANET_ABILITY = '/player/refreshPlanetAbility',
+    TAKE_PLANET, // Player has taken new planet(s)
+    LOST_PLANET, // Player has lost planet(s)
+    EXHAUST_PLANET,
+    REFRESH_PLANET,
+    EXHAUST_PLANET_ABILITY,
+    REFRESH_PLANET_ABILITY,
 
-    //
-    LIST_PLANETS = '/planet/list',
+    UPDATE_PLANET,
 }

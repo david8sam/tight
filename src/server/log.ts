@@ -16,20 +16,13 @@ function formatTime() {
 /**
  * Log a Web Socket message being received or sent.
  */
-export function logWS(
-    send: boolean,
-    accountId: string | string[] | null | undefined,
-    payload: { type: MessageType; data: any; error?: any },
-) {
+export function logWS(send: boolean, id: string, payload: { type: MessageType; data: any; error?: any }) {
     let message = chalk.cyan(send ? 'Sending' : 'Receiving');
-    const accountIdsMessage = Array.isArray(accountId) ? accountId.join() : accountId;
-    if (accountIdsMessage) {
-        const toFrom = `${send ? ' to ' : ' from '}`;
-        message = `${message}${toFrom}${chalk.blueBright(accountIdsMessage)}`;
-    }
+    const toFrom = `${send ? ' to ' : ' from '}`;
+    message = `${message}${toFrom}${chalk.blueBright(id)}`;
 
     const { type, data } = payload;
-    const typeMsg = chalk.magenta(type);
+    const typeMsg = chalk.magenta(MessageType[type]);
 
     let logData = '';
     if (data) {

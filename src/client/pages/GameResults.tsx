@@ -1,37 +1,35 @@
+import { Button, Divider, Grid, Toolbar, Typography } from '@mui/material';
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Divider, Grid, Toolbar, Typography } from '@mui/material';
 
-import { GameJoinStatus } from 'common/Game';
 import { MessageType } from 'common/message';
 
-import { useAppContext } from '../Context';
 import GameInfoToolbar from '../components/GameInfoToolbar';
 import Results from '../components/Results';
-import useAccountInfo from '../hooks/useAccountInfo';
+import useGameInfo from '../hooks/useGameInfo';
+
+import { useAppContext } from '../Context';
 
 function GameResults() {
     const navigate = useNavigate();
-    const { game, gameId, player, playerId } = useAccountInfo();
+    const { game, gameId } = useGameInfo();
     const { sendData } = useAppContext();
 
     useEffect(() => {
-        if (!player || !playerId) {
+        if (!game || !gameId) {
             navigate('/');
-        } else if (!game) {
-            navigate(`/player/${playerId}/manage-games`);
         } else if (!game.status.ended) {
-            navigate(`/player/${playerId}/game`);
+            navigate(`/${gameId}/status`);
         }
     });
 
     const onResumeGame = () => sendData({ type: MessageType.END_GAME, data: { gameId, ended: false } });
 
-    if (!game || !player || !game.status.ended) {
+    if (!game || !game.status.ended) {
         return null;
     }
 
-    const isSpectator = player.joinStatus === GameJoinStatus.SPECTATOR;
+    const isSpectator = false;
 
     return (
         <Grid container direction="column" justifyContent="center">

@@ -10,9 +10,6 @@ const useStyles = makeStyles(theme => ({
     gridItem: {
         marginBottom: theme.spacing(2),
     },
-    disabledText: {
-        color: theme.palette.text.primary,
-    },
     divider: {
         height: 2,
         backgroundColor: 'black',
@@ -44,8 +41,7 @@ export default function AccordionTextFields(props: AccordionTextFieldsProps) {
                             <Grid item className={classes.gridItem}>
                                 <TextField
                                     key={i}
-                                    InputProps={{ classes: { disabled: classes.disabledText } }}
-                                    disabled
+                                    InputProps={{ readOnly: true }}
                                     fullWidth
                                     multiline
                                     variant="outlined"

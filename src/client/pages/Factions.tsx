@@ -1,18 +1,17 @@
-import React, { ChangeEvent, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import { AppBar, Button, Grid, IconButton, Toolbar, Tooltip, Typography } from '@mui/material';
+import { AppBar, Button, CircularProgress, Grid, IconButton, Toolbar, Tooltip, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import { Faction } from 'common/Faction';
-import { MessageType } from 'common/message';
 
-import { useAppContext } from '../Context';
 import FactionInfo, { FactionAccordionIndex, FactionInfoProps } from '../components/FactionInfo';
 import FactionSelect from '../components/FactionSelect';
+import api from '../utils/api';
+
 import { HEADER_HEIGHT } from '../constants';
-import useAccountInfo from '../hooks/useAccountInfo';
 
 // Num accordions
 const COUNT = Object.keys(FactionAccordionIndex).length;
@@ -30,10 +29,9 @@ const useStyles = makeStyles(theme => ({
 function Factions() {
     const classes = useStyles();
 
-    const { state, sendData } = useAppContext();
-    const { player } = useAccountInfo();
-    const { factionNames, factionInfo: factionInfoStore } = state;
-    const [factionInfoState, setFactionInfo] = useState<Faction | null>(null);
+    const [factionInfo, setFactionInfo] = useState<Faction | null>(null);
+    const [factionNames, setFactionNames] = useState<string[]>([]);
+    const [selectedName, setSelectedName] = useState<string>('');
     const [pending, setPending] = useState(false);
 
     const [expanded, setExpanded] = useState<boolean[]>(Array(COUNT).fill(false));
@@ -44,46 +42,36 @@ function Factions() {
         setExpanded(newExpanded);
     };
 
-    // Initialize by selecting the first faction.
     useEffect(() => {
-        if (factionInfoState || factionInfoStore) {
-            // Only need to wait until state is initilaized from the server.
-            return;
-        }
+        setPending(true);
 
-        if (!pending && factionNames.length && !factionInfoState) {
-            const factionName = player?.faction ?? factionNames[0];
-            sendData({ type: MessageType.FACTION_GET, data: { factionName } });
-            setPending(true);
-        } else if (pending && factionInfoState) {
+        const setup = async () => {
+            const names = await api.factionListNames();
+            const [firstFaction] = await api.factionGetFaction({ name: names[0] });
+            setFactionNames(names);
+            setSelectedName(names[0]);
+            setFactionInfo(firstFaction);
             setPending(false);
-        }
-    });
+        };
 
-    // Effect to update the state from store change.
-    useEffect(() => {
-        if (factionInfoStore === null && factionInfoState !== null) {
-            setFactionInfo(null);
-        }
-
-        const storeName = factionInfoStore?.name;
-        const stateName = factionInfoState?.name;
-        if ((storeName && !stateName) || storeName !== stateName) {
-            setFactionInfo(factionInfoStore);
-        }
-    }, [factionInfoStore, factionInfoState]);
+        setup();
+    }, []);
 
     // Don't render until we have enough data.
-    const factionName = factionInfoState && factionInfoState.name;
-    if (factionNames.length === 0 || !factionName) {
+    if (factionNames.length === 0 || !selectedName) {
         return null;
     }
 
     const onFactionChange = (factionName: string) => {
-        sendData({ type: MessageType.FACTION_GET, data: { factionName } });
+        setPending(true);
+        setSelectedName(factionName);
+        api.factionGetFaction({ name: factionName }).then(factions => {
+            setFactionInfo(factions[0] ?? null);
+            setPending(false);
+        });
     };
 
-    const index = factionNames.indexOf(factionName);
+    const index = factionNames.indexOf(selectedName);
     const lastIndex = factionNames.length - 1;
     const prevFaction = index === 0 ? factionNames[lastIndex] : factionNames[index - 1];
     const nextFaction = index === lastIndex ? factionNames[0] : factionNames[index + 1];
@@ -100,8 +88,9 @@ function Factions() {
                     <FactionSelect
                         fullWidth
                         factionNames={factionNames}
-                        value={factionName}
-                        onChange={e => onFactionChange(e.target.value as string)}
+                        value={selectedName}
+                        onChange={onFactionChange}
+                        hideNone
                     />
                     <Tooltip title={nextFaction}>
                         <IconButton onClick={() => onFactionChange(nextFaction)} size="large">
@@ -136,7 +125,13 @@ function Factions() {
                     </Grid>
                 </Toolbar>
             </AppBar>
-            <FactionInfo faction={factionInfoState} expanded={expanded} onExpandedChange={onExpandedChange} />
+            {pending ? (
+                <Grid sx={{ height: '100%' }} container justifyContent="center" alignItems="center" direction="column">
+                    <CircularProgress size={'50vw'} />
+                </Grid>
+            ) : (
+                <FactionInfo faction={factionInfo} expanded={expanded} onExpandedChange={onExpandedChange} />
+            )}
         </>
     );
 }

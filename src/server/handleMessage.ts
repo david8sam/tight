@@ -1,26 +1,47 @@
 import { isNil } from 'lodash-es';
 
-import { ErrorType } from 'common/error.js';
 import {
     buildStrategyCardOwners,
-    GameJoinStatus,
-    getNextPlayer,
-    getPlayerOrder,
-    getPlayersInGame,
+    getNextFaction,
+    getFactionOrder,
     Phase,
     strategyCardHasOwner,
     StrategyCardIndex,
+    Game,
 } from 'common/Game.js';
 import { MessageType } from 'common/message.js';
 
-import * as AccountDB from './database/account.js';
-import * as FactionDB from './database/faction/index.js';
 import * as GameDB from './database/game.js';
 import * as PlanetDB from './database/planet/index.js';
 
-import { dirty, formatChangePlanets, markAccountDirty, markGameDirty } from './dirty.js';
+import { formatChangePlanets, markGameDirty } from './dirty.js';
 import { logWS } from './log.js';
-import { sendData, WebSocketServer, WebSocket } from './WebSocket.js';
+import { WebSocketServer, WebSocket, getWebSocketLogId } from './WebSocket.js';
+
+function addPlayer(ws: WebSocket, game: Game, playerId: string | null, factionName?: string | null) {
+    if (!playerId) {
+        return;
+    }
+
+    ws.playerId = playerId;
+
+    let players = false;
+    let factions = false;
+
+    if (!game.players[playerId]) {
+        game.players[playerId] = { id: playerId };
+        players = true;
+    }
+
+    const faction = game.factions.find(f => f.name === factionName);
+    if (faction && !faction?.playerIds.includes(playerId)) {
+        faction.playerIds.push(playerId);
+        faction.playerIds.sort();
+        factions = true;
+    }
+
+    markGameDirty(game.id, { factions, players });
+}
 
 export interface handleMessageParams {
     wss: WebSocketServer;
@@ -37,99 +58,9 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
 
     const payload = JSON.parse(message);
     const { type = null, data = null } = payload || {};
-    const { accountId = null, gameId = null, playerId = null, ...otherData } = data || {};
+    const { gameId = null, factionName = null, ...otherData } = data || {};
 
-    logWS(false, ws.accountId, payload);
-
-    // Handle list actions immediately
-    switch (type) {
-        case MessageType.LIST_GAMES:
-            sendData({ ws, type, data: GameDB.listGames() });
-            return;
-        case MessageType.LIST_PLANETS:
-            sendData({ ws, type, data: PlanetDB.listPlanets() });
-            return;
-        case MessageType.LIST_ACCOUNTS:
-            sendData({ ws, type, data: AccountDB.listAccounts() });
-            return;
-        case MessageType.FACTION_GET: {
-            const factionInfo = FactionDB.getFaction(data.factionName);
-            sendData({
-                ws,
-                type,
-                data: factionInfo,
-                error: factionInfo ? null : `Unable to find faction: "${data.factionName}"`,
-            });
-            return;
-        }
-        default:
-            break;
-    }
-
-    // Player account actions
-    switch (type) {
-        case MessageType.ACCOUNT_ADD:
-            AccountDB.addAccount(accountId);
-            markAccountDirty(accountId);
-            dirty.accountsInfo = true;
-            break;
-        case MessageType.ACCOUNT_DELETE:
-            AccountDB.deleteAccount(accountId);
-            dirty.accountsInfo = true;
-            break;
-        case MessageType.ACCOUNT_LOGIN: {
-            AccountDB.login(accountId, otherData);
-            ws.accountId = accountId;
-            markAccountDirty(accountId);
-            dirty.accountsInfo = true;
-            break;
-        }
-        case MessageType.ACCOUNT_LOGOUT: {
-            const account = AccountDB.getAccount(accountId);
-            if (account && account.joinedGame) {
-                const game = GameDB.getGame(account.joinedGame);
-                if (game) {
-                    if (game.players[accountId].joinStatus === GameJoinStatus.PLAYER) {
-                        game.players[accountId].joined = false;
-                    } else {
-                        GameDB.removePlayer(game.id, accountId, true);
-                    }
-                    markGameDirty(game.id, { players: [accountId] });
-                }
-            }
-
-            ws.accountId = null;
-            AccountDB.logout(accountId);
-            markAccountDirty(accountId);
-            break;
-        }
-        case MessageType.ACCOUNT_SET_SETTINGS: {
-            const account = AccountDB.getAccount(accountId);
-            if (account) {
-                account.settings = {
-                    ...account.settings,
-                    ...data.settings,
-                };
-
-                markAccountDirty(accountId);
-            }
-            break;
-        }
-        default:
-            break;
-    }
-
-    switch (type) {
-        case MessageType.CREATE_GAME: {
-            if (playerId) {
-                const game = GameDB.createGame({ creator: playerId, ...otherData });
-                markGameDirty(game.id, { created: true });
-            }
-            break;
-        }
-        default:
-            break;
-    }
+    logWS(false, getWebSocketLogId(ws), payload);
 
     // Following actions require a game
     const game = GameDB.getGame(gameId);
@@ -138,38 +69,51 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
     }
 
     switch (type) {
-        case MessageType.DELETE_GAME: {
-            if (game.creator === playerId) {
-                // Remove every player account from the game
-                Object.values(game.players).forEach(p => {
-                    const account = AccountDB.getAccount(p.id);
-                    if (account) {
-                        account.joinedGame = null;
-                        markAccountDirty(account.id);
-                    }
-                });
+        case MessageType.GAME_LOAD: {
+            ws.gameId = gameId;
+            markGameDirty(gameId, { created: true });
 
-                // Delete game
-                GameDB.deleteGame(gameId);
-                markGameDirty(gameId, { deleted: true });
+            const { playerId } = otherData;
+            if (playerId) {
+                addPlayer(ws, game, playerId, factionName);
+            }
+            break;
+        }
+
+        case MessageType.GAME_ADD_PLAYER: {
+            const { playerId } = otherData;
+            if (playerId) {
+                addPlayer(ws, game, playerId, factionName);
+            }
+            break;
+        }
+
+        case MessageType.GAME_UPDATE_FACTION: {
+            const { order, ...factionData } = otherData;
+            const { numPlayers } = game;
+            if (order < numPlayers) {
+                GameDB.updateFaction({ gameId, order, ...factionData });
+                markGameDirty(gameId, { factions: true });
             }
             break;
         }
 
         case MessageType.START_GAME:
             // Initialize players with their home planets.
-            getPlayersInGame(game).forEach(player => {
-                if (player.faction) {
-                    const factionPlanets = PlanetDB.getFactionPlanets(player.faction);
-                    player.planets = factionPlanets.map(p => p.name);
-                    factionPlanets.forEach(p => {
-                        const gamePlanet = game.planets[p.name];
-                        gamePlanet.owner = player.id;
-
-                        // Make sure home planets are refreshed.
-                        gamePlanet.refreshed = true;
-                    });
+            game.factions.forEach(faction => {
+                if (!faction) {
+                    return;
                 }
+
+                const factionPlanets = PlanetDB.getFactionPlanets(faction.name);
+                faction.planets = factionPlanets.map(f => f.name);
+                factionPlanets.forEach(f => {
+                    const gamePlanet = game.planets[f.name];
+                    gamePlanet.owner = faction.name;
+
+                    // Make sure home planets are refreshed.
+                    gamePlanet.refreshed = true;
+                });
             });
 
             game.status.started = true;
@@ -184,86 +128,15 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             markGameDirty(gameId, { status: true });
             break;
 
-        case MessageType.PLAYER_JOIN_GAME: {
-            const { players, status } = game;
-            const { joinStatus } = otherData;
-
-            // Anyone can join a game not started yet.
-            const canAnyoneJoin = !status.started;
-            const isPlayer = joinStatus === GameJoinStatus.PLAYER;
-
-            // When a game has started, only previous players can re-join as players.
-            const canJoinAsPlayer = status.started && isPlayer && players[playerId];
-
-            // Admins and specators can join anytime when a game has started. But not if they were a player before.
-            const canJoinAsNonPlayer = status.started && !isPlayer && !players[playerId];
-
-            if (canAnyoneJoin || canJoinAsPlayer || canJoinAsNonPlayer) {
-                // Add player to the game
-                GameDB.addPlayer(gameId, playerId, otherData);
-
-                let status = false;
-                if (!game.status.speaker) {
-                    status = true;
-                    game.status.speaker = playerId;
-                    game.status.pickOrder[0] = playerId;
-                }
-                markGameDirty(gameId, { players: [playerId], status });
-
-                const account = AccountDB.getAccount(playerId);
-                if (account) {
-                    account.joinedGame = gameId;
-                    markAccountDirty(account.id);
-                }
-            } else {
-                sendData({ ws, type: MessageType.PLAYER_JOIN_GAME, error: ErrorType.GAME_UNABLE_TO_JOIN });
-                return;
-            }
-
-            break;
-        }
-        case MessageType.PLAYER_LEAVE_GAME: {
-            // Remove player from the game if in the game
-            const gamePlayer = playerId && game.players[playerId];
-            if (gamePlayer) {
-                // Also remove if player is a nonplayer or game hasn't started yet.
-                const isNonGamePlayer = gamePlayer.joinStatus !== GameJoinStatus.PLAYER;
-                const deletePlayer = data.deletePlayer || !game.status.started || isNonGamePlayer;
-
-                GameDB.removePlayer(gameId, playerId, deletePlayer);
-
-                // Update game setup when a player leaves before game starts.
-                let status = false;
-                if (!game.status.started && !isNonGamePlayer) {
-                    status = true;
-
-                    game.status.pickOrder = game.status.pickOrder.filter(id => game.players[id]);
-                    if (gamePlayer.id === game.status.speaker) {
-                        game.status.speaker = game.status.pickOrder[0];
-                    }
-                }
-
-                markGameDirty(gameId, { players: [playerId], status });
-            }
-
-            const account = AccountDB.getAccount(playerId);
-            if (account) {
-                account.joinedGame = null;
-                markAccountDirty(account.id);
-            }
-            break;
-        }
-
         case MessageType.GAME_SET_PUBLIC_OBJECTIVES:
             game.publicObjectives = data.publicObjectives;
             markGameDirty(gameId, { publicObjectives: true });
             break;
 
         case MessageType.GAME_STATUS_SET: {
-            const { setupStep, phase, turn, pickOrder, pickTurn } = data;
+            const { phase, turn, pickOrder, pickTurn } = data;
             const { status } = game;
 
-            status.setupStep = !isNil(setupStep) ? setupStep : status.setupStep;
             status.phase = !isNil(phase) ? phase : status.phase;
             status.turn = !isNil(turn) ? turn : status.turn;
 
@@ -319,12 +192,12 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
 
         case MessageType.GAME_NEXT_ROUND: {
             if (game.status.round < 10) {
-                Object.values(game.players).forEach(p => {
-                    p.strategyCard = StrategyCardIndex.NONE;
-                    p.strategyCardTaken = false;
-                    p.stragetyCardFlipped = false;
-                    p.passed = false;
-                    p.hasNaaluZeroToken = p.faction === 'The Naalu Collective';
+                Object.values(game.factions).forEach(f => {
+                    f.strategyCard = StrategyCardIndex.NONE;
+                    f.strategyCardTaken = false;
+                    f.stragetyCardFlipped = false;
+                    f.passed = false;
+                    f.hasNaaluZeroToken = f.name === 'The Naalu Collective';
                 });
 
                 game.status.pickTurn = 0;
@@ -334,160 +207,164 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
                 game.status.agenda1Voted = false;
                 game.status.agenda2Voted = false;
 
-                markGameDirty(gameId, { players: true, status: true });
+                markGameDirty(gameId, { factions: true, status: true });
             }
             break;
+        }
+
+        case MessageType.UPDATE_PLANET: {
+            const { planetId, modifiers } = data || {};
+            const [planet] = planetId ? GameDB.getPlanetsArray(gameId, planetId) : [];
+            if (planet) {
+                planet.modifiers = modifiers;
+                markGameDirty(gameId, { planets: [planetId] });
+            }
         }
 
         default:
             break;
     }
 
-    // Following actions require a player
-    const players = game.players;
-    const player = players && players[playerId];
-    if (!player) {
+    // Following actions require a faction
+    const factions = game.factions;
+    const faction = factions.find(f => f.name === factionName);
+    if (!faction) {
         return;
     }
 
     switch (type) {
-        // Player Setup actions
-        case MessageType.PLAYER_SET_COLOR:
-            player.color = data.color;
-            markGameDirty(gameId, { players: [playerId] });
-            break;
-        case MessageType.PLAYER_SET_FACTION:
-            player.faction = data.factionName;
-            if (data.factionName === 'The Naalu Collective') {
-                player.hasNaaluZeroToken = true;
-            }
-            markGameDirty(gameId, { players: [playerId] });
-            break;
-        case MessageType.PLAYER_TAKE_NAALU_ZERO_TOKEN:
-            getPlayersInGame(game).forEach(p => (p.hasNaaluZeroToken = false));
-            player.hasNaaluZeroToken = true;
-            markGameDirty(gameId, { players: [playerId] });
+        case MessageType.TAKE_NAALU_ZERO_TOKEN:
+            const changedFactionNames = [factionName];
+            game.factions.forEach(f => {
+                if (f.hasNaaluZeroToken) {
+                    f.hasNaaluZeroToken = false;
+                    changedFactionNames.push(f.name);
+                }
+            });
+            faction.hasNaaluZeroToken = true;
+            game.status.turn = faction.strategyCard;
+            markGameDirty(gameId, { status: true, factions: changedFactionNames });
             break;
 
         // Strategy Card actions
-        case MessageType.PLAYER_TAKE_STRATEGY_CARD: {
+        case MessageType.TAKE_STRATEGY_CARD: {
             const owners = buildStrategyCardOwners(game);
-            if (owners[data.strategyCard] === player.name || strategyCardHasOwner(owners, data.strategyCard)) {
+            if (owners[data.strategyCard] === factionName || strategyCardHasOwner(owners, data.strategyCard)) {
                 return;
             }
 
             const { status } = game;
             const { pickTurn, pickOrder } = status;
 
-            player.strategyCard = data.strategyCard;
-            if (!player.strategyCardTaken) {
-                player.strategyCardTaken = true;
+            faction.strategyCard = data.strategyCard;
+            if (!faction.strategyCardTaken) {
+                faction.strategyCardTaken = true;
                 status.pickTurn = pickTurn === pickOrder.length - 1 ? 0 : pickTurn + 1;
             }
 
-            status.turn = getPlayerOrder(game)[0].strategyCard;
-            markGameDirty(gameId, { players: [playerId], status: true });
+            status.turn = getFactionOrder(game)[0].strategyCard;
+            markGameDirty(gameId, { factions: [factionName], status: true });
             break;
         }
 
-        case MessageType.PLAYER_RETURN_STRATEGY_CARD: {
-            // Reset card data for player
-            const returnedCard = player.strategyCard;
-            player.strategyCard = StrategyCardIndex.NONE;
-            player.stragetyCardFlipped = false;
-            markGameDirty(gameId, { players: [playerId] });
+        case MessageType.RETURN_STRATEGY_CARD: {
+            // Reset card data for faction
+            const returnedCard = faction.strategyCard;
+            faction.strategyCard = StrategyCardIndex.NONE;
+            faction.stragetyCardFlipped = false;
+            markGameDirty(gameId, { factions: [factionName] });
 
-            // If player is returning card that is the first turn, clear out the game turn and set to next player.
+            // If faction is returning card that is the first turn, clear out the game turn and set to next faction.
             if (game.status.turn === returnedCard) {
-                game.status.turn = getPlayerOrder(game)[0].strategyCard;
+                game.status.turn = getFactionOrder(game)[0].strategyCard;
                 markGameDirty(gameId, { status: true });
             }
 
             break;
         }
 
-        case MessageType.PLAYER_FLIP_STRATEGY_CARD:
-            player.stragetyCardFlipped = data.flipped;
+        case MessageType.FLIP_STRATEGY_CARD:
+            faction.stragetyCardFlipped = data.flipped;
             if (!data.flipped) {
-                player.passed = false;
+                faction.passed = false;
             }
-            markGameDirty(gameId, { players: [playerId] });
+            markGameDirty(gameId, { factions: [factionName] });
             break;
 
-        case MessageType.PLAYER_PASS_TURN:
-            player.passed = data.passed;
-            markGameDirty(gameId, { players: [playerId] });
+        case MessageType.PASS_TURN:
+            faction.passed = data.passed;
+            markGameDirty(gameId, { factions: [factionName] });
 
-            // If current player passed, set turn to the next player.
-            if (game.status.turn === player.strategyCard) {
-                const nextPlayer = getNextPlayer(game, player.id);
-                game.status.turn = nextPlayer ? nextPlayer.strategyCard : StrategyCardIndex.END;
+            // If current faction passed, set turn to the next faction.
+            if (game.status.turn === faction.strategyCard) {
+                const nextFaction = getNextFaction(game, factionName);
+                game.status.turn = nextFaction ? nextFaction.strategyCard : StrategyCardIndex.END;
                 markGameDirty(gameId, { status: true });
             }
 
             break;
 
-        case MessageType.PLAYER_SET_PUBLIC_OBJECTIVES:
-            player.publicObjectives = data.publicObjectives;
-            markGameDirty(gameId, { players: [playerId] });
+        case MessageType.SET_PUBLIC_OBJECTIVES:
+            faction.publicObjectives = data.publicObjectives;
+            markGameDirty(gameId, { factions: [factionName] });
             break;
 
-        case MessageType.PLAYER_SET_SECRET_OBJECTIVE:
-            player.secretObjectives = data.secretObjectives;
-            markGameDirty(gameId, { players: [playerId] });
+        case MessageType.SET_SECRET_OBJECTIVE:
+            faction.secretObjectives = data.secretObjectives;
+            markGameDirty(gameId, { factions: [factionName] });
             break;
 
-        case MessageType.PLAYER_SET_VICTORY_POINTS:
+        case MessageType.SET_VICTORY_POINTS:
             if (typeof data.victoryPoints === 'number') {
-                player.victoryPoints = data.victoryPoints;
-                markGameDirty(gameId, { players: [playerId] });
+                faction.victoryPoints = data.victoryPoints;
+                markGameDirty(gameId, { factions: [factionName] });
             }
             break;
 
         // Planet actions
-        case MessageType.PLAYER_TAKE_PLANET: {
+        case MessageType.TAKE_PLANET: {
             const { planetId } = data || {};
             const planets = GameDB.getPlanetsArray(gameId, planetId);
-            const { changedPlanets, changedPlayers } = formatChangePlanets(planets, playerId);
+            const { changedPlanets, changedFactions } = formatChangePlanets(planets, factionName);
 
             planets.forEach(p => {
                 const prevOwner = p.owner;
-                p.owner = playerId;
+                p.owner = factionName;
                 p.refreshed = false;
-                player.planets.push(p.name);
+                faction.planets.push(p.name);
 
-                const previousPlayer = prevOwner && players[prevOwner];
+                const previousPlayer = prevOwner && factions.find(f => f.name === prevOwner);
                 if (previousPlayer) {
                     previousPlayer.planets = previousPlayer.planets.filter(pp => pp !== p.name);
                 }
             });
 
-            player.planets.sort();
-            markGameDirty(gameId, { planets: changedPlanets, players: changedPlayers });
+            faction.planets.sort();
+            markGameDirty(gameId, { planets: changedPlanets, factions: changedFactions });
 
             // TODO: Send notifications to previous owners.
             break;
         }
-        case MessageType.PLAYER_LOST_PLANET: {
+        case MessageType.LOST_PLANET: {
             const { planetId } = data || {};
             const planets = GameDB.getPlanetsArray(gameId, planetId);
-            const { changedPlanets, changedPlayers } = formatChangePlanets(planets, playerId);
+            const { changedPlanets, changedFactions } = formatChangePlanets(planets, factionName);
 
             planets.forEach(p => {
-                if (p.owner === playerId) {
+                if (p.owner === factionName) {
                     p.owner = null;
                 }
             });
 
             const planetIdArray = Array.isArray(planetId) ? planetId : [planetId];
-            player.planets = player.planets.filter(p => !planetIdArray.includes(p)).sort();
-            markGameDirty(gameId, { planets: changedPlanets, players: changedPlayers });
+            faction.planets = faction.planets.filter(p => !planetIdArray.includes(p)).sort();
+            markGameDirty(gameId, { planets: changedPlanets, factions: changedFactions });
 
             break;
         }
-        case MessageType.PLAYER_EXHAUST_PLANET: {
+        case MessageType.EXHAUST_PLANET: {
             const { planetId, ability } = data || {};
-            const planets = GameDB.getPlanetsArray(gameId, planetId).filter(p => p.owner === playerId);
+            const planets = GameDB.getPlanetsArray(gameId, planetId).filter(p => p.owner === factionName);
             const { changedPlanets } = formatChangePlanets(planets);
 
             planets.forEach(p => {
@@ -500,9 +377,9 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             markGameDirty(gameId, { planets: changedPlanets });
             break;
         }
-        case MessageType.PLAYER_REFRESH_PLANET: {
+        case MessageType.REFRESH_PLANET: {
             const { planetId, ability } = data || {};
-            const planets = GameDB.getPlanetsArray(gameId, planetId).filter(p => p.owner === playerId);
+            const planets = GameDB.getPlanetsArray(gameId, planetId).filter(p => p.owner === factionName);
             const { changedPlanets } = formatChangePlanets(planets);
 
             planets.forEach(p => {
@@ -515,10 +392,10 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             markGameDirty(gameId, { planets: changedPlanets });
             break;
         }
-        case MessageType.PLAYER_EXHAUST_PLANET_ABILITY: {
+        case MessageType.EXHAUST_PLANET_ABILITY: {
             const { planetId } = data || {};
             const planets = GameDB.getPlanetsArray(gameId, planetId).filter(
-                p => p.owner === playerId && p.refreshedAbility !== undefined,
+                p => p.owner === factionName && p.refreshedAbility !== undefined,
             );
             planets.forEach(p => (p.refreshedAbility = false));
 
@@ -526,10 +403,10 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             markGameDirty(gameId, { planets: changedPlanets });
             break;
         }
-        case MessageType.PLAYER_REFRESH_PLANET_ABILITY: {
+        case MessageType.REFRESH_PLANET_ABILITY: {
             const { planetId } = data || {};
             const planets = GameDB.getPlanetsArray(gameId, planetId).filter(
-                p => p.owner === playerId && p.refreshedAbility !== undefined,
+                p => p.owner === factionName && p.refreshedAbility !== undefined,
             );
             planets.forEach(p => (p.refreshedAbility = true));
 
@@ -537,6 +414,7 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             markGameDirty(gameId, { planets: changedPlanets });
             break;
         }
+
         default:
             break;
     }

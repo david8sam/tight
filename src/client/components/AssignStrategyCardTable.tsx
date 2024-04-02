@@ -1,29 +1,30 @@
-import React from 'react';
-import { Table, TableHead, TableRow, TableCell, TableBody, Select, MenuItem } from '@mui/material';
+import { MenuItem, Select, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
+import React, { useEffect, useState } from 'react';
 
 import {
-    buildStrategyCardOwners,
-    Game,
-    GameJoinStatus,
-    GamePlayer,
-    getPlayersInGame,
+    GameClientData,
+    GameFaction,
     StrategyCard,
-    strategyCardHasOwner,
     StrategyCardIndex,
+    buildStrategyCardOwners,
+    formatFactionName,
+    strategyCardHasOwner,
 } from 'common/Game';
 import { MessageType } from 'common/message';
 
-import { useAppContext } from '../Context';
-import useAccountInfo from '../hooks/useAccountInfo';
+import useGameInfo from '../hooks/useGameInfo';
+import api from '../utils/api';
 
-function canSelectStrategyCard(strategyCard: StrategyCard, game: Game, player: GamePlayer) {
+import { useAppContext } from '../Context';
+
+function canSelectStrategyCard(strategyCard: StrategyCard, game: GameClientData, faction: GameFaction) {
     // Can always select NONE
     if (strategyCard.initiative === StrategyCardIndex.NONE) {
         return true;
     }
 
-    // Can always select the player's currently selected card
-    if (player.strategyCard === strategyCard.initiative) {
+    // Can always select the faction's currently selected card
+    if (faction.strategyCard === strategyCard.initiative) {
         return true;
     }
 
@@ -33,45 +34,48 @@ function canSelectStrategyCard(strategyCard: StrategyCard, game: Game, player: G
 }
 
 export default function AssignStrategyCardTable() {
-    const { state, sendData } = useAppContext();
-    const { strategyCards } = state;
-    const { game, gameId, player: currentPlayer } = useAccountInfo();
-    if (!game || !currentPlayer) {
+    const { sendData } = useAppContext();
+    const { game, gameId } = useGameInfo();
+
+    const [strategyCards, setStrategryCards] = useState<StrategyCard[]>([]);
+
+    useEffect(() => {
+        api.strategyCardList().then(cards => setStrategryCards(cards));
+    }, []);
+
+    if (!game || strategyCards.length === 0) {
         return null;
     }
 
-    const playersArray = getPlayersInGame(game);
-
-    const onTakeCardClick = (playerId: string, strategyCard: number) => {
-        sendData({ type: MessageType.PLAYER_TAKE_STRATEGY_CARD, data: { gameId, playerId, strategyCard } });
+    const onTakeCardClick = (factionName: string, strategyCard: number) => {
+        sendData({ type: MessageType.TAKE_STRATEGY_CARD, data: { gameId, factionName, strategyCard } });
     };
 
     return (
         <Table>
             <TableHead>
                 <TableRow>
-                    <TableCell>PLAYER</TableCell>
+                    <TableCell>FACTION</TableCell>
                     <TableCell>STRATEGY CARD</TableCell>
                 </TableRow>
             </TableHead>
             <TableBody>
-                {playersArray.map((player: GamePlayer) => {
+                {game.factions.map((faction: GameFaction) => {
                     return (
-                        <TableRow key={player.id}>
-                            <TableCell>{player.name}</TableCell>
+                        <TableRow key={faction.name}>
+                            <TableCell>{formatFactionName(game, faction.name)}</TableCell>
                             <TableCell>
                                 <Select
                                     fullWidth
-                                    value={player.strategyCard}
+                                    value={faction.strategyCard}
                                     variant="outlined"
-                                    onChange={e => onTakeCardClick(player.id, Number(e.target.value))}
-                                    disabled={currentPlayer.joinStatus === GameJoinStatus.SPECTATOR}
+                                    onChange={e => onTakeCardClick(faction.name, Number(e.target.value))}
                                 >
                                     <MenuItem key={0} value={0}>
-                                        {'NONE'}
+                                        None
                                     </MenuItem>
                                     {strategyCards
-                                        .filter(s => canSelectStrategyCard(s, game, player))
+                                        .filter(s => canSelectStrategyCard(s, game, faction))
                                         .map(s => (
                                             <MenuItem key={s.initiative} value={s.initiative}>
                                                 {s.name}

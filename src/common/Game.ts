@@ -1,3 +1,5 @@
+import { Traits } from './Planet.js';
+
 export enum Version {
     TI3 = '3',
     TI4 = '4',
@@ -51,20 +53,14 @@ export const StrategyCardsWithVersions = Object.freeze({
     [StrategyCardIndex.CONSTRUCTION]: [StrategyCardIndex.CONSTRUCTION_2],
 });
 
-export enum GameSetupStep {
-    ORDER = 0,
-    FACTION,
-}
-
 export interface GameStatus {
-    setupStep: GameSetupStep;
     started: boolean;
     ended: boolean;
     round: number;
     phase: Phase;
     turn: StrategyCardIndex;
     speaker: string;
-    pickOrder: string[]; // starting with speaker, the order of players for picking strategy cards
+    pickOrder: string[]; // starting with speaker, the order of factions for picking strategy cards
     pickTurn: number;
     custodiansRemoved: boolean;
     agenda1Voted: boolean;
@@ -76,6 +72,19 @@ export interface GamePlanet {
     owner: string | null;
     refreshed: boolean;
     refreshedAbility?: boolean; // undefined if no ability
+    modifiers?: {
+        // Modifiers to base values
+        resources?: number;
+        influence?: number;
+
+        // Tech bonuses
+        biotic?: number; // green
+        warfare?: number; //red
+        propulsion?: number; // blue
+        cybernetic?: number; // yellow
+
+        trait?: Traits;
+    };
 }
 
 export type GamePlanetMap = Record<string, GamePlanet>;
@@ -86,14 +95,18 @@ export enum GameJoinStatus {
     SPECTATOR,
 }
 
+export const NO_FACTION = 'no faction';
+
 export interface GamePlayer {
     id: string;
-    name: string;
-    joined: boolean;
-    joinStatus: GameJoinStatus;
+}
 
-    color?: string | null;
-    faction?: string | null;
+export type GamePlayerMap = Record<string, GamePlayer>;
+
+export interface GameFaction {
+    name: string;
+    color: string;
+    playerIds: string[];
 
     hasNaaluZeroToken: boolean;
     strategyCard: StrategyCardIndex;
@@ -107,7 +120,7 @@ export interface GamePlayer {
     victoryPoints: number; // additional from other game mechanics, does not include objectives
 }
 
-export type GamePlayerMap = Record<string, GamePlayer>;
+export type GameFactionMap = Record<string, GameFaction>;
 
 export interface Objective {
     id: number; // > 0 for public, < 0 for secret
@@ -115,130 +128,145 @@ export interface Objective {
     vp: number;
 }
 
-// Each player can have up to 3 secret objectives
+// Each faction can have up to 3 secret objectives
 export const SECRET_OBJECTIVE_IDS = [-1, -2, -3];
 
 export interface Game {
     readonly id: string;
     readonly date: number;
     readonly version: Version;
-    readonly creator: string;
 
-    name: string;
+    players: GamePlayerMap;
+
     numPlayers: number;
     numRounds: number;
     numVictoryPoints: number;
 
     status: GameStatus;
     planets: GamePlanetMap;
-    players: GamePlayerMap;
+    factions: GameFaction[];
     publicObjectives: Objective[];
+
+    started: boolean;
 }
+
+export type GameClientData = Omit<Game, 'players'> & {
+    players: string[];
+};
 
 export type GameMap = Record<string, Game>;
 
 export interface GameChangeData {
     id: string;
-    created?: Game;
+    created?: GameClientData;
     deleted?: boolean;
 
     status?: GameStatus;
     planets?: GamePlanetMap;
-    players?: GamePlayerMap;
+    players?: string[];
+    factions?: GameFaction[];
     publicObjectives?: Objective[];
 }
 
 export type GameChangeDataMap = Record<string, GameChangeData>;
 
-/**
- * Get all players in the game.
- */
-export function getPlayersInGame(game: Game) {
-    return Object.values(game.players).filter(p => p.joinStatus === GameJoinStatus.PLAYER);
-}
-
-/**
- * Find the Naalu player if any
- */
-export function getNaaluPlayer(game: Game) {
-    return getPlayersInGame(game).find(p => p.faction === 'The Naalu Collective');
-}
-
-export function getPlayerTurn(game: Game) {
-    const { phase, turn, pickOrder, pickTurn } = game.status;
-
-    let playerTurn = null;
-    if (phase === Phase.STRATEGY) {
-        playerTurn = pickOrder.find(p => game.players[p].strategyCard === StrategyCardIndex.NONE) ?? 'END';
-    } else if (turn === StrategyCardIndex.END) {
-        playerTurn = 'END';
-    } else {
-        const player = getPlayersInGame(game).find(p => p.strategyCard === turn);
-        playerTurn = player ? player.name : null;
+export function formatFactionName(game: Game | GameClientData, factionName: string): string {
+    const faction = game.factions.find(f => f.name === factionName);
+    if (!faction) {
+        return '';
     }
 
-    return playerTurn;
+    const playersList = faction.playerIds.length ? ` (${faction.playerIds.join(', ')})` : '';
+    return `${faction.name}${playersList}`;
 }
 
 /**
- * Get the current turn order of players.
+ * Find Naalu in game if any
  */
-export function getPlayerOrder(game: Game, checkNaalu: boolean = true) {
-    return getPlayersInGame(game).sort((p1: GamePlayer, p2: GamePlayer) => {
+export function getNaalu(game: Game | GameClientData) {
+    return game.factions.find(f => f.name === 'The Naalu Collective');
+}
+
+export function getFactionTurn(game: Game | GameClientData) {
+    const { phase, turn, pickOrder } = game.status;
+
+    let factionTurn = null;
+    if (phase === Phase.STRATEGY) {
+        factionTurn =
+            pickOrder.find(name => game.factions.find(f => f.name === name)?.strategyCard === StrategyCardIndex.NONE) ??
+            'END';
+    } else if (turn === StrategyCardIndex.END) {
+        factionTurn = 'END';
+    } else {
+        const faction = game.factions.find(p => p.strategyCard === turn);
+        factionTurn = faction ? faction.name : null;
+    }
+
+    return factionTurn;
+}
+
+/**
+ * Get the current turn order of factions.
+ */
+export function getFactionOrder(game: Game | GameClientData, checkNaalu: boolean = true) {
+    return [...game.factions].sort((f1: GameFaction, f2: GameFaction) => {
         if (checkNaalu) {
-            if (p1.hasNaaluZeroToken) {
+            if (f1.hasNaaluZeroToken) {
                 return -1;
-            } else if (p2.hasNaaluZeroToken) {
+            } else if (f2.hasNaaluZeroToken) {
                 return 1;
             }
         }
 
         // Players that have not picked a strategy card are last.
-        if (p1.strategyCard === StrategyCardIndex.NONE) {
+        if (f1.strategyCard === StrategyCardIndex.NONE) {
             return 1;
-        } else if (p2.strategyCard === StrategyCardIndex.NONE) {
+        } else if (f2.strategyCard === StrategyCardIndex.NONE) {
             return 1;
         }
 
-        return p1.strategyCard < p2.strategyCard ? -1 : 1;
+        return f1.strategyCard < f2.strategyCard ? -1 : 1;
     });
 }
 
 /**
- * Get next player in the turn order.
+ * Get next faction in the turn order.
  */
-export function getNextPlayer(game: Game, currentPlayerId: string, playerOrder?: GamePlayer[]): GamePlayer | null {
-    const players = playerOrder || getPlayerOrder(game);
+export function getNextFaction(
+    game: Game | GameClientData,
+    currentFactionName: string,
+    order?: GameFaction[],
+): GameFaction | null {
+    const factions = order || getFactionOrder(game);
 
-    // Everyone passed, no next player
-    if (players.every(p => p.passed)) {
+    // Everyone passed, no next faction
+    if (factions.every(f => f.passed)) {
         return null;
     }
 
-    // Find next player that has not passed yet.
-    let nextIndex = players.findIndex(p => p.id === currentPlayerId) + 1;
-    let nextPlayer = players[nextIndex];
-    while (nextPlayer && nextPlayer.passed) {
+    // Find next faction that has not passed yet.
+    let nextIndex = factions.findIndex(f => f.name === currentFactionName) + 1;
+    let nextFaction = factions[nextIndex];
+    while (nextFaction && nextFaction.passed) {
         nextIndex += 1;
-        nextPlayer = players[nextIndex];
+        nextFaction = factions[nextIndex];
     }
 
-    return nextPlayer || null;
+    return nextFaction || null;
 }
 
 /**
- * Map each strategy card to the player that currently owns it.
+ * Map each strategy card to the faction that currently owns it.
  */
-export function buildStrategyCardOwners(game: Game): string[] {
-    const playersArray = getPlayersInGame(game);
+export function buildStrategyCardOwners(game: Game | GameClientData): string[] {
     const stratCardOwners: string[] = [''];
-    playersArray.forEach(p => (p.strategyCard ? (stratCardOwners[p.strategyCard] = p.name) : null));
+    game.factions.forEach(f => (f.strategyCard ? (stratCardOwners[f.strategyCard] = f.name) : null));
 
     return stratCardOwners;
 }
 
 /**
- * Check if a strategy card, or other versions of it, is currently owned by a player.
+ * Check if a strategy card, or other versions of it, is currently owned by a faction.
  */
 export function strategyCardHasOwner(stratCardOwners: string[], initiative: number): boolean {
     let hasOwner = false;
@@ -261,12 +289,12 @@ export function strategyCardHasOwner(stratCardOwners: string[], initiative: numb
 }
 
 /**
- * Calculates VPs from public and secret objectives, as well as any additional victory points held by the player.
+ * Calculates VPs from public and secret objectives, as well as any additional victory points held by the faction.
  */
-export function calculateVictoryPoints(game: Game, playerId: string) {
-    const player = game.players[playerId];
+export function calculateVictoryPoints(game: Game | GameClientData, factionName: string) {
+    const faction = game.factions.find(f => f.name === factionName)!;
     const { publicObjectives: gamePOs } = game;
-    const { publicObjectives, secretObjectives, victoryPoints } = player;
+    const { publicObjectives, secretObjectives, victoryPoints } = faction;
 
     const povp = publicObjectives.reduce((total, po, i) => total + (po === true ? gamePOs[i].vp : 0), 0);
     const sovp = secretObjectives.reduce((total, so, i) => total + (so.cleared ? so.objective.vp : 0), 0);

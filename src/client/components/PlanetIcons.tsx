@@ -1,4 +1,4 @@
-import React, { MouseEvent, useRef, useState } from 'react';
+import React, { MouseEvent, useEffect, useRef, useState } from 'react';
 
 import LanguageIcon from '@mui/icons-material/Language';
 import { Avatar, AvatarProps, Popover, Typography, colors, useTheme } from '@mui/material';
@@ -19,7 +19,10 @@ const useStyle = makeStyles(theme => ({
 
 function useIcon(name: string) {
     const [icon, setIcon] = useState('');
-    import(`../assets/ti4/${name}.png`).then(i => setIcon(i.default)).catch(() => setIcon(''));
+
+    useEffect(() => {
+        import(`../assets/ti4/${name}.png`).then(i => setIcon(i.default)).catch(() => setIcon(''));
+    }, []);
 
     return icon;
 }

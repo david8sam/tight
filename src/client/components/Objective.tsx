@@ -6,13 +6,12 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Grid, IconButton, TextField, Toolbar, Tooltip, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import { calculateVictoryPoints, GamePlayer, getPlayersInGame, Objective } from 'common/Game';
+import { calculateVictoryPoints, GameFaction, Objective } from 'common/Game';
 
-import useAccountInfo from '../hooks/useAccountInfo';
-
+import { useAppContext } from '../Context';
 import { Accordion, AccordionDetails, AccordionProps, AccordionSummary } from './Accordion';
 import EditObjectiveDialog from './EditObjectiveDialog';
-import PlayerAvatar from './PlayerAvatar';
+import FactionAvatar from './FactionAvatar';
 
 const useStyles = makeStyles(theme => ({
     disabledText: {
@@ -36,7 +35,7 @@ export interface ObjectiveProps {
     onChange?: (objective: Objective) => void;
     deletable?: boolean;
     onDelete?: (objective: Objective) => void;
-    showPlayers?: boolean;
+    showFactions?: boolean;
     AccordionProps?: Omit<AccordionProps, 'children'>;
 }
 
@@ -48,18 +47,20 @@ export default function Objective(props: ObjectiveProps) {
         objective,
         onChange,
         onDelete,
-        showPlayers = false,
+        showFactions = false,
         AccordionProps,
     } = props;
     const { description, id, vp } = objective;
     const [editOpen, setEditOpen] = useState(false);
+    const {
+        state: { game },
+    } = useAppContext();
 
-    const { game } = useAccountInfo();
-    const players: GamePlayer[] = [];
-    if (showPlayers && game && id > -1) {
-        getPlayersInGame(game).forEach(p => {
-            if (p.publicObjectives[id - 1] === true) {
-                players.push(p);
+    const factions: GameFaction[] = [];
+    if (showFactions && game && id > -1) {
+        game.factions.forEach(f => {
+            if (f.publicObjectives[id - 1] === true) {
+                factions.push(f);
             }
         });
     }
@@ -111,13 +112,13 @@ export default function Objective(props: ObjectiveProps) {
                             )}
                         </Toolbar>
                         <Toolbar className={classes.toolbar} disableGutters>
-                            {players.map(player => (
-                                <div key={player.id} className={classes.avatarContainer}>
-                                    <PlayerAvatar
-                                        player={player}
+                            {factions.map(faction => (
+                                <div key={faction.name} className={classes.avatarContainer}>
+                                    <FactionAvatar
+                                        faction={faction}
                                         title={
                                             game
-                                                ? `${player.name}: ${calculateVictoryPoints(game, player.id)} VPs`
+                                                ? `${faction.name}: ${calculateVictoryPoints(game, faction.name)} VPs`
                                                 : undefined
                                         }
                                         // Prevent click from expanding accordion

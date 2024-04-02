@@ -6,8 +6,10 @@ import { makeStyles } from '@mui/styles';
 import { MessageType } from 'common/message';
 import { Traits } from 'common/Planet';
 
+import useGameInfo from '../hooks/useGameInfo';
+import { getPlanetValue } from '../utils/planet';
+
 import { useAppContext } from '../Context';
-import useAccountInfo from '../hooks/useAccountInfo';
 import { PlanetData } from '../types';
 import {
     Biotic,
@@ -32,15 +34,22 @@ const useStyle = makeStyles(theme => ({
 
 export interface PlanetNameCellProps {
     planet: PlanetData;
+    owner?: string;
     hideAbility?: boolean;
 }
 
 export default function PlanetNameCell(props: PlanetNameCellProps) {
     const classes = useStyle(props);
     const { sendData } = useAppContext();
-    const { gameId, playerId } = useAccountInfo();
-    const { planet, hideAbility } = props;
-    const { name, home, biotic = 0, warfare = 0, propulsion = 0, cybernetic = 0, trait, legendary } = planet;
+    const { gameId } = useGameInfo();
+    const { planet, owner, hideAbility } = props;
+    const { name, home, legendary } = planet;
+
+    const trait = getPlanetValue(planet, 'trait');
+    const biotic = getPlanetValue(planet, 'biotic') ?? 0;
+    const warfare = getPlanetValue(planet, 'warfare') ?? 0;
+    const propulsion = getPlanetValue(planet, 'propulsion') ?? 0;
+    const cybernetic = getPlanetValue(planet, 'cybernetic') ?? 0;
 
     // Add icons below the name
     const icons = [];
@@ -86,8 +95,8 @@ export default function PlanetNameCell(props: PlanetNameCellProps) {
     const onExhaustChange = (e: ChangeEvent<HTMLDivElement>, exhaust: boolean) => {
         e.stopPropagation();
         sendData({
-            type: exhaust ? MessageType.PLAYER_EXHAUST_PLANET_ABILITY : MessageType.PLAYER_REFRESH_PLANET_ABILITY,
-            data: { gameId, playerId, planetId: planet.name },
+            type: exhaust ? MessageType.EXHAUST_PLANET_ABILITY : MessageType.REFRESH_PLANET_ABILITY,
+            data: { gameId, factionName: owner, planetId: planet.name },
         });
     };
 

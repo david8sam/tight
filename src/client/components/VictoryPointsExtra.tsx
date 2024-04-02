@@ -6,8 +6,9 @@ import { Grid, IconButton, Tooltip, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import { MessageType } from 'common/message';
+
 import { useAppContext } from '../Context';
-import useAccountInfo from '../hooks/useAccountInfo';
+import useGameInfo from '../hooks/useGameInfo';
 
 const useStyles = makeStyles(theme => ({
     grid: {
@@ -19,25 +20,25 @@ const useStyles = makeStyles(theme => ({
 }));
 
 interface VictoryPointsExtraProps {
-    playerId: string;
+    factionName: string;
     disabled?: boolean;
 }
 
 function VictoryPointsExtra(props: VictoryPointsExtraProps) {
     const classes = useStyles(props);
-    const { playerId, disabled = false } = props;
+    const { factionName, disabled = false } = props;
     const { sendData } = useAppContext();
-    const { game, gameId } = useAccountInfo();
+    const { game, gameId } = useGameInfo();
 
-    if (!game) {
+    const faction = game?.factions.find(f => f.name === factionName);
+    if (!faction) {
         return null;
     }
 
-    const player = game.players[playerId];
-    const { victoryPoints } = player;
+    const { victoryPoints } = faction;
 
     const onVictoryPointsChange = (victoryPoints: number) => {
-        sendData({ type: MessageType.PLAYER_SET_VICTORY_POINTS, data: { gameId, playerId, victoryPoints } });
+        sendData({ type: MessageType.SET_VICTORY_POINTS, data: { gameId, factionName, victoryPoints } });
     };
 
     return (

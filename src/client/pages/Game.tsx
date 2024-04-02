@@ -22,32 +22,24 @@ import {
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import {
-    Game,
-    GameJoinStatus,
-    GameStatus,
-    getPlayersInGame,
-    getPlayerTurn,
-    Phase,
-    StrategyCardIndex,
-} from 'common/Game';
+import { Game, GameClientData, GameStatus, getFactionTurn, Phase, StrategyCardIndex } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { Accordion, AccordionDetails, AccordionSummary } from '../components/Accordion';
 import GameInfoToolbar from '../components/GameInfoToolbar';
+import PlayerNameDialog from '../components/PlayerNameDialog';
 import PlayerSetup from '../components/PlayerSetup';
 import SpeakerSelect from '../components/SpeakerSelect';
 import TextWithTooltip from '../components/TextWithTooltip';
 import { HEADER_HEIGHT } from '../constants';
 import { useAppContext } from '../Context';
+import useGameInfo from '../hooks/useGameInfo';
+import { getFactionColors } from '../utils/faction';
 
 import ActionPhase from '../components/ActionPhase';
 import AgendaPhase from '../components/AgendaPhase';
 import StatusPhase from '../components/StatusPhase';
 import StrategyPhase from '../components/StrategyPhase';
-
-import useAccountInfo from '../hooks/useAccountInfo';
-import { getPlayerColors } from '../utils/player';
 
 const PHASE_KEYS = Object.keys(Phase);
 const STEPS = PHASE_KEYS.slice(PHASE_KEYS.length / 2);
@@ -59,17 +51,17 @@ function getPhaseContents(phase: number) {
     return Component ? <Component /> : null;
 }
 
-function canNextPhase(game: Game): { canNext: boolean; message: string } {
+function canNextPhase(game: GameClientData): { canNext: boolean; message: string } {
     const { status } = game;
     const { phase, custodiansRemoved, agenda1Voted, agenda2Voted } = status;
-    const playerArray = getPlayersInGame(game);
+    const factions = game.factions;
 
     let canNext = phase < Phase.AGENDA;
     let message = '';
     if (phase === Phase.STRATEGY) {
         // Make sure everyone has picked a strategy card
-        canNext = playerArray.every(
-            p => p.strategyCard > StrategyCardIndex.NONE && p.strategyCard < StrategyCardIndex.END,
+        canNext = factions.every(
+            f => f.strategyCard > StrategyCardIndex.NONE && f.strategyCard < StrategyCardIndex.END,
         );
 
         message = canNext ? '' : 'Waiting for player to pick...';
@@ -77,7 +69,7 @@ function canNextPhase(game: Game): { canNext: boolean; message: string } {
 
     if (phase === Phase.ACTION) {
         // Everyone's turn must be done
-        canNext = playerArray.every(p => p.passed);
+        canNext = factions.every(f => f.passed);
         message = canNext ? '' : 'Waiting for all players to pass...';
     }
 
@@ -99,7 +91,7 @@ const useStyles = makeStyles(theme => ({
     appBar: {
         top: HEADER_HEIGHT,
     },
-    playerTurnText: {
+    factionTurnText: {
         padding: theme.spacing(),
         width: '100%',
         textAlign: 'center',
@@ -135,18 +127,17 @@ function Game() {
     const theme = useTheme();
     const classes = useStyles();
     const { sendData } = useAppContext();
-    const { gameId, game, player, playerId } = useAccountInfo();
+    const { gameId, game, playerId } = useGameInfo();
     const navigate = useNavigate();
 
     const [statusState, setStatusState] = useState<GameStatus>({
-        setupStep: 0,
         started: true,
         ended: false,
         round: 1,
         phase: Phase.STRATEGY,
         turn: StrategyCardIndex.NONE,
-        speaker: game ? game.creator : playerId || '',
-        pickOrder: [game ? game.creator : playerId || ''],
+        speaker: '',
+        pickOrder: [],
         pickTurn: 0,
         custodiansRemoved: false,
         agenda1Voted: false,
@@ -154,14 +145,6 @@ function Game() {
     });
     const [pending, setPending] = useState(false);
     const [actionExpanded, setActionExpaned] = useState(false);
-
-    useEffect(() => {
-        if (!game) {
-            navigate(`/player/${playerId}/manage-games`);
-        } else if (game.status.ended) {
-            navigate(`/player/${playerId}/game-results`);
-        }
-    });
 
     useEffect(() => {
         const { status } = game || {};
@@ -175,7 +158,17 @@ function Game() {
         }
     });
 
-    if (!game || game.status.ended || !player || !playerId) {
+    if (!playerId && game) {
+        const onClose = (canceled: boolean) => {
+            if (canceled) {
+                navigate(`/`);
+            }
+        };
+
+        return <PlayerNameDialog open onClose={onClose} />;
+    }
+
+    if (!game || !playerId) {
         return null;
     }
 
@@ -184,7 +177,7 @@ function Game() {
         return <PlayerSetup />;
     }
 
-    const isSpectator = player.joinStatus === GameJoinStatus.SPECTATOR;
+    const isSpectator = false;
 
     const { round, phase } = statusState;
     const canBack = round > 1 || (round === 1 && phase > Phase.STRATEGY);
@@ -260,10 +253,11 @@ function Game() {
         );
     }
 
-    const playerTurn = getPlayerTurn(game);
-    const currentTurnPlayer = playerTurn && playerTurn !== 'END' ? game.players[playerTurn] : null;
-    const currentTurnPlayerStyle = currentTurnPlayer
-        ? getPlayerColors(theme, currentTurnPlayer)
+    const factionTurn = getFactionTurn(game);
+    const currentFactionTurn =
+        factionTurn && factionTurn !== 'END' ? game.factions.find(f => f.name === factionTurn) : null;
+    const currentFactionTurnStyle = currentFactionTurn
+        ? getFactionColors(theme, currentFactionTurn)
         : {
               backgroundColor: theme.palette.text.primary,
               color: theme.palette.getContrastText(theme.palette.text.primary),
@@ -329,23 +323,17 @@ function Game() {
                 </Accordion>
                 <Toolbar>
                     <TextWithTooltip
-                        text={`Turn: ${playerTurn}`}
-                        className={classes.playerTurnText}
-                        style={currentTurnPlayerStyle}
+                        text={`Turn: ${factionTurn}`}
+                        className={classes.factionTurnText}
+                        style={currentFactionTurnStyle}
                     />
                 </Toolbar>
             </AppBar>
             <Grid container direction="column">
                 {getPhaseContents(phase)}
+                <Toolbar />
                 <Toolbar className={classes.speakerToolbar}>
-                    <Grid container alignItems="center" spacing={1}>
-                        <Grid item xs={3}>
-                            <Typography>Speaker:</Typography>
-                        </Grid>
-                        <Grid item xs={9}>
-                            <SpeakerSelect fullWidth disabled={isSpectator} />
-                        </Grid>
-                    </Grid>
+                    <SpeakerSelect fullWidth disabled={isSpectator} />
                 </Toolbar>
             </Grid>
         </>

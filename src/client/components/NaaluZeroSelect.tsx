@@ -2,34 +2,36 @@ import React from 'react';
 
 import { MenuItem, Select, SelectProps, Typography } from '@mui/material';
 
-import { getPlayersInGame } from 'common/Game';
 import { MessageType } from 'common/message';
+
 import { useAppContext } from '../Context';
-import useAccountInfo from '../hooks/useAccountInfo';
 
 export interface NaaluZeroSelectProps extends Omit<SelectProps, 'value' | 'onChange' | 'variant'> {}
 
 export default function NaaluZeroSelect(props: NaaluZeroSelectProps) {
-    const { sendData } = useAppContext();
-    const { game, gameId } = useAccountInfo();
+    const {
+        state: { game },
+        sendData,
+    } = useAppContext();
 
-    const players = game && getPlayersInGame(game);
-    const playerWithZeroToken = players && players.find(p => p.hasNaaluZeroToken);
-    if (!playerWithZeroToken || !players) {
+    const gameId = game?.id;
+    const factions = game?.factions;
+    const factionWithZeroToken = factions?.find(f => f.hasNaaluZeroToken);
+    if (!factionWithZeroToken || !factions) {
         return null;
     }
 
-    const nameOptions = players.map(p => ({ label: p.name, value: p.id }));
+    const nameOptions = factions.map(f => ({ label: f.name, value: f.name }));
 
-    const onNaaluZeroChange = (playerId: string) => {
-        sendData({ type: MessageType.PLAYER_TAKE_NAALU_ZERO_TOKEN, data: { gameId, playerId } });
+    const onNaaluZeroChange = (factionName: string) => {
+        sendData({ type: MessageType.TAKE_NAALU_ZERO_TOKEN, data: { gameId, factionName } });
     };
 
     return (
         <Select
             variant="outlined"
             {...props}
-            value={playerWithZeroToken.id}
+            value={factionWithZeroToken.name}
             onChange={e => onNaaluZeroChange(e.target.value as string)}
         >
             {nameOptions.map(({ label, value }) => (

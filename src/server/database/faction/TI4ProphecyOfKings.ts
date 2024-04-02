@@ -102,7 +102,7 @@ const Factions: Readonly<Faction[]> = [
     },
 
     {
-        name: 'The Empryrean',
+        name: 'The Empyrean',
         startingUnits: {
             [UnitType.Carrier]: 2,
             [UnitType.Destroyer]: 1,
@@ -618,7 +618,7 @@ const Factions: Readonly<Faction[]> = [
     },
 
     {
-        name: "The Vuil'Ratith Cabal",
+        name: "The Vuil'Raith Cabal",
         startingUnits: {
             [UnitType.Dreadnought]: 1,
             [UnitType.Carrier]: 1,

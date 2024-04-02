@@ -1,4 +1,4 @@
-import React, { useReducer, StrictMode } from 'react';
+import React, { useReducer } from 'react';
 
 import { CssBaseline } from '@mui/material';
 import { createTheme, ThemeProvider, Theme, StyledEngineProvider } from '@mui/material/styles';
@@ -37,16 +37,14 @@ function App() {
     });
 
     return (
-        <StrictMode>
-            <StyledEngineProvider injectFirst>
-                <ThemeProvider theme={state.theme === 'dark' ? DARK_THEME : LIGHT_THEME}>
-                    <CssBaseline />
-                    <Context.Provider value={{ state, dispatch, sendData }}>
-                        <AppContent />
-                    </Context.Provider>
-                </ThemeProvider>
-            </StyledEngineProvider>
-        </StrictMode>
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={state.theme === 'dark' ? DARK_THEME : LIGHT_THEME}>
+                <CssBaseline />
+                <Context.Provider value={{ state, dispatch, sendData }}>
+                    <AppContent />
+                </Context.Provider>
+            </ThemeProvider>
+        </StyledEngineProvider>
     );
 }
 

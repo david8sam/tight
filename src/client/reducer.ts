@@ -1,37 +1,24 @@
-import { Faction } from 'common/Faction';
-import { GameMap, Game, StrategyCard } from 'common/Game';
-import { PlanetMap } from 'common/Planet';
-import { Account, AppTheme, BaseAccountMap, LoginStatus } from 'common/Account';
+import { GameClientData, GamePlayer, StrategyCard } from 'common/Game';
 import { ChangeData } from 'common/message';
+import { AppTheme } from './types';
 
 export enum ActionType {
     setConnecting,
     setTheme,
-    setLoginStatus,
+    setPlayerId,
+    setStrategyCards,
+
     setState,
     updateState,
-    setFactionInfo,
 }
 
 export interface State {
-    // Client Data
-    initialized: boolean;
+    theme: AppTheme;
     connecting: boolean;
     connectError: boolean;
     reconnect: boolean;
-    theme: AppTheme;
-    accountId: string | null;
-    loginStatus: LoginStatus;
-
-    // Server Data (Client does NOT modify)
-    factionNames: string[];
-    factionInfo: Faction | null;
-
-    account: Account | null; // Loggined in player account
-    accountsInfo: BaseAccountMap;
-    games: GameMap;
-
-    planets: PlanetMap;
+    playerId: string | null;
+    game: GameClientData | null;
     strategyCards: StrategyCard[];
 }
 
@@ -41,103 +28,72 @@ export interface Action {
 }
 
 export const initialState: State = {
-    // Client data
-    initialized: false,
     connecting: false,
     connectError: false,
     reconnect: false,
-    theme: 'light',
-    accountId: null,
-    loginStatus: LoginStatus.LOGGED_OUT,
-
-    // Server data
-    factionNames: [],
-    factionInfo: null,
-    games: {},
-    account: null,
-    accountsInfo: {},
-    planets: {},
     strategyCards: [],
+    game: null,
+    playerId: sessionStorage.getItem('playerId') || null,
+    theme: (sessionStorage.getItem('theme') as AppTheme) || 'light',
 };
 
 /**
  * Update State from server changes
  */
 function updateState(state: State, payload: ChangeData): State {
-    let newState = { ...state };
-
     // Update app level states
-    const { games, account, accountsInfo } = payload;
-    if (account) {
-        newState.account = { ...state.account, ...account };
-        newState.theme = account.settings.theme;
-        const accountLoggedIn = account.loggedIn;
-        if (accountLoggedIn && state.loginStatus === LoginStatus.LOGIN_PENDING) {
-            newState.loginStatus = LoginStatus.LOGGED_IN;
-        } else if (!accountLoggedIn && state.loginStatus === LoginStatus.LOGOUT_PENDING) {
-            newState.loginStatus = LoginStatus.LOGGED_OUT;
-        }
+    const { game } = payload;
+
+    if (!game) {
+        return state;
     }
 
-    if (accountsInfo) {
-        newState.accountsInfo = accountsInfo;
+    // Update changes to game
+    const { created, deleted, status, planets, players, factions, publicObjectives } = game;
+    if (deleted) {
+        return { ...state, game: null };
     }
 
-    // Update changes to games
-    const gamesArray = Object.values(games || {});
-    if (gamesArray.length) {
-        const updatedGameMap: GameMap = {};
-        const deletedGames: string[] = [];
+    // TODO: Investigate even more granular updates?
+    const currentGame: GameClientData | null = created ? created : state.game;
+    if (!currentGame) {
+        return state;
+    }
 
-        gamesArray.forEach(g => {
-            const { id, created, deleted, status, planets, players, publicObjectives } = g;
-            if (deleted) {
-                deletedGames.push(id);
-                return;
-            }
+    const updatedGame: GameClientData = { ...currentGame };
+    if (status) {
+        updatedGame.status = status;
+    }
 
-            // TODO: Investigate even more granular updates?
-            const currentGame: Game = state.games[id] || {};
-            const updatedGame: Game = { ...currentGame, ...created };
-            if (status) {
-                updatedGame.status = { ...status };
-            }
+    if (planets) {
+        updatedGame.planets = { ...updatedGame.planets, ...planets };
+    }
 
-            if (planets) {
-                updatedGame.planets = { ...updatedGame.planets, ...planets };
-            }
+    if (players) {
+        updatedGame.players = players;
+    }
 
-            if (players) {
-                updatedGame.players = { ...updatedGame.players, ...players };
-
-                // Key without no value means admin or spectator has left
-                Object.keys(players).forEach(id => {
-                    if (!players[id]) {
-                        delete updatedGame.players[id];
-                    }
-                });
-            }
-
-            if (publicObjectives) {
-                updatedGame.publicObjectives = [...publicObjectives];
-            }
-
-            updatedGameMap[id] = updatedGame;
+    if (factions) {
+        const updatedFactions = [...updatedGame.factions];
+        factions.forEach((uf, factionIndex) => {
+            updatedFactions[factionIndex] = { ...updatedFactions[factionIndex], ...uf };
         });
-
-        const allGames = { ...state.games, ...updatedGameMap };
-        deletedGames.forEach(gameId => delete allGames[gameId]);
-        newState.games = allGames;
+        updatedGame.factions = updatedFactions;
     }
 
-    return newState;
+    if (publicObjectives) {
+        updatedGame.publicObjectives = [...publicObjectives];
+    }
+
+    return { ...state, game: updatedGame };
 }
 
 function validateState(state: State): State {
-    const { accountId, accountsInfo } = state;
-    if (accountId && !accountsInfo[accountId]) {
-        state.accountId = null;
-        state.loginStatus = LoginStatus.LOGGED_OUT;
+    const { game, playerId } = state;
+
+    // Remove player if not valid for the current game
+    if (playerId && !game?.players.includes(playerId)) {
+        state.playerId = null;
     }
 
     return state;
@@ -148,25 +104,24 @@ function validateState(state: State): State {
  */
 export default function reducer(state: State, action: Action): State {
     const { type, payload } = action;
+
+    // TODO: Type payloads per action type
     switch (type) {
         case ActionType.setConnecting:
             return { ...state, ...payload };
         case ActionType.setTheme:
-            return { ...state, theme: payload.theme };
-        case ActionType.setLoginStatus:
-            return {
-                ...state,
-                loginStatus: payload.status,
-                accountId: payload.accountId,
-            };
+            sessionStorage.setItem('theme', payload);
+            return { ...state, theme: payload };
+        case ActionType.setPlayerId:
+            sessionStorage.setItem('playerId', payload ?? '');
+            return { ...state, playerId: payload };
+        case ActionType.setStrategyCards:
+            return { ...state, strategyCards: payload };
 
         case ActionType.setState:
-            return validateState({ ...state, ...payload, initialized: true });
+            return validateState({ ...initialState, ...payload });
         case ActionType.updateState:
             return updateState(state, payload);
-
-        case ActionType.setFactionInfo:
-            return { ...state, factionInfo: payload };
 
         default:
             return state;

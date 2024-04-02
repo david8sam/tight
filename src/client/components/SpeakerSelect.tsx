@@ -1,32 +1,33 @@
 import React from 'react';
 
-import { MenuItem, Select, SelectProps, Typography } from '@mui/material';
+import { MenuItem, TextField, TextFieldProps, Typography } from '@mui/material';
 
-import { getPlayersInGame } from 'common/Game';
 import { MessageType } from 'common/message';
-import { useAppContext } from '../Context';
-import useAccountInfo from '../hooks/useAccountInfo';
 
-export interface SpeakerSelectProps extends Omit<SelectProps, 'value' | 'onChange' | 'variant'> {}
+import { useAppContext } from '../Context';
+import useGameInfo from '../hooks/useGameInfo';
+
+export interface SpeakerSelectProps extends Omit<TextFieldProps, 'value' | 'onChange' | 'variant'> {}
 
 export default function SpeakerSelect(props: SpeakerSelectProps) {
     const { sendData } = useAppContext();
-    const { game, gameId } = useAccountInfo();
+    const { game, gameId } = useGameInfo();
 
     if (!game) {
         return null;
     }
 
-    const { status } = game;
-    const players = getPlayersInGame(game);
-    const nameOptions = players.map(p => ({ label: p.name, value: p.id }));
+    const { factions, status } = game;
+    const nameOptions = factions.map(f => ({ label: f.name, value: f.name }));
 
-    const onSpeakerChange = (playerId: string) => {
-        sendData({ type: MessageType.GAME_SET_SPEAKER, data: { gameId, speaker: playerId } });
+    const onSpeakerChange = (factionName: string) => {
+        sendData({ type: MessageType.GAME_SET_SPEAKER, data: { gameId, speaker: factionName } });
     };
 
     return (
-        <Select
+        <TextField
+            select
+            label="Speaker"
             variant="outlined"
             {...props}
             value={status.speaker}
@@ -37,6 +38,6 @@ export default function SpeakerSelect(props: SpeakerSelectProps) {
                     <Typography>{label}</Typography>
                 </MenuItem>
             ))}
-        </Select>
+        </TextField>
     );
 }

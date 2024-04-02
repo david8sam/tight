@@ -112,6 +112,11 @@ if (dev) {
             hot: true,
             proxy: [
                 {
+                    context: '/api',
+                    target: 'http://localhost:3001',
+                    router: () => 'http://localhost',
+                },
+                {
                     context: '*',
                     target: 'http://localhost',
                 },

@@ -1,21 +1,15 @@
-import { makeStyles } from '@mui/styles';
-import { FactionTech } from 'common/Faction';
 import React from 'react';
+
+import { FactionTech } from 'common/Faction';
+
 import AccordionTextFields, { AccordionTextFieldsProps } from './AccordionTextFields';
 import TechPrerequisites from './TechPrerequisites';
-
-const useStyles = makeStyles(theme => ({
-    divider: {
-        margin: `${theme.spacing(1)} 0px`,
-    },
-}));
 
 export interface FactionTechAccordionProps extends Omit<AccordionTextFieldsProps, 'summary' | 'texts'> {
     factionTech: FactionTech[] | undefined | null;
 }
 
 export default function FactionTechAccordion(props: FactionTechAccordionProps) {
-    const classes = useStyles(props);
     const { factionTech, ...otherProps } = props;
     if (!factionTech) {
         return null;

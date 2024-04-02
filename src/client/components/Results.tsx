@@ -3,10 +3,10 @@ import React from 'react';
 import { Card, CardContent, Divider, Grid, Toolbar, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import { calculateVictoryPoints, GameJoinStatus, GamePlayer, getPlayersInGame } from 'common/Game';
+import { GameFaction, calculateVictoryPoints } from 'common/Game';
 
-import useAccountInfo from '../hooks/useAccountInfo';
-import PlayerHeader from './PlayerHeader';
+import useGameInfo from '../hooks/useGameInfo';
+import FactionHeader from './FactionHeader';
 import VictoryPoints from './VictoryPoints';
 
 const EMOJI_PARTY_POPPER = String.fromCodePoint(0x1f389);
@@ -37,20 +37,20 @@ const useStyles = makeStyles(theme => ({
 
 function Results() {
     const classes = useStyles();
-    const { game, player: currentPlayer } = useAccountInfo();
-    if (!game || !currentPlayer) {
+    const { game } = useGameInfo();
+    if (!game) {
         return null;
     }
 
-    const playerOrder = getPlayersInGame(game).sort((p1: GamePlayer, p2: GamePlayer) => {
-        const vp1 = calculateVictoryPoints(game, p1.id);
-        const vp2 = calculateVictoryPoints(game, p2.id);
+    const factionOrder = [...game.factions].sort((f1: GameFaction, f2: GameFaction) => {
+        const vp1 = calculateVictoryPoints(game, f1.name);
+        const vp2 = calculateVictoryPoints(game, f2.name);
 
         // Order by highest victory points
         const result = vp2 - vp1;
 
-        // For ties, player with lower initiative ranks higher.
-        return result === 0 ? p1.strategyCard - p2.strategyCard : result;
+        // For ties, faction with lower initiative ranks higher.
+        return result === 0 ? f1.strategyCard - f2.strategyCard : result;
     });
 
     return (
@@ -69,7 +69,10 @@ function Results() {
                             Our New Space Emperor is
                         </Typography>
                         <Typography align="center" variant="h4">
-                            {playerOrder[0].id}
+                            {factionOrder[0].name}
+                        </Typography>
+                        <Typography align="center" variant="h6">
+                            {`(${factionOrder[0].playerIds.join(', ')})`}
                         </Typography>
                     </Grid>
                     <span className={classes.emoji + ' ' + classes.flipX}>{EMOJI_PARTY_POPPER}</span>
@@ -77,17 +80,13 @@ function Results() {
             </Toolbar>
             <Divider orientation="horizontal" />
             <Toolbar />
-            {playerOrder.map((player: GamePlayer) => (
-                <Card key={player.id} variant="outlined" classes={{ root: classes.card }}>
+            {factionOrder.map((faction: GameFaction) => (
+                <Card key={faction.name} variant="outlined" classes={{ root: classes.card }}>
                     <CardContent classes={{ root: classes.cardContent }}>
-                        <PlayerHeader player={player} />
+                        <FactionHeader faction={faction} />
                     </CardContent>
                     <CardContent classes={{ root: classes.cardContent }}>
-                        <VictoryPoints
-                            playerId={player.id}
-                            allowShowSecret
-                            disabled={currentPlayer.joinStatus === GameJoinStatus.SPECTATOR || game.status.ended}
-                        />
+                        <VictoryPoints factionName={faction.name} allowShowSecret disabled={game.status.ended} />
                     </CardContent>
                 </Card>
             ))}

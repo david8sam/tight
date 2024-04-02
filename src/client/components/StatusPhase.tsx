@@ -3,10 +3,10 @@ import React from 'react';
 import { Card, CardContent, Grid, Toolbar } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import { GameJoinStatus, GamePlayer, getPlayerOrder } from 'common/Game';
+import { GameFaction, getFactionOrder } from 'common/Game';
 
-import useAccountInfo from '../hooks/useAccountInfo';
-import PlayerHeader from './PlayerHeader';
+import useGameInfo from '../hooks/useGameInfo';
+import FactionHeader from './FactionHeader';
 import RefreshAllbutton from './RefreshAllButton';
 import VictoryPoints from './VictoryPoints';
 
@@ -26,25 +26,22 @@ const useStyles = makeStyles(theme => ({
 
 function StatusPhase() {
     const classes = useStyles();
-    const { game, player: currentPlayer } = useAccountInfo();
-    if (!game || !currentPlayer) {
+    const { game } = useGameInfo();
+    if (!game) {
         return null;
     }
 
-    const playerOrder = getPlayerOrder(game);
+    const factionOrder = getFactionOrder(game);
 
     return (
         <Grid container direction="column">
-            {playerOrder.map((player: GamePlayer) => (
-                <Card key={player.id} variant="outlined" classes={{ root: classes.card }}>
+            {factionOrder.map((faction: GameFaction) => (
+                <Card key={faction.name} variant="outlined" classes={{ root: classes.card }}>
                     <CardContent classes={{ root: classes.cardContent }}>
-                        <PlayerHeader player={player} />
+                        <FactionHeader faction={faction} />
                     </CardContent>
                     <CardContent classes={{ root: classes.cardContent }}>
-                        <VictoryPoints
-                            playerId={player.id}
-                            disabled={currentPlayer.joinStatus === GameJoinStatus.SPECTATOR}
-                        />
+                        <VictoryPoints factionName={faction.name} />
                     </CardContent>
                 </Card>
             ))}

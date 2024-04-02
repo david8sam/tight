@@ -1,5 +1,6 @@
 import React, { ReactNode, useState } from 'react';
 
+import { Edit } from '@mui/icons-material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import CloseIcon from '@mui/icons-material/Close';
 import {
@@ -14,33 +15,28 @@ import {
     TableSortLabel,
     TableSortLabelProps,
     TextField,
-    Toolbar,
     Tooltip,
+    Typography,
+    styled,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import { useAppContext } from '../Context';
+import { PlanetMap } from 'common/Planet';
+
+import useGameInfo from '../hooks/useGameInfo';
+import { getPlanetValue } from '../utils/planet';
+
 import { PlanetData } from '../types';
+
+import EditPlanetDialog from './EditPlanetDialog';
 import { Influence, Resources } from './PlanetIcons';
 import PlanetNameCell, { PlanetNameCellProps } from './PlanetNameCell';
 
-export type ColumnType = keyof PlanetData;
+export type ColumnType = keyof Omit<PlanetData, 'modifiers'>;
 
-export interface PlanetsTableProps {
-    classes?: object;
-    gameId?: string | null;
-    playerId?: string | null;
-    columns?: ColumnType[];
+const StyledDiv = styled('div')({});
 
-    filterByPlanetOnly?: boolean;
-
-    showCheckbox?: boolean;
-    selection?: string[];
-    onSelectionChange?: (selection: string[]) => void;
-    onPlanetClick?: (id: string) => void | null;
-
-    PlanetNameCellProps?: Omit<PlanetNameCellProps, 'planet'>;
-}
+const FILTER_BY_NAME_HEIGHT = '90px';
 
 const useStyle = makeStyles(theme => ({
     title: {
@@ -49,7 +45,6 @@ const useStyle = makeStyles(theme => ({
     toolbar: {
         margin: `${theme.spacing(2)} 0px`,
     },
-    tableBody: {},
     tableHeaderSmall: {
         maxWidth: 80,
     },
@@ -75,6 +70,17 @@ function renderCells(
             value = <PlanetNameCell {...PlanetNameCellProps} planet={planet} />;
         } else if (column === 'owner') {
             value = value || '-';
+        } else if (column === 'resources' || column === 'influence') {
+            const modifier = planet.modifiers?.[column];
+            if (typeof value === 'number' && modifier !== undefined && modifier !== 0) {
+                const modifierStr = modifier < 0 ? `(${value}-${-modifier})` : `(${value}+${modifier})`;
+                value = (
+                    <StyledDiv sx={{ display: 'flex' }}>
+                        <Typography color="green">{value + modifier}</Typography>
+                        <Typography sx={{ paddingLeft: 1, textWrap: 'nowrap' }}>{modifierStr}</Typography>
+                    </StyledDiv>
+                );
+            }
         }
 
         return (
@@ -85,17 +91,31 @@ function renderCells(
     });
 }
 
+export interface PlanetsTableProps {
+    classes?: object;
+    factionName?: string | null; // name to filter the list of planets if any
+    ownerFactionName?: string; // name for filtering "My Planets" button
+    columns?: ColumnType[];
+
+    filterByPlanetOnly?: boolean;
+
+    showCheckbox?: boolean;
+    selection?: string[];
+    onSelectionChange?: (selection: string[]) => void;
+    onPlanetClick?: (id: string) => void | null;
+
+    PlanetNameCellProps?: Omit<PlanetNameCellProps, 'planet'>;
+    planetMap: PlanetMap;
+}
+
 function PlanetsTable(props: PlanetsTableProps) {
     const classes = useStyle(props);
-    const {
-        state: { games, planets: planetDB = {}, account },
-    } = useAppContext();
-
-    const loggedInPlayer = account?.id;
+    const { game } = useGameInfo();
 
     const {
-        gameId,
-        playerId,
+        planetMap,
+        factionName,
+        ownerFactionName,
         columns = DEFAULT_COLUMNS,
         filterByPlanetOnly,
         showCheckbox = false,
@@ -107,11 +127,12 @@ function PlanetsTable(props: PlanetsTableProps) {
 
     const [nameFilter, setNameFilter] = useState('');
     const [sortBy, setSortBy] = useState<{ key: ColumnType; asc: boolean }>({ key: 'name', asc: true });
+    const [editPlanet, setEditPlanet] = useState<PlanetData | null>(null);
 
-    const { planets = {} } = gameId && games ? games[gameId] : {};
+    const { planets = {} } = game || {};
     let names = Object.keys(planets);
-    if (playerId) {
-        names = names.filter(n => planets[n] && planets[n].owner === playerId);
+    if (factionName) {
+        names = names.filter(n => planets[n] && planets[n].owner === factionName);
     }
 
     // Apply owner filter
@@ -140,12 +161,12 @@ function PlanetsTable(props: PlanetsTableProps) {
     if (sortBy) {
         const { key, asc } = sortBy;
         names.sort((a, b) => {
-            const planetA = { ...planetDB[a], ...planets[a] } as PlanetData;
-            const planetB = { ...planetDB[b], ...planets[b] } as PlanetData;
+            const planetA = { ...planetMap[a], ...planets[a] } as PlanetData;
+            const planetB = { ...planetMap[b], ...planets[b] } as PlanetData;
 
             // Swap values depending on sort direction
-            let value1 = asc ? planetA[key] : planetB[key];
-            let value2 = asc ? planetB[key] : planetA[key];
+            let value1 = asc ? getPlanetValue(planetA, key) : getPlanetValue(planetB, key);
+            let value2 = asc ? getPlanetValue(planetB, key) : getPlanetValue(planetA, key);
 
             // Default the value based on type in cases of null/undefined.
             // Case insensitive for string comparison.
@@ -205,7 +226,7 @@ function PlanetsTable(props: PlanetsTableProps) {
     let headerCheckbox = null;
     if (showCheckbox) {
         headerCheckbox = (
-            <TableCell padding="checkbox">
+            <TableCell sx={{ top: FILTER_BY_NAME_HEIGHT }} padding="checkbox">
                 <Checkbox
                     indeterminate={filteredSelection.length > 0 && filteredSelection.length < names.length}
                     checked={filteredSelection.length > 0 && filteredSelection.length === names.length}
@@ -217,33 +238,31 @@ function PlanetsTable(props: PlanetsTableProps) {
 
     // Add filter by plant or owner names
     const filterByName = (
-        <Toolbar classes={{ root: classes.toolbar }}>
-            <TextField
-                variant="outlined"
-                fullWidth
-                value={nameFilter}
-                label={`Filter By Name${filterByPlanetOnly ? '' : ' or Owner'}`}
-                onChange={e => setNameFilter(e.target.value)}
-                InputProps={{
-                    endAdornment: (
-                        <>
-                            {!filterByPlanetOnly && (
-                                <Tooltip title="My Planets">
-                                    <IconButton onClick={() => setNameFilter(loggedInPlayer || '')} size="large">
-                                        <AccountCircleIcon />
-                                    </IconButton>
-                                </Tooltip>
-                            )}
-                            <Tooltip title="clear">
-                                <IconButton onClick={() => setNameFilter('')} size="large">
-                                    <CloseIcon />
+        <TextField
+            variant="outlined"
+            fullWidth
+            value={nameFilter}
+            label={`Filter By Name${filterByPlanetOnly ? '' : ' or Owner'}`}
+            onChange={e => setNameFilter(e.target.value)}
+            InputProps={{
+                endAdornment: (
+                    <>
+                        {!filterByPlanetOnly && (
+                            <Tooltip title="My Planets">
+                                <IconButton onClick={() => setNameFilter(ownerFactionName || '')} size="large">
+                                    <AccountCircleIcon />
                                 </IconButton>
                             </Tooltip>
-                        </>
-                    ),
-                }}
-            />
-        </Toolbar>
+                        )}
+                        <Tooltip title="clear">
+                            <IconButton onClick={() => setNameFilter('')} size="large">
+                                <CloseIcon />
+                            </IconButton>
+                        </Tooltip>
+                    </>
+                ),
+            }}
+        />
     );
 
     // Handle sort when clicking on a table column header
@@ -260,9 +279,13 @@ function PlanetsTable(props: PlanetsTableProps) {
 
     return (
         <>
-            {filterByName}
-            <Table>
+            <Table stickyHeader>
                 <TableHead>
+                    <TableRow>
+                        <TableCell sx={{ margin: 1, height: FILTER_BY_NAME_HEIGHT }} colSpan={4}>
+                            {filterByName}
+                        </TableCell>
+                    </TableRow>
                     <TableRow>
                         {headerCheckbox}
                         {columns.map(column => {
@@ -285,16 +308,22 @@ function PlanetsTable(props: PlanetsTableProps) {
                             }
 
                             return (
-                                <TableCell key={column} onClick={() => onSortBy(column)} {...extraProps}>
+                                <TableCell
+                                    sx={{ top: FILTER_BY_NAME_HEIGHT }}
+                                    key={column}
+                                    onClick={() => onSortBy(column)}
+                                    {...extraProps}
+                                >
                                     <TableSortLabel {...sortLabelProps}>{label}</TableSortLabel>
                                 </TableCell>
                             );
                         })}
+                        <TableCell sx={{ top: FILTER_BY_NAME_HEIGHT }} />
                     </TableRow>
                 </TableHead>
-                <TableBody classes={{ root: classes.tableBody }}>
+                <TableBody>
                     {names.map(name => {
-                        const planet: PlanetData = { ...planetDB[name], ...planets[name] };
+                        const planet: PlanetData = { ...planetMap[name], ...planets[name] };
                         let rowCheckbox = null;
                         if (showCheckbox) {
                             rowCheckbox = (
@@ -314,11 +343,25 @@ function PlanetsTable(props: PlanetsTableProps) {
                             >
                                 {rowCheckbox}
                                 {renderCells(planet, columns, PlanetNameCellProps)}
+                                <TableCell align="center">
+                                    <Tooltip title="Edit">
+                                        <IconButton
+                                            onClick={e => {
+                                                e.stopPropagation();
+                                                e.preventDefault();
+                                                setEditPlanet(planet);
+                                            }}
+                                        >
+                                            <Edit />
+                                        </IconButton>
+                                    </Tooltip>
+                                </TableCell>
                             </TableRow>
                         );
                     })}
                 </TableBody>
             </Table>
+            {editPlanet ? <EditPlanetDialog open onClose={() => setEditPlanet(null)} planet={editPlanet} /> : null}
         </>
     );
 }

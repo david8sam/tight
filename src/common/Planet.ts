@@ -5,18 +5,18 @@ export enum Traits {
 }
 
 export interface Planet {
-    readonly name: string;
-    readonly trait?: Traits;
-    readonly resources: number;
-    readonly influence: number;
-    readonly home?: string; // faction name
-    readonly legendary?: string; // ability
+    name: string;
+    trait?: Traits;
+    resources: number;
+    influence: number;
+    home?: string; // faction name
+    legendary?: string; // ability
 
     // Tech bonuses
-    readonly biotic?: number; // green
-    readonly warfare?: number; //red
-    readonly propulsion?: number; // blue
-    readonly cybernetic?: number; // yellow
+    biotic?: number; // green
+    warfare?: number; //red
+    propulsion?: number; // blue
+    cybernetic?: number; // yellow
 }
 
 export interface PlanetMap {

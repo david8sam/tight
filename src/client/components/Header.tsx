@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router';
 
+import Brightness6 from '@mui/icons-material/Brightness6';
+import Brightness6Outlined from '@mui/icons-material/Brightness6Outlined';
+import ErroIcon from '@mui/icons-material/Error';
+import MenuIcon from '@mui/icons-material/Menu';
 import {
     AppBar,
     Button,
@@ -11,16 +16,11 @@ import {
     Typography,
     useTheme,
 } from '@mui/material';
-import Brightness6 from '@mui/icons-material/Brightness6';
-import Brightness6Outlined from '@mui/icons-material/Brightness6Outlined';
-import ErroIcon from '@mui/icons-material/Error';
-import MenuIcon from '@mui/icons-material/Menu';
-
-import { AppTheme, LoginStatus } from 'common/Account';
-import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
 import { ActionType } from '../reducer';
+import { AppTheme } from '../types';
+
 import Drawer from './Drawer';
 import TextWithTooltip from './TextWithTooltip';
 
@@ -28,23 +28,17 @@ function Header() {
     const appTheme = useTheme();
     const [drawerOpen, setDrawerOpen] = useState(false);
 
+    const { pathname } = useLocation();
+    const isHome = pathname === '/';
+
     const {
         dispatch,
-        sendData,
-        state: { account, loginStatus, theme = 'light', connecting, connectError },
+        state: { playerId, theme, connecting, connectError },
     } = useAppContext();
 
-    const accountId = account?.id;
-    const loggedIn = loginStatus === LoginStatus.LOGGED_IN;
-
     const onThemeChange = (theme: AppTheme) => {
-        dispatch({ type: ActionType.setTheme, payload: { theme } });
-        if (loggedIn) {
-            sendData({ type: MessageType.ACCOUNT_SET_SETTINGS, data: { accountId, settings: { theme } } });
-        }
+        dispatch({ type: ActionType.setTheme, payload: theme });
     };
-
-    const accountName = loggedIn ? account?.name : '';
 
     let connectionStatus = null;
     if (connectError) {
@@ -88,7 +82,11 @@ function Header() {
                                 <MenuIcon />
                             </IconButton>
                         </Tooltip>
-                        <TextWithTooltip text={accountName ?? ''} width={connectError ? '25%' : '75%'} variant="h6" />
+                        <TextWithTooltip
+                            text={isHome ? '' : playerId ?? ''}
+                            width={connectError ? '25%' : '75%'}
+                            variant="h6"
+                        />
                     </Grid>
                     {connectionStatus}
                     <Tooltip title={theme === 'light' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}>

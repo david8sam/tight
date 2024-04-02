@@ -36,7 +36,7 @@ export interface PublicObjectivesProps {
     editable?: boolean;
     publicObjectives?: ObjectiveType[];
     onChange?: (objectives: ObjectiveType[]) => void;
-    showPlayers?: boolean;
+    showFactions?: boolean;
 }
 
 function PublicObjectives(props: PublicObjectivesProps) {
@@ -47,7 +47,7 @@ function PublicObjectives(props: PublicObjectivesProps) {
         editable = false,
         publicObjectives = [],
         onChange,
-        showPlayers,
+        showFactions,
     } = props;
     const [createNewObjective, setCreateNewObjective] = useState(false);
     const [optionsOpen, setOptionsOpen] = useState(false);
@@ -158,7 +158,7 @@ function PublicObjectives(props: PublicObjectivesProps) {
                             objective={po}
                             onChange={onObjectiveChange}
                             onDelete={onObjectiveDelete}
-                            showPlayers={showPlayers}
+                            showFactions={showFactions}
                             AccordionProps={{
                                 expanded: expanded[po.id - 1],
                                 onChange: (_e, expand) => onExpandChange(po.id, expand),

@@ -19,6 +19,10 @@ export function listPlanets(): Readonly<PlanetMap> {
     return PlanetsMap;
 }
 
+export function listPlanetNames(): string[] {
+    return Planets.map(p => p.name);
+}
+
 export function getFactionPlanets(name: string) {
     if (!name) {
         return [];

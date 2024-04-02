@@ -8,15 +8,16 @@ import {
     IconButtonProps,
     Popover,
     Toolbar,
+    ToolbarProps,
     Tooltip,
     Typography,
     useTheme,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import { calculateVictoryPoints, Game, GameJoinStatus, GamePlayer, getPlayerTurn } from 'common/Game';
+import { calculateVictoryPoints, GameClientData } from 'common/Game';
 
-import { getPlayerColors } from '../utils/player';
+import { getFactionColors } from '../utils/faction';
 import TextWithTooltip from './TextWithTooltip';
 
 const useStyle = makeStyles(theme => ({
@@ -25,9 +26,9 @@ const useStyle = makeStyles(theme => ({
         borderRadius: theme.spacing(),
     },
     divider: {
-        margin: `${theme.spacing()}px 0px`,
+        margin: `${theme.spacing()} 0px`,
     },
-    player: {
+    faction: {
         padding: theme.spacing(),
     },
     turn: {
@@ -38,8 +39,8 @@ const useStyle = makeStyles(theme => ({
     },
 }));
 
-export interface GameInfoToolbarProps {
-    game: Game;
+export interface GameInfoToolbarProps extends ToolbarProps {
+    game: GameClientData;
     onInfoClick?: IconButtonProps['onClick'];
 }
 
@@ -47,39 +48,17 @@ export default function GameInfoToolbar(props: GameInfoToolbarProps) {
     const theme = useTheme();
     const classes = useStyle(props);
 
-    const { game, onInfoClick } = props;
-    const { creator, numRounds, numVictoryPoints, players, status } = game;
+    const { game, onInfoClick, ...toolbarProps } = props;
+    const { factions, numRounds, numVictoryPoints, status } = game;
 
-    const playersArray: GamePlayer[] = [];
-    const admins: GamePlayer[] = [];
-    const spectators: GamePlayer[] = [];
-    Object.values(players).forEach(p => {
-        switch (p.joinStatus) {
-            case GameJoinStatus.PLAYER:
-                playersArray.push(p);
-                break;
-            case GameJoinStatus.ADMIN:
-                admins.push(p);
-                break;
-            case GameJoinStatus.SPECTATOR:
-                spectators.push(p);
-                break;
-            default:
-                break;
-        }
-    });
-
-    const adminNames = admins.map(a => a.name);
-    const specatorsNames = spectators.map(s => s.name);
-
-    const vpMap = playersArray.reduce((r, p) => {
-        r[p.id] = calculateVictoryPoints(game, p.id);
+    const vpMap = factions.reduce((r, f) => {
+        r[f.name] = calculateVictoryPoints(game, f.name);
         return r;
     }, {} as Record<string, number>);
 
     // Sort by VP
-    const leaderboard = playersArray.sort((a, b) => {
-        const result = vpMap[b.id] - vpMap[a.id];
+    const leaderboard = [...factions].sort((a, b) => {
+        const result = vpMap[b.name] - vpMap[a.name];
         return result === 0 ? a.strategyCard - b.strategyCard : result;
     });
 
@@ -87,7 +66,6 @@ export default function GameInfoToolbar(props: GameInfoToolbarProps) {
     const infoRef = useRef<HTMLButtonElement>(null);
 
     const { started, round } = status;
-    const playerTurn = getPlayerTurn(game);
 
     const onInfoButtonClick: IconButtonProps['onClick'] = e => {
         setInfoOpen(true);
@@ -97,11 +75,11 @@ export default function GameInfoToolbar(props: GameInfoToolbarProps) {
     };
 
     return (
-        <Toolbar>
+        <Toolbar {...toolbarProps}>
             <Grid container justifyContent="space-between" alignItems="center">
                 <Grid item>
                     <Grid container justifyContent="center" alignItems="center">
-                        <Typography variant="h6">{game.name}</Typography>
+                        <Typography variant="h6">{game.id}</Typography>
                         <Tooltip title="Game Info">
                             <IconButton ref={infoRef} onClick={onInfoButtonClick} size="large">
                                 <InfoIcon />
@@ -127,36 +105,23 @@ export default function GameInfoToolbar(props: GameInfoToolbarProps) {
                     vertical: 'top',
                     horizontal: 'center',
                 }}
-                PaperProps={{ className: classes.infoPaper }}
+                slotProps={{ paper: { className: classes.infoPaper } }}
             >
                 <Grid container direction="column">
-                    <Typography>{`Creator: ${creator}`}</Typography>
                     <Typography>{`Rounds: ${numRounds}`}</Typography>
                     <Typography>{`VP to win: ${numVictoryPoints}`}</Typography>
                     {game.status.started && (
                         <>
                             <Divider className={classes.divider} />
-                            {leaderboard.map(p => (
+                            {leaderboard.map(f => (
                                 <TextWithTooltip
-                                    key={p.id}
-                                    text={`${p.name}: ${vpMap[p.id]} VP `}
-                                    title={p.name}
-                                    style={getPlayerColors(theme, p)}
-                                    className={classes.player}
+                                    key={f.name}
+                                    text={`${f.name}: ${vpMap[f.name]} VP `}
+                                    title={f.name}
+                                    style={getFactionColors(theme, f)}
+                                    className={classes.faction}
                                 />
                             ))}
-                            {adminNames.length > 0 && (
-                                <>
-                                    <Divider className={classes.divider} />
-                                    <Typography>{`Admins: ${adminNames.join(', ')}`}</Typography>
-                                </>
-                            )}
-                            {specatorsNames.length > 0 && (
-                                <>
-                                    <Divider className={classes.divider} />
-                                    <Typography>{`Spectators: ${specatorsNames.join(', ')}`}</Typography>
-                                </>
-                            )}
                         </>
                     )}
                 </Grid>

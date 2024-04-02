@@ -1,16 +1,18 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Divider, List, ListItem, ListItemText, SwipeableDrawer, SwipeableDrawerProps } from '@mui/material';
+import {
+    Divider,
+    List,
+    ListItem,
+    ListItemButton,
+    ListItemText,
+    SwipeableDrawer,
+    SwipeableDrawerProps,
+} from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import { LoginStatus } from 'common/Account';
-import { MessageType } from 'common/message';
-
-import { useAppContext } from '../Context';
-import { ActionType } from '../reducer';
-import useAccountInfo from '../hooks/useAccountInfo';
-import { GameJoinStatus } from 'common/Game';
+import useGameInfo from '../hooks/useGameInfo';
 
 const useStyle = makeStyles(() => ({
     drawer: {
@@ -26,101 +28,67 @@ interface DrawerProps extends SwipeableDrawerProps {}
 
 function Drawer(props: DrawerProps) {
     const classes = useStyle(props);
-    const { sendData, dispatch } = useAppContext();
     const { open, onOpen, onClose, ...drawerProps } = props;
 
     const navigate = useNavigate();
-    const { loggedIn, game, player, playerId } = useAccountInfo();
 
-    const onOptionClick = (e: React.SyntheticEvent<{}, Event>, id: string, isPlayerPage?: boolean) => {
+    const { game, gameId } = useGameInfo();
+
+    const onOptionClick = (e: React.SyntheticEvent<{}, Event>, id: string, isGamePage?: boolean) => {
         onClose(e);
 
-        if (isPlayerPage) {
-            if (playerId) {
-                navigate(`/player/${playerId}/${id}`);
+        if (isGamePage) {
+            if (gameId) {
+                navigate(`/${gameId}/${id}`);
             }
         } else {
             navigate(`/${id}`);
         }
     };
 
-    const onLogin = (e: React.SyntheticEvent<{}, Event>) => {
-        navigate('/');
-        onClose(e);
-    };
-
-    const onLogout = (e: React.SyntheticEvent<{}, Event>) => {
-        dispatch({
-            type: ActionType.setLoginStatus,
-            payload: { status: LoginStatus.LOGOUT_PENDING, accountId: playerId },
-        });
-        sendData({ type: MessageType.ACCOUNT_LOGOUT, data: { accountId: playerId } });
-        onClose(e);
-
-        navigate('/');
-    };
-
-    const inGame = Boolean(player);
-    const isPlayer = player ? player.joinStatus === GameJoinStatus.PLAYER : false;
-
     return (
         <SwipeableDrawer open={open} onOpen={onOpen} onClose={onClose} {...drawerProps}>
             <div className={classes.drawer}>
                 <List>
-                    <ListItem key="game" button disabled={!inGame} onClick={e => onOptionClick(e, 'game', true)}>
-                        <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary="Game Status" />
+                    <ListItemButton key="home" onClick={e => onOptionClick(e, '')}>
+                        <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary="Home" />
+                    </ListItemButton>
+
+                    <ListItem>
+                        <Divider classes={{ root: classes.divider }} />
                     </ListItem>
-                    <ListItem
+
+                    <ListItemButton key="status" disabled={!game} onClick={e => onOptionClick(e, 'status', true)}>
+                        <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary={`Status`} />
+                    </ListItemButton>
+                    <ListItemButton key="players" disabled={!game} onClick={e => onOptionClick(e, 'players', true)}>
+                        <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary={`Players`} />
+                    </ListItemButton>
+                    <ListItemButton
                         key="objectives"
-                        button
-                        disabled={!inGame}
+                        disabled={!game}
                         onClick={e => onOptionClick(e, 'objectives', true)}
                     >
                         <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary="Objectives" />
-                    </ListItem>
-                    <ListItem
+                    </ListItemButton>
+                    <ListItemButton
                         key="planets"
-                        button
-                        disabled={!game || !game.status.started || !isPlayer}
+                        disabled={!game?.status.started}
                         onClick={e => onOptionClick(e, 'planets', true)}
                     >
                         <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary="My Planets" />
-                    </ListItem>
+                    </ListItemButton>
 
                     <ListItem>
                         <Divider classes={{ root: classes.divider }} />
                     </ListItem>
 
-                    <ListItem
-                        key="manage-games"
-                        button
-                        disabled={!loggedIn}
-                        onClick={e => onOptionClick(e, 'manage-games', true)}
-                    >
-                        <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary="Manage Games" />
-                    </ListItem>
-
-                    <ListItem>
-                        <Divider classes={{ root: classes.divider }} />
-                    </ListItem>
-
-                    <ListItem key="factions" button onClick={e => onOptionClick(e, 'factions', loggedIn)}>
+                    <ListItemButton key="factions" onClick={e => onOptionClick(e, 'factions')}>
                         <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary="Factions" />
-                    </ListItem>
-                    <ListItem key="strategy-cards" button onClick={e => onOptionClick(e, 'strategy-cards', loggedIn)}>
+                    </ListItemButton>
+                    <ListItemButton key="strategy-cards" onClick={e => onOptionClick(e, 'strategy-cards')}>
                         <ListItemText primaryTypographyProps={{ variant: 'h5' }} primary="Strategy Cards" />
-                    </ListItem>
-
-                    <ListItem>
-                        <Divider classes={{ root: classes.divider }} />
-                    </ListItem>
-
-                    <ListItem key="loginout" button onClick={loggedIn ? onLogout : onLogin}>
-                        <ListItemText
-                            primaryTypographyProps={{ variant: 'h5' }}
-                            primary={loggedIn ? 'Logout' : 'Login'}
-                        />
-                    </ListItem>
+                    </ListItemButton>
                 </List>
             </div>
         </SwipeableDrawer>

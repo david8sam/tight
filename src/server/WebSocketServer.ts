@@ -3,23 +3,20 @@ import http, { IncomingMessage } from 'http';
 import { parse } from 'url';
 import { WebSocketServer as WSServer, WebSocket as WebSocketType } from 'ws';
 
-import { AccountMap } from 'common/Account.js';
 import { WSS_PORT } from 'common/constants.js';
-import { AllData, ChangeData, MessageType, PartialData } from 'common/message.js';
+import { MessageType, PartialData } from 'common/message.js';
+import uuidv4 from 'common/uuidv4.js';
 
-import * as FactionDB from './database/faction/index.js';
-import * as GameDB from './database/game.js';
-import * as AccountDB from './database/account.js';
-import * as PlanetDB from './database/planet/index.js';
-import * as StrategyDB from './database/strategy.js';
+import { getGame, getGameForClient } from './database/game.js';
 
-import { dirty, isDirty, setDirty, getDirtyGameData } from './dirty.js';
+import { isDirty, setDirty, getDirtyGameData, removeOldGames } from './dirty.js';
 import handleMessage from './handleMessage.js';
 import log from './log.js';
-import { WebSocket, WebSocketServer, sendData, broadcastChangeData } from './WebSocket.js';
+import { WebSocket, WebSocketServer, sendData, broadcastChangeData, getWebSocketLogId } from './WebSocket.js';
 
 const KEEP_ALIVE_INTERVAL = 10000; // ms
 const BROADCAST_INTERVAL = 300; // ms
+const REMOVE_GAME_INTERVAL = 1000 * 60 * 60; // 1 hour
 
 interface OnConnectionParam {
     wss: WebSocketServer;
@@ -30,44 +27,41 @@ interface OnConnectionParam {
 let wss: WebSocketServer;
 
 function onConnection({ wss, ws, request }: OnConnectionParam) {
-    const reconnectId = request.url ? (parse(request.url, true).query?.reconnect as string) : null;
-    if (reconnectId && reconnectId !== 'anonymous') {
-        ws.accountId = reconnectId;
-    }
+    const queryParams = request.url ? parse(request.url, true).query : null;
+    const { gameId, playerId } = queryParams || {};
+    ws.gameId = (gameId as string) || null;
 
-    const wsKey = request.headers['sec-websocket-key'];
-    const idMsg = ws.accountId ? `${wsKey} (${ws.accountId})` : wsKey;
-    log(`Opening web socket connection: ${idMsg}`);
+    // const wsKey = request.headers['sec-websocket-key'];
+    // const idMsg = ws.playerId ? `${wsKey} (${ws.playerId})` : wsKey;
 
     ws.isAlive = true;
+    if (!ws.socketId) {
+        ws.socketId = uuidv4();
+    }
+
+    const idMsg = getWebSocketLogId(ws);
+    log(`Opening web socket connection: ${idMsg}`);
 
     ws.on('pong', () => (ws.isAlive = true));
     ws.on('message', (message: string) => handleMessage({ wss, ws, message }));
     ws.on('close', () => log(`Closing web socket connection: ${idMsg}`));
 
-    // TODO: Design a better way to initialize without sending everything.
-    // Send initial packet to client
-    if (reconnectId) {
-        const data: PartialData = {
-            games: GameDB.listGames(),
-            accountsInfo: AccountDB.listAccountsInfo(),
-        };
+    // Maybe use as API token?
+    // const data: PartialData = { socketId: ws.socketId };
+    const data: PartialData = {};
 
-        sendData({ ws, type: MessageType.BROADCAST_RECONNECT, data });
-    } else {
-        const data: AllData = {
-            // Dynamic data
-            games: GameDB.listGames(),
-            accountsInfo: AccountDB.listAccountsInfo(),
-
-            // Static data
-            planets: PlanetDB.listPlanets(),
-            strategyCards: StrategyDB.listCards(),
-            factionNames: FactionDB.listFactionNames(),
-        };
-
-        sendData({ ws, type: MessageType.BROADCAST_INITIALIZE, data });
+    if (ws.gameId) {
+        data.game = getGameForClient(ws.gameId);
     }
+
+    const pid = playerId as string;
+    if (playerId && data.game?.players.includes(pid)) {
+        data.game?.players.includes(pid);
+        ws.playerId = pid;
+    }
+
+    // Send initial packet
+    sendData({ ws, type: MessageType.BROADCAST_INITIALIZE, data });
 }
 
 export default function initialize(app: Application) {
@@ -90,8 +84,8 @@ export default function initialize(app: Application) {
         wss.clients.forEach((websocket: WebSocketType) => {
             const ws: WebSocket = websocket as WebSocket;
             if (!ws.isAlive) {
-                const idMsg = ws.accountId ? `for ${ws.accountId}` : '';
-                log(`Terminating websocket${idMsg}`);
+                const idMsg = getWebSocketLogId(ws);
+                log(`Terminating websocket for ${idMsg}`);
                 return ws.terminate();
             }
 
@@ -100,6 +94,9 @@ export default function initialize(app: Application) {
         });
     }, KEEP_ALIVE_INTERVAL);
 
+    // Interval to remove games that haven't had activity in a while.
+    setInterval(removeOldGames, REMOVE_GAME_INTERVAL);
+
     // Broadcast changes on an interval
     setInterval(() => {
         if (!isDirty()) {
@@ -107,32 +104,12 @@ export default function initialize(app: Application) {
             return;
         }
 
-        const data: ChangeData = {};
-
-        let updatedAccounts: AccountMap | null = null;
-        if (dirty.accounts.length) {
-            updatedAccounts = {};
-            dirty.accounts.forEach(a => {
-                const account = AccountDB.getAccount(a);
-                if (account && updatedAccounts) {
-                    updatedAccounts[account.id] = account;
-                }
-            });
-        }
-
-        if (dirty.accountsInfo) {
-            data.accountsInfo = AccountDB.listAccountsInfo();
-        }
-
         const dirtyGames = getDirtyGameData();
-        if (dirtyGames) {
-            data.games = dirtyGames;
-        }
-
-        // TODO: Save changes to disk
-
         setDirty(false);
-        broadcastChangeData({ wss, updatedAccounts, data });
+
+        if (dirtyGames) {
+            broadcastChangeData({ wss, dirtyGames });
+        }
     }, BROADCAST_INTERVAL);
 
     server.listen(WSS_PORT, () => {

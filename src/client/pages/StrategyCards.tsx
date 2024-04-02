@@ -1,19 +1,17 @@
-import React from 'react';
 import { Grid } from '@mui/material';
+import React from 'react';
 
 import { StrategyCard as StrategyCardType } from 'common/Game';
 
-import { useAppContext } from '../Context';
 import StrategyCard from '../components/StrategyCard';
+import useGameInfo from '../hooks/useGameInfo';
 
 function StrategyCards() {
-    const { state } = useAppContext();
-    const { strategyCards } = state;
-    const cards = strategyCards.filter(c => Boolean(c));
+    const { strategyCards } = useGameInfo();
 
     return (
         <Grid container direction="column">
-            {cards.map((card: StrategyCardType) => (
+            {strategyCards.map((card: StrategyCardType) => (
                 <StrategyCard key={card.initiative} card={card} hideButton />
             ))}
         </Grid>
