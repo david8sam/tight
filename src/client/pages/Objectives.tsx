@@ -1,7 +1,7 @@
 import { Grid, MenuItem, TextField, Toolbar } from '@mui/material';
 import React, { useMemo, useState } from 'react';
 
-import { Objective as ObjectiveType } from 'common/Game';
+import { Objective as ObjectiveType, isPlayerSpectator } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import GameInfoToolbar from '../components/GameInfoToolbar';
@@ -59,15 +59,14 @@ function StrategyCards() {
         });
     };
 
-    const isPlayer = factions.some(f => f.playerIds.includes(playerId));
-    const editable = isPlayer;
+    const isPlayer = !isPlayerSpectator(game, playerId);
 
     return (
         <Grid container direction="column">
             <GameInfoToolbar game={game} />
             <Grid item>
                 <PublicObjectives
-                    editable={editable}
+                    editable={isPlayer}
                     publicObjectives={game.publicObjectives}
                     onChange={onPublicObjectivesChange}
                     showFactions
@@ -98,7 +97,7 @@ function StrategyCards() {
                         {secretObjectives?.map(so => (
                             <Objective
                                 key={so.objective.id}
-                                editable={editable}
+                                editable={isPlayer}
                                 objective={so.objective}
                                 onChange={onSecretObjectiveChange}
                             />

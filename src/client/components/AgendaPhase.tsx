@@ -12,7 +12,7 @@ import {
     Typography,
 } from '@mui/material';
 
-import { calculateVictoryPoints } from 'common/Game';
+import { calculateVictoryPoints, isPlayerSpectator } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
@@ -22,7 +22,7 @@ import RefreshAllbutton from './RefreshAllButton';
 export default function AgendaPhase() {
     const { sendData } = useAppContext();
     const [endGameEarly, setEndGameEarly] = useState(false);
-    const { game, gameId } = useGameInfo();
+    const { game, gameId, playerId } = useGameInfo();
 
     if (!game) {
         return null;
@@ -61,7 +61,7 @@ export default function AgendaPhase() {
         numRounds,
     } = game;
 
-    const isSpectator = false;
+    const isSpectator = isPlayerSpectator(game, playerId);
     const canEndEarly = round < numRounds && !isSpectator;
 
     const factionsAtVp = factions.filter(f => calculateVictoryPoints(game, f.name) >= game.numVictoryPoints);

@@ -9,10 +9,11 @@ import Results from '../components/Results';
 import useGameInfo from '../hooks/useGameInfo';
 
 import { useAppContext } from '../Context';
+import { isPlayerSpectator } from 'common/Game';
 
 function GameResults() {
     const navigate = useNavigate();
-    const { game, gameId } = useGameInfo();
+    const { game, gameId, playerId } = useGameInfo();
     const { sendData } = useAppContext();
 
     useEffect(() => {
@@ -29,7 +30,7 @@ function GameResults() {
         return null;
     }
 
-    const isSpectator = false;
+    const isSpectator = isPlayerSpectator(game, playerId);
 
     return (
         <Grid container direction="column" justifyContent="center">

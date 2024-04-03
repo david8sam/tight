@@ -73,11 +73,11 @@ function renderCells(
         } else if (column === 'resources' || column === 'influence') {
             const modifier = planet.modifiers?.[column];
             if (typeof value === 'number' && modifier !== undefined && modifier !== 0) {
-                const modifierStr = modifier < 0 ? `(${value}-${-modifier})` : `(${value}+${modifier})`;
+                const baseValue = value;
                 value = (
                     <StyledDiv sx={{ display: 'flex' }}>
-                        <Typography color="green">{value + modifier}</Typography>
-                        <Typography sx={{ paddingLeft: 1, textWrap: 'nowrap' }}>{modifierStr}</Typography>
+                        <Typography color="green">{baseValue + modifier}</Typography>
+                        <Typography sx={{ paddingLeft: 1, textWrap: 'nowrap' }}>{baseValue}</Typography>
                     </StyledDiv>
                 );
             }

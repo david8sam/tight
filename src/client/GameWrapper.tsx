@@ -1,7 +1,7 @@
 import React, { ElementType, ReactElement, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useLocation, useNavigate, useParams } from 'react-router';
 
-import { CircularProgress, Grid, Skeleton } from '@mui/material';
+import { CircularProgress, Grid } from '@mui/material';
 
 import { MessageType } from 'common/message';
 
@@ -23,15 +23,12 @@ export default function GameWrapper(props: GameWrapperProps): ReactElement {
     const [strategyCardsLoaded, setStrategyCardsLoaded] = useState(false);
     const [gameLoaded, setGameLoaded] = useState(false);
 
-    const {
-        state: { strategyCards },
-        dispatch,
-        sendData,
-    } = useAppContext();
-    const { game, gameId, playerId } = useGameInfo();
+    const { dispatch, sendData } = useAppContext();
+    const { game, gameId, playerId, strategyCards } = useGameInfo();
 
     const navigate = useNavigate();
     const params = useParams();
+    const { pathname } = useLocation();
     const gameIdParam = params.gameId;
 
     const { Page } = props;
@@ -91,17 +88,21 @@ export default function GameWrapper(props: GameWrapperProps): ReactElement {
     }, [gameIdToLoad]);
 
     useEffect(() => {
-        if (game?.status.ended) {
-            navigate(`/${gameId}/results`);
-        } else if (game) {
+        if (game) {
             setGameLoaded(true);
+        }
+
+        if (pathname !== '/' && game?.status.ended) {
+            navigate(`/${gameId}/results`);
         }
     }, [game]);
 
     if (!strategyCardsLoaded || (gameIdToLoad && !gameLoaded)) {
-        <Grid sx={{ height: '100%' }} container justifyContent="center" alignItems="center" direction="column">
-            <CircularProgress size={'50vw'} />
-        </Grid>;
+        return (
+            <Grid sx={{ height: '100%' }} container justifyContent="center" alignItems="center" direction="column">
+                <CircularProgress size="50vw" />
+            </Grid>
+        );
     }
 
     return <Page />;

@@ -9,6 +9,7 @@ import {
     buildStrategyCardOwners,
     getFactionTurn,
     getNaalu,
+    isPlayerSpectator,
 } from 'common/Game';
 import { MessageType } from 'common/message';
 
@@ -29,13 +30,14 @@ function StrategyPhase() {
         api.strategyCardList().then(cards => setStrategryCards(cards));
     }, []);
 
-    const { game, gameId } = useGameInfo();
+    const { game, gameId, playerId } = useGameInfo();
     if (!game) {
         return null;
     }
 
     const factionName = getFactionTurn(game);
     const stratCardOwners = buildStrategyCardOwners(game);
+    const isSpectator = isPlayerSpectator(game, playerId);
 
     const onTakeCardClick = (e: MouseEvent<HTMLButtonElement>, strategyCard: StrategyCardIndex) => {
         e.stopPropagation();
@@ -48,7 +50,7 @@ function StrategyPhase() {
     };
 
     let naaluZeroSelect = null;
-    if (getNaalu(game)) {
+    if (getNaalu(game) && !isSpectator) {
         naaluZeroSelect = (
             <>
                 <Toolbar />
@@ -78,7 +80,7 @@ function StrategyPhase() {
                 let buttonLabel = cardOwner ? 'Return' : 'Take';
 
                 const ButtonProps: NonNullable<StrategyCardProps['ButtonProps']> = {
-                    disabled: factionName === 'END' && !Boolean(cardOwner),
+                    disabled: isSpectator || (factionName === 'END' && !Boolean(cardOwner)),
                     onClick: (e: MouseEvent<HTMLButtonElement>) => onTakeCardClick(e, initiative),
                 };
 
@@ -94,14 +96,16 @@ function StrategyPhase() {
             })}
             {naaluZeroSelect}
             <Toolbar />
-            <Accordion disableMargin>
-                <AccordionSummary disableMargin expandIcon={<ExpandMoreIcon />}>
-                    <Typography>Assign Cards</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                    <AssignStrategyCardTable />
-                </AccordionDetails>
-            </Accordion>
+            {!isSpectator && (
+                <Accordion disableMargin>
+                    <AccordionSummary disableMargin expandIcon={<ExpandMoreIcon />}>
+                        <Typography>Assign Cards</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <AssignStrategyCardTable />
+                    </AccordionDetails>
+                </Accordion>
+            )}
         </Grid>
     );
 }

@@ -5,7 +5,7 @@ import { makeStyles } from '@mui/styles';
 
 import classNames from 'classnames';
 
-import { GameFaction, StrategyCardIndex, getFactionOrder, getNextFaction } from 'common/Game';
+import { GameFaction, StrategyCardIndex, getFactionOrder, getNextFaction, isPlayerSpectator } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
@@ -53,7 +53,7 @@ const useStyles = makeStyles(theme => ({
 function ActionPhase() {
     const classes = useStyles();
     const { sendData } = useAppContext();
-    const { game, gameId } = useGameInfo();
+    const { game, gameId, playerId } = useGameInfo();
     if (!game) {
         return null;
     }
@@ -85,7 +85,7 @@ function ActionPhase() {
         }
     };
 
-    const isSpectator = false;
+    const isSpectator = isPlayerSpectator(game, playerId);
     const currentFactionIndex =
         turn === StrategyCardIndex.END ? factionOrder.length : factionOrder.findIndex(f => f.strategyCard === turn);
 

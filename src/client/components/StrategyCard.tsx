@@ -2,7 +2,6 @@ import React from 'react';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Button, ButtonProps, Grid, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 
 import { StrategyCard } from 'common/Game';
 import {
@@ -26,21 +25,14 @@ export interface StrategyCardProps {
     buttonLabel?: React.ReactNode;
 }
 
-const useStyles = makeStyles(theme => ({
-    button: {
-        marginRight: theme.spacing(1),
-    },
-}));
-
 function StrategyCard(props: StrategyCardProps) {
-    const classes = useStyles(props);
     const { card, owner, hideButton, ButtonProps, buttonLabel, PanelProps, SummaryProps, DetailsProps } = props;
     const { name, initiative, primary, secondary, notes, version } = card;
 
     let button = null;
     if (!hideButton) {
         button = (
-            <Button classes={{ root: classes.button }} color="primary" variant="contained" {...ButtonProps}>
+            <Button sx={{ marginRight: 1 }} color="primary" variant="contained" {...ButtonProps}>
                 {buttonLabel}
             </Button>
         );

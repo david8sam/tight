@@ -2,6 +2,7 @@ import React from 'react';
 
 import { Button, Toolbar, Typography } from '@mui/material';
 
+import { isPlayerSpectator } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
@@ -9,9 +10,9 @@ import useGameInfo from '../hooks/useGameInfo';
 
 export default function RefreshAllbutton() {
     const { sendData } = useAppContext();
-    const { game, gameId } = useGameInfo();
+    const { game, gameId, playerId } = useGameInfo();
 
-    if (!game) {
+    if (!game || isPlayerSpectator(game, playerId)) {
         return null;
     }
 

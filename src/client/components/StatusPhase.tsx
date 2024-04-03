@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, Grid, Toolbar } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import { GameFaction, getFactionOrder } from 'common/Game';
+import { GameFaction, getFactionOrder, isPlayerSpectator } from 'common/Game';
 
 import useGameInfo from '../hooks/useGameInfo';
 import FactionHeader from './FactionHeader';
@@ -26,7 +26,7 @@ const useStyles = makeStyles(theme => ({
 
 function StatusPhase() {
     const classes = useStyles();
-    const { game } = useGameInfo();
+    const { game, playerId } = useGameInfo();
     if (!game) {
         return null;
     }
@@ -41,7 +41,7 @@ function StatusPhase() {
                         <FactionHeader faction={faction} />
                     </CardContent>
                     <CardContent classes={{ root: classes.cardContent }}>
-                        <VictoryPoints factionName={faction.name} />
+                        <VictoryPoints factionName={faction.name} disabled={isPlayerSpectator(game, playerId)} />
                     </CardContent>
                 </Card>
             ))}

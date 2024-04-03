@@ -22,7 +22,15 @@ import {
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import { Game, GameClientData, GameStatus, getFactionTurn, Phase, StrategyCardIndex } from 'common/Game';
+import {
+    Game,
+    GameClientData,
+    GameStatus,
+    getFactionTurn,
+    isPlayerSpectator,
+    Phase,
+    StrategyCardIndex,
+} from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { Accordion, AccordionDetails, AccordionSummary } from '../components/Accordion';
@@ -177,7 +185,7 @@ function Game() {
         return <PlayerSetup />;
     }
 
-    const isSpectator = false;
+    const isSpectator = isPlayerSpectator(game, playerId);
 
     const { round, phase } = statusState;
     const canBack = round > 1 || (round === 1 && phase > Phase.STRATEGY);
@@ -335,6 +343,7 @@ function Game() {
                 <Toolbar className={classes.speakerToolbar}>
                     <SpeakerSelect fullWidth disabled={isSpectator} />
                 </Toolbar>
+                <Toolbar />
             </Grid>
         </>
     );

@@ -1,7 +1,7 @@
 import { Button, CircularProgress, Grid, Toolbar } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 
-import { GameClientData } from 'common/Game';
+import { GameClientData, isPlayerSpectator } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
@@ -32,7 +32,7 @@ function canStart(game: GameClientData): boolean {
 
 function PlayerSetup() {
     const { sendData } = useAppContext();
-    const { gameId, game } = useGameInfo();
+    const { gameId, game, playerId } = useGameInfo();
 
     const [pending, setPending] = useState(false);
 
@@ -64,7 +64,7 @@ function PlayerSetup() {
         sendData({ type: start ? MessageType.START_GAME : MessageType.STOP_GAME, data: { gameId } });
     };
 
-    const isSpectator = false;
+    const isSpectator = isPlayerSpectator(game, playerId);
 
     return (
         <>

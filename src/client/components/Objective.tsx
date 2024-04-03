@@ -14,9 +14,6 @@ import EditObjectiveDialog from './EditObjectiveDialog';
 import FactionAvatar from './FactionAvatar';
 
 const useStyles = makeStyles(theme => ({
-    disabledText: {
-        color: theme.palette.text.primary,
-    },
     summaryContent: {
         alignItems: 'center',
     },
@@ -131,8 +128,7 @@ export default function Objective(props: ObjectiveProps) {
                 </AccordionSummary>
                 <AccordionDetails>
                     <TextField
-                        InputProps={{ classes: { disabled: classes.disabledText } }}
-                        disabled
+                        InputProps={{ readOnly: true }}
                         fullWidth
                         multiline
                         variant="outlined"

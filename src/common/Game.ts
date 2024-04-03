@@ -89,12 +89,6 @@ export interface GamePlanet {
 
 export type GamePlanetMap = Record<string, GamePlanet>;
 
-export enum GameJoinStatus {
-    PLAYER,
-    ADMIN,
-    SPECTATOR,
-}
-
 export const NO_FACTION = 'no faction';
 
 export interface GamePlayer {
@@ -317,4 +311,12 @@ export function generateBlankPublicObjectives(count: number = 10): Objective[] {
     return Array(count)
         .fill('')
         .map((_dummy, index) => generateBlankObjective(index + 1));
+}
+
+export function isPlayerSpectator(game: Game | GameClientData, playerId: string | null) {
+    if (!playerId) {
+        return true;
+    }
+
+    return !game.factions.some(f => f.playerIds.includes(playerId));
 }

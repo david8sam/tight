@@ -9,9 +9,6 @@ const useStyles = makeStyles(theme => ({
     primary: {},
     secondary: { marginTop: theme.spacing(2) },
     notes: { marginTop: theme.spacing(2) },
-    disabledText: {
-        color: theme.palette.text.primary,
-    },
 }));
 
 interface StrategyCardDetailsProps {
@@ -30,8 +27,7 @@ function StrategyCardDetails(props: StrategyCardDetailsProps) {
         <Grid container direction="column">
             <TextField
                 classes={{ root: classes.primary }}
-                InputProps={{ classes: { disabled: classes.disabledText } }}
-                disabled
+                InputProps={{ readOnly: true }}
                 fullWidth
                 multiline
                 variant="outlined"
@@ -40,8 +36,7 @@ function StrategyCardDetails(props: StrategyCardDetailsProps) {
             />
             <TextField
                 classes={{ root: classes.secondary }}
-                InputProps={{ classes: { disabled: classes.disabledText } }}
-                disabled
+                InputProps={{ readOnly: true }}
                 fullWidth
                 multiline
                 variant="outlined"
@@ -51,8 +46,7 @@ function StrategyCardDetails(props: StrategyCardDetailsProps) {
             {notes && (
                 <TextField
                     classes={{ root: classes.secondary }}
-                    InputProps={{ classes: { disabled: classes.disabledText } }}
-                    disabled
+                    InputProps={{ readOnly: true }}
                     fullWidth
                     multiline
                     variant="outlined"
