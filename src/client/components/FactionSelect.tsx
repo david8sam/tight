@@ -18,10 +18,6 @@ function FactionSelect(props: FactionSelectProps) {
     const { factionNames, onChange, order = -1, hideNone = false, disabled = false, ...TextFieldProps } = props;
     const { game } = useGameInfo();
 
-    if (!game) {
-        return null;
-    }
-
     const onSelectChange: TextFieldPropsType['onChange'] = e => {
         onChange(e.target.value);
     };
@@ -34,7 +30,7 @@ function FactionSelect(props: FactionSelectProps) {
         };
 
         let factionName = randomize();
-        while (game.factions.find(f => f.name === factionName)) {
+        while (game?.factions.find(f => f.name === factionName)) {
             factionName = randomize();
         }
 
@@ -42,7 +38,7 @@ function FactionSelect(props: FactionSelectProps) {
     };
 
     let errorMessage = '';
-    if (order > -1) {
+    if (game && order > -1) {
         const currentFaction = game.factions[order];
         if (currentFaction.name === FACTION_NONE) {
             errorMessage = 'Select a faction';
