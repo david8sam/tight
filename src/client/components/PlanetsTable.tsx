@@ -77,7 +77,7 @@ function renderCells(
                 value = (
                     <StyledDiv sx={{ display: 'flex' }}>
                         <Typography color="green">{baseValue + modifier}</Typography>
-                        <Typography sx={{ paddingLeft: 1, textWrap: 'nowrap' }}>{baseValue}</Typography>
+                        <Typography sx={{ paddingLeft: 1, textWrap: 'nowrap' }}>{`(${baseValue})`}</Typography>
                     </StyledDiv>
                 );
             }

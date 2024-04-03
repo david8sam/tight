@@ -7,12 +7,12 @@ import { WSS_PORT } from 'common/constants.js';
 import { MessageType, PartialData } from 'common/message.js';
 import uuidv4 from 'common/uuidv4.js';
 
-import { getGame, getGameForClient } from './database/game.js';
+import { getGameForClient } from './database/game.js';
 
-import { isDirty, setDirty, getDirtyGameData, removeOldGames } from './dirty.js';
+import { WebSocket, WebSocketServer, broadcastChangeData, getWebSocketLogId, sendData } from './WebSocket.js';
+import { getDirtyGameData, isDirty, removeOldGames, setDirty } from './dirty.js';
 import handleMessage from './handleMessage.js';
 import log from './log.js';
-import { WebSocket, WebSocketServer, sendData, broadcastChangeData, getWebSocketLogId } from './WebSocket.js';
 
 const KEEP_ALIVE_INTERVAL = 10000; // ms
 const BROADCAST_INTERVAL = 300; // ms
