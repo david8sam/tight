@@ -135,7 +135,9 @@ type RowData =
           name: 'trait';
           Icon: typeof Trait;
           value: Traits | '';
-          modifier: Traits[];
+          // undefined means use default planet value
+          // [] means None
+          modifier: Traits[] | undefined;
       };
 
 export interface PlayerNameDialogProps {
@@ -158,7 +160,7 @@ export default function EditPlanetDialog(props: PlayerNameDialogProps) {
                 name,
                 Icon: Trait,
                 value: planet[name] || '',
-                modifier: modifiers[name] || [],
+                modifier: modifiers[name] || undefined,
             };
         }
 
@@ -188,7 +190,7 @@ export default function EditPlanetDialog(props: PlayerNameDialogProps) {
 
     const onTraitsChange: TextFieldProps['onChange'] = e => {
         setModifiers(prev => {
-            let newTraits = e.target.value?.length ? (e.target.value as unknown as Traits[]) : undefined;
+            let newTraits = e.target.value?.length ? (e.target.value as unknown as Traits[]) : [];
 
             // Remove modifier if selected trait is the same as the planet's trait.
             if (newTraits?.length === 1 && newTraits[0] === planet.trait) {
@@ -205,7 +207,7 @@ export default function EditPlanetDialog(props: PlayerNameDialogProps) {
             return [];
         }
 
-        if (rowData.modifier?.length) {
+        if (rowData.modifier) {
             return rowData.modifier;
         }
 
