@@ -242,7 +242,7 @@ function Planets() {
                         sx={{ marginTop: 2 }}
                         fullWidth
                         select
-                        label={factionNameOptions.length ? 'My Planets' : 'No Factions'}
+                        label={factionNameOptions.length ? 'My Factions' : 'No Factions'}
                         value={factionName}
                         onChange={e => setFactionName(e.target.value)}
                     >

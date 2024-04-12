@@ -35,6 +35,7 @@ export default function GameWrapper(props: GameWrapperProps): ReactElement {
 
     const sessionGameId = sessionStorage.getItem('gameId');
     const gameIdToLoad = gameIdParam || sessionGameId;
+    const isGamePage = gameIdToLoad ? pathname.toLowerCase().includes(gameIdToLoad.toLowerCase()) : false;
 
     useEffect(() => {
         if (strategyCards.length !== 0) {
@@ -85,17 +86,17 @@ export default function GameWrapper(props: GameWrapperProps): ReactElement {
                 navigate(`/${gameIdToLoad}/deleted`);
             }
         });
-    }, [gameIdToLoad]);
+    }, [gameIdToLoad, gameId, playerId]);
 
     useEffect(() => {
         if (game) {
             setGameLoaded(true);
         }
 
-        if (pathname !== '/' && game?.status.ended) {
+        if (isGamePage && game?.status.ended) {
             navigate(`/${gameId}/results`);
         }
-    }, [game]);
+    }, [game, isGamePage]);
 
     if (!strategyCardsLoaded || (gameIdToLoad && !gameLoaded)) {
         return (

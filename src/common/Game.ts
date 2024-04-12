@@ -83,7 +83,7 @@ export interface GamePlanet {
         propulsion?: number; // blue
         cybernetic?: number; // yellow
 
-        trait?: Traits;
+        trait?: Traits[];
     };
 }
 

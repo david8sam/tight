@@ -45,7 +45,7 @@ export default function PlanetNameCell(props: PlanetNameCellProps) {
     const { planet, owner, hideAbility } = props;
     const { name, home, legendary } = planet;
 
-    const trait = getPlanetValue(planet, 'trait');
+    const traits = getPlanetValue(planet, 'trait');
     const biotic = getPlanetValue(planet, 'biotic') ?? 0;
     const warfare = getPlanetValue(planet, 'warfare') ?? 0;
     const propulsion = getPlanetValue(planet, 'propulsion') ?? 0;
@@ -74,19 +74,22 @@ export default function PlanetNameCell(props: PlanetNameCellProps) {
         icons.push(<Cybernetic key={`cybernetic${c}`} {...iconProps} />);
     }
 
-    switch (trait) {
-        case Traits.CULTURAL:
-            icons.push(<Cultural key="cultural" {...iconProps} />);
-            break;
-        case Traits.HAZARDOUS:
-            icons.push(<Hazardous key="hazardous" {...iconProps} />);
-            break;
-        case Traits.INDUSTRIAL:
-            icons.push(<Industrial key="industrial" {...iconProps} />);
-            break;
-        default:
-            break;
-    }
+    const traitsArray = Array.isArray(traits) ? traits : [traits];
+    traitsArray.forEach(trait => {
+        switch (trait) {
+            case Traits.CULTURAL:
+                icons.push(<Cultural key="cultural" {...iconProps} />);
+                break;
+            case Traits.HAZARDOUS:
+                icons.push(<Hazardous key="hazardous" {...iconProps} />);
+                break;
+            case Traits.INDUSTRIAL:
+                icons.push(<Industrial key="industrial" {...iconProps} />);
+                break;
+            default:
+                break;
+        }
+    });
 
     if (legendary) {
         icons.push(<Legendary key="legendary" {...iconProps} title={planet.legendary} />);

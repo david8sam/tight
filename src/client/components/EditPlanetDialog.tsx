@@ -9,6 +9,7 @@ import {
     Button,
     Dialog,
     DialogContent,
+    Grid,
     IconButton,
     IconButtonProps,
     MenuItem,
@@ -18,6 +19,7 @@ import {
     TableCell,
     TableRow,
     TextField,
+    TextFieldProps,
     Theme,
     Toolbar,
     Tooltip,
@@ -133,7 +135,7 @@ type RowData =
           name: 'trait';
           Icon: typeof Trait;
           value: Traits | '';
-          modifier: Traits | '';
+          modifier: Traits[];
       };
 
 export interface PlayerNameDialogProps {
@@ -144,11 +146,11 @@ export interface PlayerNameDialogProps {
 
 export default function EditPlanetDialog(props: PlayerNameDialogProps) {
     const { open, onClose, planet } = props;
-    const { name: planetId, modifiers: planetAdditions = {} } = planet;
+    const { name: planetId, modifiers: planetModifiers = {} } = planet;
     const { sendData } = useAppContext();
     const { gameId } = useGameInfo();
 
-    const [modifiers, setAdditions] = useState(planetAdditions);
+    const [modifiers, setModifiers] = useState(planetModifiers);
 
     const rows: RowData[] = ROW_NAMES.map(name => {
         if (name === 'trait') {
@@ -156,7 +158,7 @@ export default function EditPlanetDialog(props: PlayerNameDialogProps) {
                 name,
                 Icon: Trait,
                 value: planet[name] || '',
-                modifier: modifiers[name] || '',
+                modifier: modifiers[name] || [],
             };
         }
 
@@ -180,9 +182,36 @@ export default function EditPlanetDialog(props: PlayerNameDialogProps) {
     };
     const plusOne = (value: number | undefined) => (value !== undefined ? value + 1 : 1);
     const onMinusOneClick = (name: RowNameExcludeTrait) =>
-        setAdditions(prev => ({ ...prev, [name]: minusOne(prev[name], name) }));
+        setModifiers(prev => ({ ...prev, [name]: minusOne(prev[name], name) }));
     const onPlusOneClick = (name: RowNameExcludeTrait) =>
-        setAdditions(prev => ({ ...prev, [name]: plusOne(prev[name]) }));
+        setModifiers(prev => ({ ...prev, [name]: plusOne(prev[name]) }));
+
+    const onTraitsChange: TextFieldProps['onChange'] = e => {
+        setModifiers(prev => {
+            let newTraits = e.target.value?.length ? (e.target.value as unknown as Traits[]) : undefined;
+
+            // Remove modifier if selected trait is the same as the planet's trait.
+            if (newTraits?.length === 1 && newTraits[0] === planet.trait) {
+                const newModifers = { ...prev };
+                delete newModifers.trait;
+            }
+
+            return { ...prev, trait: newTraits };
+        });
+    };
+
+    const getPlanetTraits = (rowData: RowData) => {
+        if (rowData.name !== 'trait') {
+            return [];
+        }
+
+        if (rowData.modifier?.length) {
+            return rowData.modifier;
+        }
+
+        return planet.trait ? [planet.trait] : [];
+    };
+
     return (
         <Dialog open={open} fullScreen>
             <AppBar sx={styles.appBar}>
@@ -194,7 +223,7 @@ export default function EditPlanetDialog(props: PlayerNameDialogProps) {
                     </Tooltip>
                 </Toolbar>
                 <Typography variant="h6" sx={styles.title}>
-                    Edit Planet
+                    {`Edit ${planetId}`}
                 </Typography>
                 <Button autoFocus color="inherit" onClick={onSave}>
                     Save
@@ -207,7 +236,7 @@ export default function EditPlanetDialog(props: PlayerNameDialogProps) {
                             <TableRow key={r.name}>
                                 <TableCell>{r.name === 'trait' ? <r.Icon trait={r.value} /> : <r.Icon />}</TableCell>
                                 <TableCell sx={{ paddingLeft: 0, textWrap: 'nowrap' }}>
-                                    <Typography>{r.name === 'trait' ? r.value || 'NO TRAIT' : r.name}</Typography>
+                                    <Typography>{r.name === 'trait' ? 'Planet Trait(s)' : r.name}</Typography>
                                 </TableCell>
                                 <TableCell>
                                     {r.name === 'trait' ? <ArrowIcon /> : <Typography>{`${r.value}+`}</Typography>}
@@ -215,23 +244,30 @@ export default function EditPlanetDialog(props: PlayerNameDialogProps) {
                                 <TableCell sx={{ padding: 1 }}>
                                     {r.name === 'trait' ? (
                                         <TextField
-                                            label="Planet Trait"
                                             fullWidth
-                                            select
-                                            value={r.modifier}
+                                            label="Planet Trait(s)"
                                             InputLabelProps={{ shrink: true }}
+                                            onChange={onTraitsChange}
+                                            select
+                                            value={getPlanetTraits(r)}
+                                            variant="outlined"
                                             SelectProps={{
+                                                multiple: true,
                                                 displayEmpty: true,
-                                                renderValue: value => (value as string) || 'NO CHANGE',
+                                                renderValue: value => {
+                                                    const valueArray = value as string[];
+                                                    return valueArray?.length ? (
+                                                        <Grid container>
+                                                            {valueArray.map(v => (
+                                                                <Trait trait={v as Traits} key={v} />
+                                                            ))}
+                                                        </Grid>
+                                                    ) : (
+                                                        'NONE'
+                                                    );
+                                                },
                                             }}
-                                            onChange={e =>
-                                                setAdditions(prev => ({
-                                                    ...prev,
-                                                    [r.name]: (e.target.value as Traits) || undefined,
-                                                }))
-                                            }
                                         >
-                                            <MenuItem value={''}>NO CHANGE</MenuItem>
                                             {Object.entries(Traits).map(([key, value]) => (
                                                 <MenuItem key={key} value={value}>
                                                     <r.Icon trait={value} />
@@ -278,7 +314,7 @@ export default function EditPlanetDialog(props: PlayerNameDialogProps) {
                         color="primary"
                         variant="contained"
                         size="large"
-                        onClick={() => setAdditions({})}
+                        onClick={() => setModifiers({})}
                     >
                         Reset
                     </Button>
