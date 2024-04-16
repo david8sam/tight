@@ -288,7 +288,7 @@ const Planets: readonly Planet[] = [
         influence: 2,
     },
     {
-        name: 'Zhobat',
+        name: 'Zohbat',
         trait: Traits.HAZARDOUS,
         resources: 3,
         influence: 1,
