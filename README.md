@@ -8,6 +8,8 @@ Twilight Imperium Game Helper and Tracker
 
 `npm i`
 
+Note: Add `--legacy-peer-deps` flag if dealing with dependency version conflicts
+
 ### 2. Build server and client
 
 `npm run build`
