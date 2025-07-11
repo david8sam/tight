@@ -7,6 +7,7 @@ import {
     GameMap,
     GamePlanet,
     GamePlanetMap,
+    GamePlayerMap,
     generateBlankObjective,
     Phase,
     SECRET_OBJECTIVE_IDS,
@@ -16,7 +17,7 @@ import {
 import { Planet } from 'common/Planet.js';
 
 import { Planets } from './planet/index.js';
-import { GameCreateParams } from 'common/api.js';
+import { GameCreateParams, GameRestartParams } from 'common/api.js';
 import { generateGameCode } from '../utils/game.js';
 
 // Map of all games
@@ -32,17 +33,8 @@ const DEFAULT_GAME_PLANETS: Readonly<GamePlanetMap> = Planets.reduce((result: Ga
     return result;
 }, {});
 
-export function createGame({
-    version = Version.TI4_1,
-    numPlayers = 8,
-    numRounds = 10,
-    numVictoryPoints = 10,
-    publicObjectives = [],
-}: GameCreateParams): Game {
-    let id = generateGameCode();
-    while (_games[id]) {
-        id = generateGameCode();
-    }
+export function initializeGame(options: Required<GameCreateParams> & { id: string; players?: GamePlayerMap }) {
+    const { id, players, numPlayers, numRounds, numVictoryPoints, version, publicObjectives } = options;
 
     let factions: GameFaction[] = [];
     for (let i = 0; i < numPlayers; ++i) {
@@ -52,7 +44,7 @@ export function createGame({
     const game: Game = {
         id,
         date: Date.now(),
-        players: {},
+        players: players ?? {},
         numPlayers,
         numRounds,
         numVictoryPoints,
@@ -76,6 +68,23 @@ export function createGame({
         started: false,
     };
 
+    return game;
+}
+
+export function createGame({
+    version = Version.TI4_1,
+    numPlayers = 8,
+    numRounds = 10,
+    numVictoryPoints = 10,
+    publicObjectives = [],
+}: GameCreateParams): Game {
+    let id = generateGameCode();
+    while (_games[id]) {
+        id = generateGameCode();
+    }
+
+    const game = initializeGame({ id, version, numPlayers, numRounds, numVictoryPoints, publicObjectives });
+
     if (_games) {
         _games[game.id] = game;
     } else {
@@ -83,6 +92,30 @@ export function createGame({
     }
 
     return game;
+}
+
+export function restartGame(options: GameRestartParams): Game | null {
+    const { id, ...otherGameOptions } = options;
+    const game = _games[id];
+    if (!game) {
+        return null;
+    }
+
+    const { version, players, numPlayers, numRounds, numVictoryPoints, publicObjectives } = game;
+    const combinedOptions = {
+        id,
+        players,
+        version,
+        numPlayers,
+        numRounds,
+        numVictoryPoints,
+        publicObjectives,
+        ...otherGameOptions,
+    };
+    const newGame = initializeGame(combinedOptions);
+    _games[id] = newGame;
+
+    return newGame;
 }
 
 export function deleteGame(id: string): boolean {

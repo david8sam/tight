@@ -15,6 +15,7 @@ import {
     TableSortLabel,
     TableSortLabelProps,
     TextField,
+    Toolbar,
     Tooltip,
     Typography,
     styled,
@@ -359,6 +360,8 @@ function PlanetsTable(props: PlanetsTableProps) {
                             </TableRow>
                         );
                     })}
+                    {/* Extra padding to work around bug where the last row can't be selected on some phones */}
+                    <Toolbar />
                 </TableBody>
             </Table>
             {editPlanet ? <EditPlanetDialog open onClose={() => setEditPlanet(null)} planet={editPlanet} /> : null}

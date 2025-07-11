@@ -9,6 +9,8 @@ import {
     GameDeleteResult,
     GameListPlayersParams,
     GameListPlayersResult,
+    GameRestartParams,
+    GameRestartResult,
     GameValidateParams,
     GameValidateResult,
     NoParams,
@@ -73,6 +75,7 @@ function createPost<Params extends Record<string, unknown> = Record<string, unkn
 
 export default {
     gameCreate: createPost<GameCreateParams, GameCreateResult>('/game/create'),
+    gameRestart: createPost<GameRestartParams, GameRestartResult>('/game/restart'),
     gameDelete: createPost<GameDeleteParams, GameDeleteResult>('/game/delete'),
     gameValidate: createGet<GameValidateParams, GameValidateResult>('/game/validate'),
     gameListPlayers: createGet<GameListPlayersParams, GameListPlayersResult>('/game/list-players'),

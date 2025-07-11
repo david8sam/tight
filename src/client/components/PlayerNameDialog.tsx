@@ -125,7 +125,7 @@ export default function PlayerNameDialog(props: PlayerNameDialogProps) {
                 </Toolbar>
             </AppBar>
             <DialogContent dividers>
-                <GameInfoToolbar game={game} sx={{ marginBottom: 1 }} />
+                <GameInfoToolbar game={game} sx={{ marginBottom: 1 }} hideRestartButton />
                 <Grid container direction="column" justifyContent="center" alignItems="center" spacing={2}>
                     <Grid item sx={styles.gridItem}>
                         <FormControl fullWidth variant="standard">

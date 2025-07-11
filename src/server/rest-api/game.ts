@@ -7,18 +7,35 @@ import {
     GameDeleteResult,
     GameListPlayersParams,
     GameListPlayersResult,
+    GameRestartParams,
+    GameRestartResult,
     GameValidateParams,
     GameValidateResult,
 } from 'common/api.js';
 
-import { createGame, deleteGame, getGame } from '../database/game.js';
+import { createGame, deleteGame, getGame, restartGame } from '../database/game.js';
 
+import { markGameDirty } from '../dirty.js';
 import { PostRequest, GetRequest } from './types.js';
 
 export default function initializeGameOperations(router: Router) {
     router.post('/game/create', (req: PostRequest<GameCreateParams>, res: Response<GameCreateResult>): void => {
         const game = createGame(req.body);
         res.status(200).json(game.id);
+    });
+
+    router.post('/game/restart', (req: PostRequest<GameRestartParams>, res: Response<GameRestartResult>): void => {
+        const game = restartGame(req.body);
+        if (game) {
+            // respond with success
+            res.status(200).json(game.id);
+
+            // broadcast new game state to all clients
+            markGameDirty(game.id, { created: true });
+        } else {
+            // respond with invalid params error
+            res.status(422);
+        }
     });
 
     router.post('/game/delete', (req: PostRequest<GameDeleteParams>, res: Response<GameDeleteResult>): void => {

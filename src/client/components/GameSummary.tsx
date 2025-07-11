@@ -22,15 +22,17 @@ export default function GameSummary(): ReactElement | null {
     }, {} as Record<string, number>);
 
     // Sort by VP
-    const leaderboard = [...factions].sort((a, b) => {
-        const result = vpMap[b.name] - vpMap[a.name];
-        return result === 0 ? a.strategyCard - b.strategyCard : result;
-    });
+    const leaderboard = game.status.started
+        ? [...factions].sort((a, b) => {
+              const result = vpMap[b.name] - vpMap[a.name];
+              return result === 0 ? a.strategyCard - b.strategyCard : result;
+          })
+        : [];
 
     return (
         <Box display="flex" flexDirection="column" width="100%">
             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography>{`Rounds: ${numRounds}`}</Typography>
+                <Typography sx={{ marginRight: 2 }}>{`Rounds: ${numRounds}`}</Typography>
                 <Typography>{`VP to win: ${numVictoryPoints}`}</Typography>
             </Box>
             {game.status.started && (

@@ -15,13 +15,14 @@ import PlayerSelect from './PlayerSelect';
 interface FactionsSetupProps {
     disableFactionSelect?: boolean;
     disableColorNone?: boolean;
+    disableReordering?: boolean;
 }
 
 function FactionsSetup(props: FactionsSetupProps) {
     const { sendData } = useAppContext();
     const { game, gameId } = useGameInfo();
     const { factions, players } = game || {};
-    const { disableFactionSelect, disableColorNone } = props;
+    const { disableFactionSelect, disableColorNone, disableReordering } = props;
 
     const [factionNames, setFactionNames] = useState<string[]>([]);
     useEffect(() => {
@@ -76,6 +77,7 @@ function FactionsSetup(props: FactionsSetupProps) {
                                 value={i}
                                 onChange={onFactionReorder}
                                 inputProps={{ sx: { paddingLeft: '4px' } }}
+                                disabled={disableReordering}
                             >
                                 {playerOrderOptions.map(o => (
                                     <MenuItem key={o.value} value={o.value}>

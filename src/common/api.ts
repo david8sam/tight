@@ -11,11 +11,12 @@ export type GameCreateParams = {
     numVictoryPoints?: number;
     publicObjectives?: Objective[];
 };
-
 export type GameCreateResult = string;
 
-export type GameDeleteParams = { id: string };
+export type GameRestartParams = { id: string } & GameCreateParams;
+export type GameRestartResult = string;
 
+export type GameDeleteParams = { id: string };
 export type GameDeleteResult = boolean;
 
 export type GameValidateParams = { gameId: string };

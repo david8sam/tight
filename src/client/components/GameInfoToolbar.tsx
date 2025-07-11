@@ -1,30 +1,34 @@
 import React, { useRef, useState } from 'react';
 
 import InfoIcon from '@mui/icons-material/Info';
-import { Grid, IconButton, IconButtonProps, Popover, Toolbar, ToolbarProps, Tooltip, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import {
+    Button,
+    Grid,
+    IconButton,
+    IconButtonProps,
+    Popover,
+    Toolbar,
+    ToolbarProps,
+    Tooltip,
+    Typography,
+} from '@mui/material';
 
 import { GameClientData } from 'common/Game';
 
 import GameSummary from './GameSummary';
-
-const useStyle = makeStyles(theme => ({
-    infoPaper: {
-        padding: theme.spacing(2),
-        borderRadius: theme.spacing(),
-    },
-}));
+import RestartGameDialog from './RestartGameDialog';
 
 export interface GameInfoToolbarProps extends ToolbarProps {
     game: GameClientData;
     onInfoClick?: IconButtonProps['onClick'];
+    hideRestartButton?: boolean;
 }
 
 export default function GameInfoToolbar(props: GameInfoToolbarProps) {
-    const classes = useStyle(props);
-
-    const { game, onInfoClick, ...toolbarProps } = props;
+    const { game, onInfoClick, hideRestartButton, ...toolbarProps } = props;
     const { status } = game;
+
+    const [restartDialogOpen, setRestartDialogOpen] = useState(false);
 
     const [infoOpen, setInfoOpen] = useState(false);
     const infoRef = useRef<HTMLButtonElement>(null);
@@ -36,6 +40,16 @@ export default function GameInfoToolbar(props: GameInfoToolbarProps) {
         if (onInfoClick) {
             onInfoClick(e);
         }
+    };
+
+    const onRestartGameClick = () => {
+        setRestartDialogOpen(true);
+        setInfoOpen(false);
+    };
+
+    const onRestartGameDialogClose = () => {
+        setRestartDialogOpen(false);
+        setInfoOpen(false);
     };
 
     return (
@@ -72,7 +86,18 @@ export default function GameInfoToolbar(props: GameInfoToolbarProps) {
                 slotProps={{ paper: { sx: { padding: 2, borderRadius: 1 } } }}
             >
                 <GameSummary />
+                {hideRestartButton ? null : (
+                    <>
+                        <Toolbar />
+                        <Button fullWidth color="error" variant="contained" onClick={onRestartGameClick}>
+                            Restart Game...
+                        </Button>
+                    </>
+                )}
             </Popover>
+            {hideRestartButton ? null : (
+                <RestartGameDialog open={restartDialogOpen} onClose={onRestartGameDialogClose} />
+            )}
         </Toolbar>
     );
 }

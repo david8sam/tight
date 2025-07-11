@@ -83,7 +83,7 @@ function Results() {
             {factionOrder.map((faction: GameFaction) => (
                 <Card key={faction.name} variant="outlined" classes={{ root: classes.card }}>
                     <CardContent classes={{ root: classes.cardContent }}>
-                        <FactionHeader faction={faction} hideInitiative />
+                        <FactionHeader faction={faction} />
                     </CardContent>
                     <CardContent classes={{ root: classes.cardContent }}>
                         <VictoryPoints
