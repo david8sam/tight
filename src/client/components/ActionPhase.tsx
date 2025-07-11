@@ -1,3 +1,4 @@
+import confetti from 'canvas-confetti';
 import React from 'react';
 
 import { Button, Card, CardContent, Grid, Toolbar } from '@mui/material';
@@ -67,6 +68,13 @@ function ActionPhase() {
     };
 
     const onPassClick = (factionName: string, passed: boolean) => {
+        if (passed) {
+            confetti({
+                particleCount: 500,
+                spread: 70,
+                origin: { y: 0.6 },
+            });
+        }
         sendData({ type: MessageType.PASS_TURN, data: { gameId, factionName, passed } });
     };
 
