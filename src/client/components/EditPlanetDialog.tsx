@@ -13,6 +13,7 @@ import {
     IconButton,
     IconButtonProps,
     MenuItem,
+    Switch,
     SxProps,
     Table,
     TableBody,
@@ -43,6 +44,7 @@ import {
     Cultural,
     Industrial,
     Hazardous,
+    DMZPlanet,
 } from './PlanetIcons';
 import { Traits } from 'common/Planet';
 
@@ -66,9 +68,18 @@ const styles: Record<string, SxProps<Theme>> = {
 };
 
 type RowName = keyof NonNullable<PlanetData['modifiers']>;
-type RowNameExcludeTrait = Exclude<RowName, 'trait'>;
-const ROW_NAMES: RowName[] = ['resources', 'influence', 'biotic', 'cybernetic', 'propulsion', 'warfare', 'trait'];
-const ROW_ICON_MAP: Record<RowNameExcludeTrait, typeof Resources> = {
+type RowNameExclude = Exclude<RowName, 'trait' | 'DMZ'>;
+const ROW_NAMES: RowName[] = [
+    'resources',
+    'influence',
+    'biotic',
+    'cybernetic',
+    'propulsion',
+    'warfare',
+    'trait',
+    'DMZ',
+];
+const ROW_ICON_MAP: Record<RowNameExclude, typeof Resources> = {
     resources: Resources,
     influence: Influence,
     biotic: Biotic,
@@ -77,7 +88,7 @@ const ROW_ICON_MAP: Record<RowNameExcludeTrait, typeof Resources> = {
     warfare: Warfare,
 };
 
-function MinusOne(props: { name: RowNameExcludeTrait; onClick: (name: RowNameExcludeTrait) => void }) {
+function MinusOne(props: { name: RowNameExclude; onClick: (name: RowNameExclude) => void }) {
     const { name, onClick } = props;
     const onClickHandler: IconButtonProps['onClick'] = e => {
         e.stopPropagation();
@@ -94,7 +105,7 @@ function MinusOne(props: { name: RowNameExcludeTrait; onClick: (name: RowNameExc
     );
 }
 
-function PlusOne(props: { name: RowNameExcludeTrait; onClick: (name: RowNameExcludeTrait) => void }) {
+function PlusOne(props: { name: RowNameExclude; onClick: (name: RowNameExclude) => void }) {
     const { name, onClick } = props;
     const onClickHandler: IconButtonProps['onClick'] = e => {
         e.stopPropagation();
@@ -126,7 +137,7 @@ function Trait(props: { trait: Traits | '' }) {
 
 type RowData =
     | {
-          name: RowNameExcludeTrait;
+          name: RowNameExclude;
           Icon: (typeof ROW_ICON_MAP)[keyof typeof ROW_ICON_MAP];
           value: number; // base value
           modifier: number;
@@ -138,6 +149,12 @@ type RowData =
           // undefined means use default planet value
           // [] means None
           modifier: Traits[] | undefined;
+      }
+    | {
+          name: 'DMZ';
+          Icon: typeof DMZPlanet;
+          value: boolean;
+          modifier: boolean;
       };
 
 export interface PlayerNameDialogProps {
@@ -162,6 +179,13 @@ export default function EditPlanetDialog(props: PlayerNameDialogProps) {
                 value: planet[name] || '',
                 modifier: modifiers[name] || undefined,
             };
+        } else if (name === 'DMZ') {
+            return {
+                name,
+                Icon: DMZPlanet,
+                value: planet[name] || false,
+                modifier: modifiers[name] || false,
+            };
         }
 
         return {
@@ -177,16 +201,15 @@ export default function EditPlanetDialog(props: PlayerNameDialogProps) {
         onClose?.();
     };
 
-    const minusOne = (value: number | undefined, name: RowNameExcludeTrait) => {
+    const minusOne = (value: number | undefined, name: RowNameExclude) => {
         const base = planet[name] ?? 0;
         const newModifier = (value ?? 0) - 1;
         return base + newModifier >= 0 ? newModifier : -base;
     };
     const plusOne = (value: number | undefined) => (value !== undefined ? value + 1 : 1);
-    const onMinusOneClick = (name: RowNameExcludeTrait) =>
+    const onMinusOneClick = (name: RowNameExclude) =>
         setModifiers(prev => ({ ...prev, [name]: minusOne(prev[name], name) }));
-    const onPlusOneClick = (name: RowNameExcludeTrait) =>
-        setModifiers(prev => ({ ...prev, [name]: plusOne(prev[name]) }));
+    const onPlusOneClick = (name: RowNameExclude) => setModifiers(prev => ({ ...prev, [name]: plusOne(prev[name]) }));
 
     const onTraitsChange: TextFieldProps['onChange'] = e => {
         setModifiers(prev => {
@@ -234,66 +257,87 @@ export default function EditPlanetDialog(props: PlayerNameDialogProps) {
             <DialogContent dividers sx={{ padding: 0 }}>
                 <Table size="small">
                     <TableBody>
-                        {rows.map(r => (
-                            <TableRow key={r.name}>
-                                <TableCell>{r.name === 'trait' ? <r.Icon trait={r.value} /> : <r.Icon />}</TableCell>
-                                <TableCell sx={{ paddingLeft: 0, textWrap: 'nowrap' }}>
-                                    <Typography>{r.name === 'trait' ? 'Planet Trait(s)' : r.name}</Typography>
-                                </TableCell>
-                                <TableCell>
-                                    {r.name === 'trait' ? <ArrowIcon /> : <Typography>{`${r.value}+`}</Typography>}
-                                </TableCell>
-                                <TableCell sx={{ padding: 1 }}>
-                                    {r.name === 'trait' ? (
-                                        <TextField
-                                            fullWidth
-                                            label="Planet Trait(s)"
-                                            InputLabelProps={{ shrink: true }}
-                                            onChange={onTraitsChange}
-                                            select
-                                            value={getPlanetTraits(r)}
-                                            variant="outlined"
-                                            SelectProps={{
-                                                multiple: true,
-                                                displayEmpty: true,
-                                                renderValue: value => {
-                                                    const valueArray = value as string[];
-                                                    return valueArray?.length ? (
-                                                        <Grid container>
-                                                            {valueArray.map(v => (
-                                                                <Trait trait={v as Traits} key={v} />
-                                                            ))}
-                                                        </Grid>
-                                                    ) : (
-                                                        'NONE'
-                                                    );
-                                                },
-                                            }}
-                                        >
-                                            {Object.entries(Traits).map(([key, value]) => (
-                                                <MenuItem key={key} value={value}>
-                                                    <r.Icon trait={value} />
-                                                    <Typography sx={{ paddingLeft: 1 }}>{key}</Typography>
-                                                </MenuItem>
-                                            ))}
-                                        </TextField>
-                                    ) : (
-                                        <TextField
-                                            fullWidth
-                                            type="number"
-                                            value={r.modifier}
-                                            inputProps={{ sx: { textAlign: 'center' } }}
-                                            InputProps={{
-                                                sx: { padding: 0 },
-                                                readOnly: true,
-                                                startAdornment: <MinusOne name={r.name} onClick={onMinusOneClick} />,
-                                                endAdornment: <PlusOne name={r.name} onClick={onPlusOneClick} />,
-                                            }}
-                                        />
-                                    )}
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                        {rows.map(r => {
+                            const { name, value, Icon } = r;
+                            let iconField = null;
+                            let nameField: string = name;
+                            let valueField = null;
+                            let editField = null;
+                            if (name === 'trait') {
+                                iconField = <Icon trait={r.value} />;
+                                nameField = 'Planet Trait(s)';
+                                valueField = <ArrowIcon />;
+                                editField = (
+                                    <TextField
+                                        fullWidth
+                                        label={nameField}
+                                        InputLabelProps={{ shrink: true }}
+                                        onChange={onTraitsChange}
+                                        select
+                                        value={getPlanetTraits(r)}
+                                        variant="outlined"
+                                        SelectProps={{
+                                            multiple: true,
+                                            displayEmpty: true,
+                                            renderValue: value => {
+                                                const valueArray = value as string[];
+                                                return valueArray?.length ? (
+                                                    <Grid container>
+                                                        {valueArray.map(v => (
+                                                            <Trait trait={v as Traits} key={v} />
+                                                        ))}
+                                                    </Grid>
+                                                ) : (
+                                                    'NONE'
+                                                );
+                                            },
+                                        }}
+                                    >
+                                        {Object.entries(Traits).map(([key, value]) => (
+                                            <MenuItem key={key} value={value}>
+                                                <r.Icon trait={value} />
+                                                <Typography sx={{ paddingLeft: 1 }}>{key}</Typography>
+                                            </MenuItem>
+                                        ))}
+                                    </TextField>
+                                );
+                            } else if (name === 'DMZ') {
+                                iconField = <Icon />;
+                                editField = (
+                                    <Switch
+                                        value={r.value}
+                                        onChange={e => setModifiers(prev => ({ ...prev, DMZ: e.target.checked }))}
+                                    />
+                                );
+                            } else {
+                                iconField = <Icon />;
+                                valueField = <Typography>{`${r.value}+`}</Typography>;
+                                editField = (
+                                    <TextField
+                                        fullWidth
+                                        type="number"
+                                        value={r.modifier}
+                                        inputProps={{ sx: { textAlign: 'center' } }}
+                                        InputProps={{
+                                            sx: { padding: 0 },
+                                            readOnly: true,
+                                            startAdornment: <MinusOne name={r.name} onClick={onMinusOneClick} />,
+                                            endAdornment: <PlusOne name={r.name} onClick={onPlusOneClick} />,
+                                        }}
+                                    />
+                                );
+                            }
+                            return (
+                                <TableRow key={name}>
+                                    <TableCell>{iconField}</TableCell>
+                                    <TableCell sx={{ paddingLeft: 0, textWrap: 'nowrap' }}>
+                                        <Typography>{nameField}</Typography>
+                                    </TableCell>
+                                    <TableCell>{valueField}</TableCell>
+                                    <TableCell sx={{ padding: 1 }}>{editField}</TableCell>
+                                </TableRow>
+                            );
+                        })}
                     </TableBody>
                 </Table>
                 <Toolbar />

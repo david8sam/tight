@@ -11,6 +11,7 @@ export interface Planet {
     influence: number;
     home?: string; // faction name
     legendary?: string; // ability
+    DMZ?: boolean;
 
     // Tech bonuses
     biotic?: number; // green

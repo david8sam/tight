@@ -15,6 +15,7 @@ import {
     Biotic,
     Cultural,
     Cybernetic,
+    DMZPlanet,
     Hazardous,
     HomePlanet,
     Industrial,
@@ -43,7 +44,7 @@ export default function PlanetNameCell(props: PlanetNameCellProps) {
     const { sendData } = useAppContext();
     const { gameId } = useGameInfo();
     const { planet, owner, hideAbility } = props;
-    const { name, home, legendary } = planet;
+    const { name, home, legendary, modifiers } = planet;
 
     const traits = getPlanetValue(planet, 'trait');
     const biotic = getPlanetValue(planet, 'biotic') ?? 0;
@@ -93,6 +94,10 @@ export default function PlanetNameCell(props: PlanetNameCellProps) {
 
     if (legendary) {
         icons.push(<Legendary key="legendary" {...iconProps} title={planet.legendary} />);
+    }
+
+    if (modifiers?.DMZ) {
+        icons.push(<DMZPlanet key="DMZ" {...iconProps} />);
     }
 
     const onExhaustChange = (e: ChangeEvent<HTMLDivElement>, exhaust: boolean) => {

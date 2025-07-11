@@ -1,6 +1,7 @@
 import React, { MouseEvent, useEffect, useRef, useState } from 'react';
 
 import LanguageIcon from '@mui/icons-material/Language';
+import BlockIcon from '@mui/icons-material/Block';
 import { Avatar, AvatarProps, Popover, Typography, colors, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
@@ -75,7 +76,7 @@ function PlanetIcon(props: PlanetIconProps) {
                     horizontal: 'center',
                 }}
                 onClick={e => e.stopPropagation()}
-                PaperProps={{ className: classes.popoverPaper }}
+                slotProps={{ paper: { className: classes.popoverPaper } }}
             >
                 <Typography className={classes.title}>{title}</Typography>
             </Popover>
@@ -208,6 +209,18 @@ export function Industrial(props: PlanetIconProps) {
     return (
         <PlanetIcon title="Industrial" color={color} backgroundColor={backgroundColor} {...props} src={src}>
             D
+        </PlanetIcon>
+    );
+}
+
+export function DMZPlanet(props: PlanetIconProps) {
+    const theme = useTheme();
+    const color = colors.red[500];
+    const backgroundColor = theme.palette.getContrastText(color);
+    const description = `DMZ - Player's units cannot land, be produced, or be placed on this planet`;
+    return (
+        <PlanetIcon title={description} color={color} backgroundColor={backgroundColor} {...props}>
+            <BlockIcon />
         </PlanetIcon>
     );
 }

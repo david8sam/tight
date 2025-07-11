@@ -85,6 +85,7 @@ export interface GamePlanet {
         cybernetic?: number; // yellow
 
         trait?: Traits[];
+        DMZ?: boolean;
     };
 }
 

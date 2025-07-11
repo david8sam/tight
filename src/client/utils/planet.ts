@@ -20,6 +20,8 @@ export function getPlanetValue<P extends PlanetTypeWithModifiers, K extends keyo
         const modifier = planet.modifiers[key as keyof typeof planet.modifiers];
         if (isTraitsModifier(key as string, modifier)) {
             (value as Traits[]) = modifier;
+        } else if (key === 'DMZ' && typeof value === 'boolean') {
+            (value as boolean) = modifier as boolean;
         } else if (modifier !== undefined && (typeof value === 'number' || typeof value === 'undefined')) {
             (value as number) = (value ?? 0) + (modifier as number);
         }
