@@ -22,6 +22,25 @@ import { Accordion, AccordionDetails, AccordionSummary } from './Accordion';
 import NaaluZeroSelect from './NaaluZeroSelect';
 import StrategyCard, { StrategyCardProps } from './StrategyCard';
 
+function getCardOwnwer(
+    card: StrategyCardIndex,
+    stratCardOwners: string[],
+): { owner: string | undefined; card: StrategyCardIndex } {
+    let owner = stratCardOwners[card];
+    let actualCard = card;
+
+    // Special case for 2 versions of diplomacy.
+    if (card === StrategyCardIndex.DIPLOMACY && !owner && stratCardOwners[StrategyCardIndex.DIPLOMACY_2]) {
+        owner = stratCardOwners[StrategyCardIndex.DIPLOMACY_2];
+        actualCard = StrategyCardIndex.DIPLOMACY_2;
+    } else if (card === StrategyCardIndex.DIPLOMACY_2 && !owner && stratCardOwners[StrategyCardIndex.DIPLOMACY]) {
+        owner = stratCardOwners[StrategyCardIndex.DIPLOMACY];
+        actualCard = StrategyCardIndex.DIPLOMACY;
+    }
+
+    return { owner, card: actualCard };
+}
+
 function StrategyPhase() {
     const { sendData } = useAppContext();
     const [strategyCards, setStrategryCards] = useState<StrategyCardType[]>([]);
@@ -42,11 +61,11 @@ function StrategyPhase() {
     const onTakeCardClick = (e: MouseEvent<HTMLButtonElement>, strategyCard: StrategyCardIndex) => {
         e.stopPropagation();
 
-        const owner = stratCardOwners[strategyCard];
+        const { owner, card } = getCardOwnwer(strategyCard, stratCardOwners);
         const take = !Boolean(owner);
         const type = take ? MessageType.TAKE_STRATEGY_CARD : MessageType.RETURN_STRATEGY_CARD;
 
-        sendData({ type, data: { gameId, factionName: take ? factionName : owner, strategyCard } });
+        sendData({ type, data: { gameId, factionName: take ? factionName : owner, strategyCard: card } });
     };
 
     let naaluZeroSelect = null;
@@ -76,7 +95,7 @@ function StrategyPhase() {
                 }
 
                 const { initiative, name } = card;
-                const cardOwner = stratCardOwners[initiative];
+                const { owner: cardOwner } = getCardOwnwer(initiative, stratCardOwners);
                 let buttonLabel = cardOwner ? 'Return' : 'Take';
 
                 const ButtonProps: NonNullable<StrategyCardProps['ButtonProps']> = {

@@ -18,6 +18,7 @@ import { MessageType } from 'common/message';
 import { useAppContext } from '../Context';
 import useGameInfo from '../hooks/useGameInfo';
 import RefreshAllbutton from './RefreshAllButton';
+import GameSummary from './GameSummary';
 
 export default function AgendaPhase() {
     const { sendData } = useAppContext();
@@ -100,6 +101,13 @@ export default function AgendaPhase() {
                 <>
                     <Toolbar />
                     <Divider orientation="horizontal" />
+                    <Toolbar sx={{ display: 'flex', flexDirection: 'column' }}>
+                        <Typography display="flex" justifyContent="center" width="100%" variant="h5">
+                            Summary
+                        </Typography>
+                        <GameSummary />
+                    </Toolbar>
+                    <Divider orientation="horizontal" sx={{ marginTop: 1 }} />
                     <Toolbar />
                     <Toolbar>
                         <Grid container direction="column" spacing={2}>

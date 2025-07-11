@@ -66,6 +66,8 @@ function StrategyCards() {
             <GameInfoToolbar game={game} />
             <Grid item>
                 <PublicObjectives
+                    creatable={isPlayer}
+                    deletable={isPlayer}
                     editable={isPlayer}
                     publicObjectives={game.publicObjectives}
                     onChange={onPublicObjectivesChange}

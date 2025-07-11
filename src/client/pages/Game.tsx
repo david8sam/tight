@@ -7,6 +7,7 @@ import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import {
     AppBar,
+    Box,
     Button,
     CircularProgress,
     Grid,
@@ -46,6 +47,7 @@ import { getFactionColors } from '../utils/faction';
 
 import ActionPhase from '../components/ActionPhase';
 import AgendaPhase from '../components/AgendaPhase';
+import FactionHeader from '../components/FactionHeader';
 import StatusPhase from '../components/StatusPhase';
 import StrategyPhase from '../components/StrategyPhase';
 
@@ -329,15 +331,25 @@ function Game() {
                         </Grid>
                     </AccordionDetails>
                 </Accordion>
-                <Toolbar>
-                    <TextWithTooltip
-                        text={`Turn: ${factionTurn}`}
-                        className={classes.factionTurnText}
-                        style={currentFactionTurnStyle}
-                    />
+                <Toolbar sx={{ display: 'flex', width: '100%', height: '100%', padding: 1 }}>
+                    {currentFactionTurn && currentFactionTurn.strategyCard ? (
+                        <FactionHeader
+                            faction={currentFactionTurn}
+                            sx={{ justifyContent: 'center', padding: '4px' }}
+                            prefixText={'Turn: '}
+                            hideInitiativeNumber
+                        />
+                    ) : (
+                        <TextWithTooltip
+                            text={`Turn: ${factionTurn}`}
+                            className={classes.factionTurnText}
+                            style={currentFactionTurnStyle}
+                        />
+                    )}
                 </Toolbar>
             </AppBar>
             <Grid container direction="column">
+                <Box sx={{ marginBottom: 1 }} />
                 {getPhaseContents(phase)}
                 <Toolbar />
                 <Toolbar className={classes.speakerToolbar}>

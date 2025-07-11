@@ -98,6 +98,13 @@ export default function handleMessage({ wss, ws, message }: handleMessageParams)
             break;
         }
 
+        case MessageType.GAME_REORDER_FACTION: {
+            if (GameDB.reorderFaction({ gameId, ...otherData })) {
+                markGameDirty(gameId, { factions: true, status: true });
+            }
+            break;
+        }
+
         case MessageType.START_GAME:
             // Initialize players with their home planets.
             game.factions.forEach(faction => {

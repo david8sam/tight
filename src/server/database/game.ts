@@ -153,6 +153,23 @@ export function updateFaction(options: {
     return true;
 }
 
+export function reorderFaction(options: { gameId: string; index: number; newIndex: number }): boolean {
+    const { gameId, index, newIndex } = options;
+    const game = getGame(gameId);
+    if (!game) {
+        return false;
+    }
+
+    const factionToReorder = game.factions[index];
+    game.factions.splice(index, 1);
+    game.factions.splice(newIndex, 0, factionToReorder);
+
+    game.status.pickOrder.splice(index, 1);
+    game.status.pickOrder.splice(newIndex, 0, factionToReorder.name);
+
+    return true;
+}
+
 export function getPlanetsArray(gameId: string, name?: string | string[]): GamePlanet[] {
     const game = getGame(gameId);
     if (!game) {

@@ -28,6 +28,7 @@ export interface StrategyCard {
     secondary: string[];
     version: Version; // or just expansion?
     notes?: string[];
+    color: string;
 }
 
 export type StrategyCardsType = readonly Readonly<StrategyCard>[];

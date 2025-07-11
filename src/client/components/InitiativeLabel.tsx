@@ -20,6 +20,7 @@ const useStyles = makeStyles(theme => ({
 export interface InitiativeLabelProps {
     card: StrategyCard;
     infoIconColor: string;
+    hideInitiativeNumber?: boolean;
 }
 
 function InitiativeLabel(props: InitiativeLabelProps) {
@@ -28,7 +29,7 @@ function InitiativeLabel(props: InitiativeLabelProps) {
     const [openedCard, setOpenedCard] = useState(StrategyCardIndex.NONE);
     const [cardPopoverAnchor, setCardPopoverAnchor] = useState<HTMLButtonElement | null>(null);
 
-    const { card, infoIconColor } = props;
+    const { card, infoIconColor, hideInitiativeNumber } = props;
     const { initiative, name, primary, secondary, version, notes } = card;
 
     const onCardInfoClick = (e: MouseEvent<HTMLButtonElement>, card: StrategyCard) => {
@@ -43,7 +44,7 @@ function InitiativeLabel(props: InitiativeLabelProps) {
 
     return (
         <Grid classes={{ root: classes.infoIconGrid }} container justifyContent="flex-start" alignItems="center">
-            <Typography>{`${initiative} - ${name}`}</Typography>
+            <Typography>{hideInitiativeNumber ? name : `${initiative} - ${name}`}</Typography>
             <Tooltip title="Strategy Card Details">
                 <IconButton classes={{ root: classes.infoIcon }} onClick={e => onCardInfoClick(e, card)} size="large">
                     <InfoIcon style={{ color: infoIconColor }} />

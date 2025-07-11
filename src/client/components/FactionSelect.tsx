@@ -69,6 +69,7 @@ function FactionSelect(props: FactionSelectProps) {
                     </Tooltip>
                 ),
             }}
+            inputProps={{ sx: { paddingRight: `0px !important` } }}
             disabled={disabled}
             {...TextFieldProps}
         >

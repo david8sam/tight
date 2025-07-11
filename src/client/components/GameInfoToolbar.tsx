@@ -1,41 +1,17 @@
 import React, { useRef, useState } from 'react';
 
 import InfoIcon from '@mui/icons-material/Info';
-import {
-    Divider,
-    Grid,
-    IconButton,
-    IconButtonProps,
-    Popover,
-    Toolbar,
-    ToolbarProps,
-    Tooltip,
-    Typography,
-    useTheme,
-} from '@mui/material';
+import { Grid, IconButton, IconButtonProps, Popover, Toolbar, ToolbarProps, Tooltip, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import { calculateVictoryPoints, GameClientData } from 'common/Game';
+import { GameClientData } from 'common/Game';
 
-import { getFactionColors } from '../utils/faction';
-import TextWithTooltip from './TextWithTooltip';
+import GameSummary from './GameSummary';
 
 const useStyle = makeStyles(theme => ({
     infoPaper: {
         padding: theme.spacing(2),
         borderRadius: theme.spacing(),
-    },
-    divider: {
-        margin: `${theme.spacing()} 0px`,
-    },
-    faction: {
-        padding: theme.spacing(),
-    },
-    turn: {
-        width: '30%',
-    },
-    round: {
-        width: '30%',
     },
 }));
 
@@ -45,22 +21,10 @@ export interface GameInfoToolbarProps extends ToolbarProps {
 }
 
 export default function GameInfoToolbar(props: GameInfoToolbarProps) {
-    const theme = useTheme();
     const classes = useStyle(props);
 
     const { game, onInfoClick, ...toolbarProps } = props;
-    const { factions, numRounds, numVictoryPoints, status } = game;
-
-    const vpMap = factions.reduce((r, f) => {
-        r[f.name] = calculateVictoryPoints(game, f.name);
-        return r;
-    }, {} as Record<string, number>);
-
-    // Sort by VP
-    const leaderboard = [...factions].sort((a, b) => {
-        const result = vpMap[b.name] - vpMap[a.name];
-        return result === 0 ? a.strategyCard - b.strategyCard : result;
-    });
+    const { status } = game;
 
     const [infoOpen, setInfoOpen] = useState(false);
     const infoRef = useRef<HTMLButtonElement>(null);
@@ -88,7 +52,7 @@ export default function GameInfoToolbar(props: GameInfoToolbarProps) {
                     </Grid>
                 </Grid>
                 {started && (
-                    <Grid item className={classes.round}>
+                    <Grid item sx={{ width: '30%' }}>
                         <Typography variant="h6" align="right">{`Round: ${round}`}</Typography>
                     </Grid>
                 )}
@@ -105,26 +69,9 @@ export default function GameInfoToolbar(props: GameInfoToolbarProps) {
                     vertical: 'top',
                     horizontal: 'center',
                 }}
-                slotProps={{ paper: { className: classes.infoPaper } }}
+                slotProps={{ paper: { sx: { padding: 2, borderRadius: 1 } } }}
             >
-                <Grid container direction="column">
-                    <Typography>{`Rounds: ${numRounds}`}</Typography>
-                    <Typography>{`VP to win: ${numVictoryPoints}`}</Typography>
-                    {game.status.started && (
-                        <>
-                            <Divider className={classes.divider} />
-                            {leaderboard.map(f => (
-                                <TextWithTooltip
-                                    key={f.name}
-                                    text={`${f.name}: ${vpMap[f.name]} VP `}
-                                    title={f.name}
-                                    style={getFactionColors(theme, f)}
-                                    className={classes.faction}
-                                />
-                            ))}
-                        </>
-                    )}
-                </Grid>
+                <GameSummary />
             </Popover>
         </Toolbar>
     );

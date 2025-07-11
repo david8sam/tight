@@ -28,7 +28,7 @@ const useStyles = makeStyles(theme => ({
         },
     },
     doneBackground: {
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.5)',
     },
     toolbarGutters: {
         padding: theme.spacing(1),

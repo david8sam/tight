@@ -19,7 +19,7 @@ export type FactionColorKey = keyof typeof FactionColor;
 export type FactionColorValue = (typeof FactionColor)[FactionColorKey];
 
 export function getFactionColors(theme: Theme, faction: GameFaction): { color: string; backgroundColor: string } {
-    const playerColor = faction.color || '#fff';
+    const playerColor = faction.color === 'None' ? '#fff' : faction.color || '#fff';
     const color = theme.palette.getContrastText(playerColor);
     const backgroundColor = playerColor;
     return { color, backgroundColor };

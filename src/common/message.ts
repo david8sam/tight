@@ -47,6 +47,9 @@ export enum MessageType {
     // data: { gameId, factionName }
     GAME_UPDATE_FACTION,
 
+    // data: { gameId, index, newIndex }
+    GAME_REORDER_FACTION,
+
     // Player actions
     // data: { gameId, playerId }
 

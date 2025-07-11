@@ -1,65 +1,63 @@
 import React from 'react';
-
-import { Grid, Typography, useTheme } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { Grid, SxProps, Typography, useTheme } from '@mui/material';
 
 import { GameFaction, formatFactionName } from 'common/Game';
 
 import useGameInfo from '../hooks/useGameInfo';
-
 import InitiativeLabel from './InitiativeLabel';
-
-const useStyles = makeStyles(theme => ({
-    card: {
-        border: `${theme.spacing(0.25)} solid ${theme.palette.text.primary}`,
-        margin: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
-        position: 'relative',
-    },
-    cardContent: {
-        padding: 0,
-        '&:last-child': {
-            paddingBottom: 0,
-        },
-    },
-    factionInfo: {
-        padding: `0px ${theme.spacing(1)}`,
-    },
-}));
 
 export interface FactionHeaderProps {
     faction: GameFaction;
     hideInitiative?: boolean;
+    sx?: SxProps;
+    prefixText?: string;
+    hideInitiativeNumber?: boolean;
 }
 
 function FactionHeader(props: FactionHeaderProps) {
     const theme = useTheme();
-    const classes = useStyles(props);
     const { game, strategyCards } = useGameInfo();
 
     if (!game) {
         return null;
     }
 
-    const { faction, hideInitiative = false } = props;
+    const { faction, hideInitiative = false, sx, prefixText, hideInitiativeNumber } = props;
     const { strategyCard } = faction;
 
     const card = hideInitiative ? null : strategyCards.find(s => s.initiative === strategyCard);
-    const factionColor = faction.color || '#fff';
-    const color = theme.palette.getContrastText(factionColor);
-    const backgroundColor = factionColor;
+    const cardBackgroundColor = card?.color || '#fff';
+    const cardColor = theme.palette.getContrastText(cardBackgroundColor);
+    const factionBackgroundColor = faction.color;
+    const factionColor = theme.palette.getContrastText(factionBackgroundColor);
 
     const title = formatFactionName(game, faction.name);
+    const factionStyle = card
+        ? {
+              color: factionColor,
+              backgroundColor: factionBackgroundColor,
+              padding: '0px 4px',
+              margin: '4px 0px',
+              border: `1px solid ${factionColor}`,
+          }
+        : undefined;
 
     return (
         <Grid
             container
             justifyContent="space-between"
             alignItems="center"
-            classes={{ root: classes.factionInfo }}
-            style={{ color, backgroundColor }}
+            style={{
+                color: card ? cardColor : factionColor,
+                backgroundColor: card ? cardBackgroundColor : factionBackgroundColor,
+            }}
+            sx={{ padding: `0px ${theme.spacing(1)}`, ...sx }}
         >
-            {card ? <InitiativeLabel card={card} infoIconColor={color} /> : null}
-            <Typography>{title}</Typography>
+            {prefixText ? <Typography sx={{ whiteSpace: 'pre' }}>{prefixText}</Typography> : null}
+            {card ? (
+                <InitiativeLabel card={card} infoIconColor={cardColor} hideInitiativeNumber={hideInitiativeNumber} />
+            ) : null}
+            <Typography sx={factionStyle}>{title}</Typography>
         </Grid>
     );
 }
