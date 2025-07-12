@@ -97,16 +97,16 @@ export default function AgendaPhase() {
             </Toolbar>
             <Toolbar />
             <RefreshAllbutton />
+            <Divider orientation="horizontal" />
+            <Toolbar sx={{ display: 'flex', flexDirection: 'column' }}>
+                <Typography display="flex" justifyContent="center" width="100%" variant="h5">
+                    Summary
+                </Typography>
+                <GameSummary />
+            </Toolbar>
             {canEndEarly && (
                 <>
                     <Toolbar />
-                    <Divider orientation="horizontal" />
-                    <Toolbar sx={{ display: 'flex', flexDirection: 'column' }}>
-                        <Typography display="flex" justifyContent="center" width="100%" variant="h5">
-                            Summary
-                        </Typography>
-                        <GameSummary />
-                    </Toolbar>
                     <Divider orientation="horizontal" sx={{ marginTop: 1 }} />
                     <Toolbar />
                     <Toolbar>
