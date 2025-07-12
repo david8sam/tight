@@ -28,7 +28,8 @@ function Header() {
     const appTheme = useTheme();
     const [drawerOpen, setDrawerOpen] = useState(false);
 
-    const { pathname } = useLocation();
+    useLocation();
+    const { pathname } = window.location;
     const isHome = pathname === '/';
 
     const {

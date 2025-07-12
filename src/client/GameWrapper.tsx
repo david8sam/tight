@@ -28,7 +28,9 @@ export default function GameWrapper(props: GameWrapperProps): ReactElement {
 
     const navigate = useNavigate();
     const params = useParams();
-    const { pathname } = useLocation();
+    useLocation();
+
+    const { pathname } = window.location;
     const gameIdParam = params.gameId;
 
     const { Page } = props;
@@ -89,12 +91,11 @@ export default function GameWrapper(props: GameWrapperProps): ReactElement {
     }, [gameIdToLoad, gameId, playerId]);
 
     useEffect(() => {
-        if (game) {
+        if (gameId && gameId === gameIdParam) {
             setGameLoaded(true);
-        }
-
-        if (isGamePage && game?.status.ended) {
-            navigate(`/${gameId}/results`);
+            if (isGamePage && game?.status.ended) {
+                navigate(`/${gameId}/results`);
+            }
         }
     }, [game, isGamePage]);
 
