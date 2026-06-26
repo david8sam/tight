@@ -15,13 +15,13 @@ import {
     Toolbar,
     Typography,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import { generateBlankObjective, generateBlankPublicObjectives, Objective as ObjectiveType } from 'common/Game';
 import EditObjectiveDialog from './EditObjectiveDialog';
 import Objective from './Objective';
 
-const useStyle = makeStyles(theme => ({
+const useStyle = makeStyles()((theme) => ({
     poToolbar: {
         width: '100%',
     },
@@ -40,7 +40,7 @@ export interface PublicObjectivesProps {
 }
 
 function PublicObjectives(props: PublicObjectivesProps) {
-    const classes = useStyle(props);
+    const { classes } = useStyle();
     const {
         creatable = false,
         deletable = false,
@@ -119,7 +119,7 @@ function PublicObjectives(props: PublicObjectivesProps) {
                 </Toolbar>
                 <Toolbar className={classes.poToolbar}>
                     <Grid container justifyContent="space-between" alignItems="center" spacing={1}>
-                        <Grid item>
+                        <Grid>
                             <Button
                                 className={classes.collapseButton}
                                 size="small"
@@ -141,7 +141,7 @@ function PublicObjectives(props: PublicObjectivesProps) {
                             </Button>
                         </Grid>
                         {(creatable || deletable) && (
-                            <Grid item>
+                            <Grid>
                                 <IconButton ref={optionsRef} onClick={() => setOptionsOpen(true)} size="large">
                                     <MoreVertIcon />
                                 </IconButton>

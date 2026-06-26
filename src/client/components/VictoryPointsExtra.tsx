@@ -3,14 +3,14 @@ import React from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import MinusIcon from '@mui/icons-material/Remove';
 import { Grid, IconButton, Tooltip, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
 import useGameInfo from '../hooks/useGameInfo';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()((theme) => ({
     grid: {
         width: 'auto',
     },
@@ -25,7 +25,7 @@ interface VictoryPointsExtraProps {
 }
 
 function VictoryPointsExtra(props: VictoryPointsExtraProps) {
-    const classes = useStyles(props);
+    const { classes } = useStyles();
     const { factionName, disabled = false } = props;
     const { sendData } = useAppContext();
     const { game, gameId } = useGameInfo();
@@ -42,7 +42,7 @@ function VictoryPointsExtra(props: VictoryPointsExtraProps) {
     };
 
     return (
-        <Grid container justifyContent="center" alignItems="center" classes={{ root: classes.grid }}>
+        <Grid container justifyContent="center" alignItems="center" className={classes.grid}>
             <Tooltip title="Minus VP">
                 <span>
                     <IconButton
@@ -60,7 +60,7 @@ function VictoryPointsExtra(props: VictoryPointsExtraProps) {
                 direction="column"
                 justifyContent="center"
                 alignItems="center"
-                classes={{ root: classes.grid }}
+                className={classes.grid}
             >
                 <Typography>{`${victoryPoints} VP`}</Typography>
             </Grid>

@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Card, CardContent, Divider, Grid, Toolbar, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import { GameFaction, calculateVictoryPoints, isPlayerSpectator } from 'common/Game';
 
@@ -11,7 +11,7 @@ import VictoryPoints from './VictoryPoints';
 
 const EMOJI_PARTY_POPPER = String.fromCodePoint(0x1f389);
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()((theme) => ({
     card: {
         border: `${theme.spacing(0.25)} solid ${theme.palette.text.primary}`,
         margin: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
@@ -36,7 +36,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 function Results() {
-    const classes = useStyles();
+    const { classes } = useStyles();
     const { game, playerId } = useGameInfo();
     if (!game) {
         return null;

@@ -103,7 +103,7 @@ export default function JoinGameDialog(props: JoinGameDialogProps) {
             </AppBar>
             <DialogContent dividers>
                 <Grid container direction="column" justifyContent="center" alignItems="center" spacing={2}>
-                    <Grid item sx={styles.gridItem}>
+                    <Grid sx={styles.gridItem}>
                         <FormControl fullWidth variant="standard">
                             <TextField
                                 color="primary"
@@ -116,7 +116,7 @@ export default function JoinGameDialog(props: JoinGameDialogProps) {
                             />
                         </FormControl>
                     </Grid>
-                    <Grid item sx={styles.gridItem}>
+                    <Grid sx={styles.gridItem}>
                         <FormControl fullWidth variant="standard">
                             <Button
                                 disabled={gameId.length !== 4 || joining}
@@ -132,7 +132,7 @@ export default function JoinGameDialog(props: JoinGameDialogProps) {
                     </Grid>
                     {currentGameId && canRejoin && (
                         <>
-                            <Grid item sx={styles.gridItem}>
+                            <Grid sx={styles.gridItem}>
                                 <FormControl fullWidth variant="standard">
                                     <Button
                                         disabled={joining}
@@ -146,7 +146,7 @@ export default function JoinGameDialog(props: JoinGameDialogProps) {
                                     </Button>
                                 </FormControl>
                             </Grid>
-                            <Grid item sx={styles.gridItem}>
+                            <Grid sx={styles.gridItem}>
                                 <FormControl fullWidth variant="standard">
                                     <Button
                                         disabled={joining}

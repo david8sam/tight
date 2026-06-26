@@ -4,7 +4,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import SyncIcon from '@mui/icons-material/Sync';
 import SyncDisabledIcon from '@mui/icons-material/SyncDisabled';
 import { AppBar, Divider, IconButton, MenuItem, TextField, Toolbar, Tooltip, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import { debounce, isEmpty } from 'lodash-es';
 
@@ -25,7 +25,7 @@ import { getPlanetValue } from '../utils/planet';
 import { useAppContext } from '../Context';
 import { HEADER_HEIGHT } from '../constants';
 
-const useStyle = makeStyles(() => ({
+const useStyle = makeStyles()(() => ({
     appBar: {
         top: HEADER_HEIGHT,
     },
@@ -66,7 +66,7 @@ function syncPlanetsFunc({ sendData, refreshed, exhausted, gameId, factionName, 
 }
 
 function Planets() {
-    const classes = useStyle();
+    const { classes } = useStyle();
     const { sendData } = useAppContext();
     const { game, gameId, playerId } = useGameInfo();
     const [planetMap, setPlanetMap] = useState<PlanetMap>({});

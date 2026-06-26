@@ -4,8 +4,8 @@ import { Message, MessageType } from 'common/message';
 
 import { Action, ActionType, State } from '../reducer';
 
-const RETRY_LIMIT = 5;
 const RETRY_INTERVAL = 3000;
+const MAX_RETRY_INTERVAL = 30000;
 
 export interface SendDataFunction {
     ({ type, data }: { type: MessageType; data?: any }): void;
@@ -80,40 +80,39 @@ export default function useWebSocket(options: WebSocketOptions) {
         }
 
         const { state, dispatch, url } = optionsRef.current;
-        if (retryRef.current < RETRY_LIMIT) {
-            let ws = wsRef.current;
-            if (!ws || ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
-                dispatch({ type: ActionType.setConnecting, payload: { connecting: true, connectError: false } });
+        let ws = wsRef.current;
+        if (!ws || ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
+            dispatch({ type: ActionType.setConnecting, payload: { connecting: true, connectError: false } });
 
-                // Create new connection to the server
-                const gameId = state.game?.id || sessionStorage.getItem('gameId');
-                const playerId = state.playerId || sessionStorage.getItem('playerId');
-                const queryParams = `${gameId ? `?gameId=${gameId}` : ''}${playerId ? `&playerId=${playerId}` : ''}`;
-                ws = new WebSocket(`${url}${queryParams}`);
-                ws.onopen = onOpen;
-                ws.onmessage = onMessage;
-                ws.onclose = onClose;
-                ws.onerror = onError;
-                wsRef.current = ws;
-            }
+            // Create new connection to the server
+            const gameId = state.game?.id || sessionStorage.getItem('gameId');
+            const playerId = state.playerId || sessionStorage.getItem('playerId');
+            const queryParams = `${gameId ? `?gameId=${gameId}` : ''}${playerId ? `&playerId=${playerId}` : ''}`;
+            ws = new WebSocket(`${url}${queryParams}`);
+            ws.onopen = onOpen;
+            ws.onmessage = onMessage;
+            ws.onclose = onClose;
+            ws.onerror = onError;
+            wsRef.current = ws;
         }
 
         if (wsRef.current?.readyState === WebSocket.OPEN) {
             retryRef.current = 0;
         } else {
-            if (retryRef.current < RETRY_LIMIT) {
-                retryRef.current += 1;
-                setTimeout(connect, RETRY_INTERVAL);
-            } else if (retryRef.current === RETRY_LIMIT) {
-                dispatch({ type: ActionType.setConnecting, payload: { connecting: false, connectError: true } });
-            }
+            const delay = Math.min(RETRY_INTERVAL * 2 ** retryRef.current, MAX_RETRY_INTERVAL);
+            retryRef.current += 1;
+            setTimeout(connect, delay);
         }
     }, []);
 
     useEffect(() => {
         // When a device sleeps/moves the browser to the background, it will close web socket connections.
-        // Reconnect when the page becomes visible/active again.
-        document.addEventListener('visibilitychange', connect);
+        // Reconnect when the page becomes visible/active again, resetting backoff.
+        const onVisibilityChange = () => {
+            retryRef.current = 0;
+            connect();
+        };
+        document.addEventListener('visibilitychange', onVisibilityChange);
 
         if (!initRef.current.initialized && !initRef.current.initializing) {
             initRef.current.initializing = true;
@@ -125,7 +124,7 @@ export default function useWebSocket(options: WebSocketOptions) {
                 wsRef.current.close();
             }
 
-            document.removeEventListener('visibilitychange', connect);
+            document.removeEventListener('visibilitychange', onVisibilityChange);
         };
     }, []);
 

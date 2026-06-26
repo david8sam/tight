@@ -1,7 +1,7 @@
 import React, { ChangeEvent } from 'react';
 
 import { FormControlLabel, Grid, Switch, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import { MessageType } from 'common/message';
 import { Traits } from 'common/Planet';
@@ -24,7 +24,7 @@ import {
     Warfare,
 } from './PlanetIcons';
 
-const useStyle = makeStyles(theme => ({
+const useStyle = makeStyles()((theme) => ({
     icon: {
         marginRight: theme.spacing(1),
     },
@@ -40,7 +40,7 @@ export interface PlanetNameCellProps {
 }
 
 export default function PlanetNameCell(props: PlanetNameCellProps) {
-    const classes = useStyle(props);
+    const { classes } = useStyle();
     const { sendData } = useAppContext();
     const { gameId } = useGameInfo();
     const { planet, owner, hideAbility } = props;
@@ -113,14 +113,14 @@ export default function PlanetNameCell(props: PlanetNameCellProps) {
 
     return (
         <Grid container direction="row" spacing={2}>
-            <Grid item>
+            <Grid>
                 <Grid container direction="column" className={classes.grid}>
-                    <Grid item>{name}</Grid>
+                    <Grid>{name}</Grid>
                     <Grid container>{icons}</Grid>
                 </Grid>
             </Grid>
             {isLegendary && !hideAbility && (
-                <Grid item>
+                <Grid>
                     <Grid container justifyContent="center" alignItems="center" className={classes.grid}>
                         <FormControlLabel
                             control={<Switch color="primary" checked={abilityExhausted} onChange={onExhaustChange} />}

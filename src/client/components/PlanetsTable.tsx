@@ -20,7 +20,7 @@ import {
     Typography,
     styled,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import { PlanetMap } from 'common/Planet';
 
@@ -39,7 +39,7 @@ const StyledDiv = styled('div')({});
 
 const FILTER_BY_NAME_HEIGHT = '90px';
 
-const useStyle = makeStyles(theme => ({
+const useStyle = makeStyles()((theme) => ({
     title: {
         flex: '1 1 100%',
     },
@@ -110,7 +110,7 @@ export interface PlanetsTableProps {
 }
 
 function PlanetsTable(props: PlanetsTableProps) {
-    const classes = useStyle(props);
+    const { classes } = useStyle();
     const { game } = useGameInfo();
 
     const {

@@ -64,7 +64,7 @@ function StrategyCards() {
     return (
         <Grid container direction="column">
             <GameInfoToolbar game={game} />
-            <Grid item>
+            <Grid>
                 <PublicObjectives
                     creatable={isPlayer}
                     deletable={isPlayer}
@@ -95,7 +95,7 @@ function StrategyCards() {
                             </TextField>
                         </Grid>
                     </Toolbar>
-                    <Grid item>
+                    <Grid>
                         {secretObjectives?.map(so => (
                             <Objective
                                 key={so.objective.id}

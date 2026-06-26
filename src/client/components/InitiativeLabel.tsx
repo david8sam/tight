@@ -2,13 +2,13 @@ import React, { MouseEvent, useState } from 'react';
 
 import InfoIcon from '@mui/icons-material/Info';
 import { Card, CardContent, Grid, IconButton, Popover, Tooltip, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import { StrategyCard, StrategyCardIndex } from 'common/Game';
 
 import StrategyCardDetails from '../components/StrategyCardDetails';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()((theme) => ({
     infoIconGrid: {
         width: 'auto',
     },
@@ -24,7 +24,7 @@ export interface InitiativeLabelProps {
 }
 
 function InitiativeLabel(props: InitiativeLabelProps) {
-    const classes = useStyles(props);
+    const { classes } = useStyles();
 
     const [openedCard, setOpenedCard] = useState(StrategyCardIndex.NONE);
     const [cardPopoverAnchor, setCardPopoverAnchor] = useState<HTMLButtonElement | null>(null);
@@ -43,7 +43,7 @@ function InitiativeLabel(props: InitiativeLabelProps) {
     };
 
     return (
-        <Grid classes={{ root: classes.infoIconGrid }} container justifyContent="flex-start" alignItems="center">
+        <Grid className={classes.infoIconGrid} container justifyContent="flex-start" alignItems="center">
             <Typography>{hideInitiativeNumber ? name : `${initiative} - ${name}`}</Typography>
             <Tooltip title="Strategy Card Details">
                 <IconButton classes={{ root: classes.infoIcon }} onClick={e => onCardInfoClick(e, card)} size="large">

@@ -112,14 +112,14 @@ export default function AgendaPhase() {
                     <Toolbar>
                         <Grid container direction="column" spacing={2}>
                             {winners && (
-                                <Grid item>
+                                <Grid>
                                     <Typography variant="h5">{`${winners} ${
                                         factionsAtVp.length === 1 ? 'has' : 'have'
                                     } at least ${game.numVictoryPoints} VPs`}</Typography>
                                 </Grid>
                             )}
                             {!winners && (
-                                <Grid item>
+                                <Grid>
                                     <FormControlLabel
                                         control={
                                             <Switch
@@ -132,7 +132,7 @@ export default function AgendaPhase() {
                                     />
                                 </Grid>
                             )}
-                            <Grid item>
+                            <Grid>
                                 <Button
                                     disabled={!endGameEarly && !winners}
                                     color="primary"

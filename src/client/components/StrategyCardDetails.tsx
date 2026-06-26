@@ -1,11 +1,11 @@
 import React from 'react';
 
 import { Grid, TextField, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import { ExpansionVersionNames, Version } from 'common/Game';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()((theme) => ({
     primary: {},
     secondary: { marginTop: theme.spacing(2) },
     notes: { marginTop: theme.spacing(2) },
@@ -19,7 +19,7 @@ interface StrategyCardDetailsProps {
 }
 
 function StrategyCardDetails(props: StrategyCardDetailsProps) {
-    const classes = useStyles(props);
+    const { classes } = useStyles();
     const { primary, secondary, version, notes } = props;
     const versionName = ExpansionVersionNames[version];
 

@@ -45,7 +45,7 @@ function FactionsSetup(props: FactionsSetupProps) {
         sendData({ type: MessageType.GAME_UPDATE_FACTION, data: { gameId, order: i, playerIds } });
     };
 
-    const onFactionReorder: NonNullable<SelectProps['onChange']> = e => {
+    const onFactionReorder: NonNullable<SelectProps<number>['onChange']> = e => {
         const index = Number(e.target.name);
         const newIndex = e.target.value;
         if (index !== newIndex) {

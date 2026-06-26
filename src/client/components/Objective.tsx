@@ -4,7 +4,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Grid, IconButton, TextField, Toolbar, Tooltip, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import { calculateVictoryPoints, GameFaction, Objective } from 'common/Game';
 
@@ -13,7 +13,7 @@ import { Accordion, AccordionDetails, AccordionProps, AccordionSummary } from '.
 import EditObjectiveDialog from './EditObjectiveDialog';
 import FactionAvatar from './FactionAvatar';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()((theme) => ({
     summaryContent: {
         alignItems: 'center',
     },
@@ -37,7 +37,7 @@ export interface ObjectiveProps {
 }
 
 export default function Objective(props: ObjectiveProps) {
-    const classes = useStyles(props);
+    const { classes } = useStyles();
     const {
         deletable = false,
         editable = false,

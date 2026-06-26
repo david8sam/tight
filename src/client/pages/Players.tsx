@@ -18,7 +18,7 @@ function Players() {
     return (
         <Grid container direction="column">
             <GameInfoToolbar game={game} />
-            <Grid item>
+            <Grid>
                 <FactionsSetup disableFactionSelect disableColorNone />
             </Grid>
         </Grid>

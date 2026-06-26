@@ -19,9 +19,35 @@ import { Planet } from 'common/Planet.js';
 import { Planets } from './planet/index.js';
 import { GameCreateParams, GameRestartParams } from 'common/api.js';
 import { generateGameCode } from '../utils/game.js';
+import db from './db.js';
 
 // Map of all games
 let _games: GameMap = {};
+
+const _stmts = {
+    upsert: db.prepare('INSERT OR REPLACE INTO games (id, data, updated_at) VALUES (?, ?, ?)'),
+    delete: db.prepare('DELETE FROM games WHERE id = ?'),
+    all: db.prepare('SELECT id, data FROM games'),
+};
+
+export function loadGamesFromDB(): void {
+    const rows = _stmts.all.all() as Array<{ id: string; data: string }>;
+    for (const row of rows) {
+        try {
+            const game: Game = JSON.parse(row.data);
+            _games[game.id] = game;
+        } catch {
+            // skip malformed rows
+        }
+    }
+}
+
+export function persistGame(id: string): void {
+    const game = _games[id];
+    if (game) {
+        _stmts.upsert.run(id, JSON.stringify(game), Date.now());
+    }
+}
 
 // Default setting for all planets in a new game
 const DEFAULT_GAME_PLANETS: Readonly<GamePlanetMap> = Planets.reduce((result: GamePlanetMap, planet: Planet) => {
@@ -91,6 +117,7 @@ export function createGame({
         _games = { [game.id]: game };
     }
 
+    persistGame(game.id);
     return game;
 }
 
@@ -114,6 +141,7 @@ export function restartGame(options: GameRestartParams): Game | null {
     };
     const newGame = initializeGame(combinedOptions);
     _games[id] = newGame;
+    persistGame(id);
 
     return newGame;
 }
@@ -121,6 +149,7 @@ export function restartGame(options: GameRestartParams): Game | null {
 export function deleteGame(id: string): boolean {
     if (_games && _games[id]) {
         delete _games[id];
+        _stmts.delete.run(id);
         return true;
     }
 

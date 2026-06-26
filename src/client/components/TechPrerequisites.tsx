@@ -13,7 +13,7 @@ const buildIcons = (Component: typeof Biotic, count?: number) => {
     return Array(count)
         .fill(0)
         .map((_, i) => (
-            <Grid key={i} item>
+            <Grid key={i}>
                 <Component />
             </Grid>
         ));
@@ -33,7 +33,7 @@ export default function TechPrerequisites(props: TechPrerequisitesProps) {
 
     return (
         <Grid container direction="row" spacing={1}>
-            <Grid item>
+            <Grid>
                 <Typography>Prerequisites:</Typography>
             </Grid>
             {buildIcons(Biotic, biotic)}

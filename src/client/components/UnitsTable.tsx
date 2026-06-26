@@ -2,11 +2,11 @@ import React from 'react';
 
 import { Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import { UnitCountMap } from 'common/Faction';
 
-const useStyle = makeStyles(() => ({
+const useStyle = makeStyles()(() => ({
     headerCell: {
         fontWeight: 'bold',
     },
@@ -17,7 +17,7 @@ export interface UnitsCountTableProps {
 }
 
 export default function UnitsCountTable(props: UnitsCountTableProps) {
-    const classes = useStyle();
+    const { classes } = useStyle();
     const { unitsCountMap } = props;
 
     return (

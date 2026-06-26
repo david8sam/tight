@@ -10,11 +10,11 @@ import {
     SwipeableDrawer,
     SwipeableDrawerProps,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import useGameInfo from '../hooks/useGameInfo';
 
-const useStyle = makeStyles(() => ({
+const useStyle = makeStyles()(() => ({
     drawer: {
         width: 250,
     },
@@ -27,7 +27,7 @@ const useStyle = makeStyles(() => ({
 interface DrawerProps extends SwipeableDrawerProps {}
 
 function Drawer(props: DrawerProps) {
-    const classes = useStyle(props);
+    const { classes } = useStyle();
     const { open, onOpen, onClose, ...drawerProps } = props;
 
     const navigate = useNavigate();

@@ -2,11 +2,11 @@ import React, { ReactNode } from 'react';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Divider, Grid, TextField, TextFieldProps, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import { Accordion, AccordionDetails, AccordionProps, AccordionSummary } from './Accordion';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()((theme) => ({
     gridItem: {
         marginBottom: theme.spacing(2),
     },
@@ -22,7 +22,7 @@ export interface AccordionTextFieldsProps extends Omit<AccordionProps, 'children
 }
 
 export default function AccordionTextFields(props: AccordionTextFieldsProps) {
-    const classes = useStyles(props);
+    const { classes } = useStyles();
     const { summary, texts, ...AccordionProps } = props;
 
     if (!texts) {
@@ -38,7 +38,7 @@ export default function AccordionTextFields(props: AccordionTextFieldsProps) {
                 <Grid container direction="column">
                     {texts.map(({ divider, children, ...text }, i) => (
                         <Grid key={i} container direction="column">
-                            <Grid item className={classes.gridItem}>
+                            <Grid className={classes.gridItem}>
                                 <TextField
                                     key={i}
                                     InputProps={{ readOnly: true }}
@@ -52,12 +52,12 @@ export default function AccordionTextFields(props: AccordionTextFieldsProps) {
                                 />
                             </Grid>
                             {children ? (
-                                <Grid item className={classes.gridItem}>
+                                <Grid className={classes.gridItem}>
                                     {children}
                                 </Grid>
                             ) : null}
                             {divider ? (
-                                <Grid item className={classes.gridItem}>
+                                <Grid className={classes.gridItem}>
                                     <Divider className={classes.divider} />
                                 </Grid>
                             ) : null}

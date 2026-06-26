@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import CloseIcon from '@mui/icons-material/Close';
 import { AppBar, Button, Dialog, DialogContent, IconButton, Toolbar, Tooltip, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import { MessageType } from 'common/message';
 import { PlanetMap } from 'common/Planet';
@@ -19,7 +19,7 @@ interface AddPlanetDialogProps {
     factionName: string;
 }
 
-const useStyle = makeStyles(theme => ({
+const useStyle = makeStyles()((theme) => ({
     appBar: {
         flexDirection: 'row',
         position: 'relative',
@@ -36,7 +36,7 @@ const useStyle = makeStyles(theme => ({
 }));
 
 function AddPlanetDialog(props: AddPlanetDialogProps) {
-    const classes = useStyle(props);
+    const { classes } = useStyle();
     const { open, onClose, planetMap, factionName } = props;
     const { sendData } = useAppContext();
     const { game, gameId } = useGameInfo();

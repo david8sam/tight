@@ -75,10 +75,10 @@ function StrategyPhase() {
                 <Toolbar />
                 <Toolbar>
                     <Grid container justifyContent="space-between" alignItems="center" spacing={1}>
-                        <Grid item xs={3}>
+                        <Grid size={3}>
                             <Typography align="center">Naalu "0":</Typography>
                         </Grid>
-                        <Grid item xs={9}>
+                        <Grid size={9}>
                             <NaaluZeroSelect fullWidth />
                         </Grid>
                     </Grid>

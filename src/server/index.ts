@@ -1,10 +1,11 @@
 import chalk from 'chalk';
 import cors from 'cors';
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response } from 'express';
 import ip from 'ip';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+import { loadGamesFromDB } from './database/game.js';
 import initializeRouter from './rest-api/router.js';
 import initializeWebSocketServer from './WebSocketServer.js';
 
@@ -16,6 +17,7 @@ const port = process.env.PORT || 80;
 const distDir = path.join(dirname, '../dist');
 const html = path.join(distDir, 'index.html');
 
+loadGamesFromDB();
 initializeWebSocketServer(app);
 
 const publicPath = express.static(distDir);
@@ -26,7 +28,7 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use('/api', initializeRouter());
 
-app.get('*', (req: Request, res: Response) => {
+app.get('/{*path}', (req: Request, res: Response) => {
     res.sendFile(html);
 });
 

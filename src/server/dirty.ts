@@ -2,7 +2,7 @@ import { isEmpty } from 'lodash-es';
 
 import { GameChangeData, GameChangeDataMap, GameFaction, GamePlanet, GamePlanetMap } from 'common/Game.js';
 
-import { getGame, listGames, deleteGame } from './database/game.js';
+import { getGame, listGames, deleteGame, persistGame } from './database/game.js';
 import log from './log.js';
 
 const REMOVE_GAME_TIME_THRESHOLD = 1000 * 60 * 60 * 4; // 4 hours
@@ -154,6 +154,10 @@ export function getDirtyGameData(): GameChangeDataMap | null {
 
         if (publicObjectives) {
             gameData.publicObjectives = game.publicObjectives;
+        }
+
+        if (!gameData.deleted) {
+            persistGame(gameId);
         }
 
         gameDataMap[gameId] = gameData;

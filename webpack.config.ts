@@ -1,41 +1,35 @@
-import HtmlWebPackPlugin from 'html-webpack-plugin';
 import path from 'path';
 import { Configuration } from 'webpack';
-import { Configuration as ConfigurationDev } from 'webpack-dev-server';
 import nodeExternals from 'webpack-node-externals';
 
 const dev = process.env.NODE_ENV === 'development';
-const web = process.env.TARGET === 'web';
-const target = web ? 'web' : 'node';
 const mode = dev ? 'development' : 'production';
-
 const cwd = process.cwd();
-const clientDir = path.resolve(cwd, './src/client');
 const serverDir = path.resolve(cwd, './src/server');
+const tsconfigFile = path.resolve(cwd, 'tsconfig.server.json');
 
-const tsconfigFile = web ? path.resolve(cwd, 'tsconfig.web.json') : path.resolve(cwd, 'tsconfig.server.json');
-
-let config: Configuration | ConfigurationDev = {
-    target,
+const config: Configuration = {
+    target: 'node',
     mode,
+    entry: path.resolve(serverDir, 'index.ts'),
+    output: {
+        filename: dev ? 'server-dev.js' : 'server.js',
+        library: { type: 'module' },
+        path: path.resolve(cwd, 'build'),
+        module: true,
+        chunkFormat: 'module',
+    },
+    experiments: {
+        outputModule: true,
+    },
+    externals: [nodeExternals({ importType: 'module' })],
+    watch: dev,
     module: {
         rules: [
             {
                 test: /\.tsx?$/,
                 loader: 'ts-loader',
                 options: { configFile: tsconfigFile },
-            },
-            {
-                enforce: 'pre',
-                test: /\.js$/,
-                loader: 'source-map-loader',
-            },
-            {
-                test: /\.(png|svg|jpg|gif)$/,
-                loader: 'file-loader',
-                options: {
-                    outputPath: 'images',
-                },
             },
         ],
     },
@@ -49,80 +43,8 @@ let config: Configuration | ConfigurationDev = {
             '.mjs': ['.mts', '.mjs'],
         },
     },
-    plugins: [],
     performance: { hints: false },
+    devtool: dev ? 'cheap-module-source-map' : false,
 };
-
-if (web) {
-    config = {
-        ...config,
-        entry: path.resolve(clientDir, 'index.tsx'),
-        output: {
-            filename: 'js/bundle.js',
-            chunkFilename: 'js/[name].chunk.js',
-            publicPath: '/',
-            path: path.resolve(cwd, 'dist'),
-        },
-        plugins: [
-            new HtmlWebPackPlugin({
-                template: path.resolve(clientDir, 'index.html'),
-                filename: './index.html',
-            }),
-        ],
-    };
-} else {
-    config = {
-        ...config,
-        entry: path.resolve(serverDir, 'index.ts'),
-        output: {
-            filename: dev ? 'server-dev.js' : 'server.js',
-            library: {
-                type: 'module',
-            },
-            publicPath: '/',
-            path: path.resolve(cwd, 'build'),
-            module: true,
-            chunkFormat: 'module',
-        },
-        experiments: {
-            outputModule: true,
-        },
-        externals: [nodeExternals({ importType: 'module' })],
-        watch: dev,
-    };
-}
-
-if (dev) {
-    config = {
-        ...config,
-        devtool: 'cheap-module-source-map',
-    };
-
-    config.output = {
-        ...config.output,
-        hotUpdateChunkFilename: 'hot/[id].[fullhash].hot-update.js',
-        hotUpdateMainFilename: 'hot/[runtime].[fullhash].hot-update.json',
-    };
-
-    if (web) {
-        config.devServer = {
-            static: {
-                directory: path.resolve(cwd, 'dist'),
-            },
-            hot: true,
-            proxy: [
-                {
-                    context: '/api',
-                    target: 'http://localhost:3001',
-                    router: () => 'http://localhost',
-                },
-                {
-                    context: '*',
-                    target: 'http://localhost',
-                },
-            ],
-        };
-    }
-}
 
 export default config;

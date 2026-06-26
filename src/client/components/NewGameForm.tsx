@@ -54,7 +54,7 @@ function NewGameForm(props: NewGameFormProps) {
     return (
         <>
             <Grid container direction="column" justifyContent="center" alignItems="center" spacing={2}>
-                <Grid item sx={styles.gridItem}>
+                <Grid sx={styles.gridItem}>
                     <FormControl fullWidth variant="outlined">
                         <InputLabel id="num-players">Number of Players</InputLabel>
                         <Select
@@ -72,7 +72,7 @@ function NewGameForm(props: NewGameFormProps) {
                         </Select>
                     </FormControl>
                 </Grid>
-                <Grid item sx={styles.gridItem}>
+                <Grid sx={styles.gridItem}>
                     <FormControl fullWidth variant="outlined">
                         <InputLabel id="num-rounds">Number of Rounds</InputLabel>
                         <Select
@@ -90,7 +90,7 @@ function NewGameForm(props: NewGameFormProps) {
                         </Select>
                     </FormControl>
                 </Grid>
-                <Grid item sx={styles.gridItem}>
+                <Grid sx={styles.gridItem}>
                     <FormControl fullWidth variant="outlined">
                         <InputLabel id="num-vps">Victory Points To Win</InputLabel>
                         <Select
@@ -108,10 +108,10 @@ function NewGameForm(props: NewGameFormProps) {
                         </Select>
                     </FormControl>
                 </Grid>
-                <Grid item sx={styles.gridItem}>
+                <Grid sx={styles.gridItem}>
                     <Divider variant="fullWidth" orientation="horizontal" />
                 </Grid>
-                <Grid item sx={styles.gridItem}>
+                <Grid sx={styles.gridItem}>
                     <PublicObjectives
                         creatable
                         deletable

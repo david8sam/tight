@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Card, CardContent, Grid, Toolbar } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import { GameFaction, getFactionOrder, isPlayerSpectator } from 'common/Game';
 
@@ -10,7 +10,7 @@ import FactionHeader from './FactionHeader';
 import RefreshAllbutton from './RefreshAllButton';
 import VictoryPoints from './VictoryPoints';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()((theme) => ({
     card: {
         border: `${theme.spacing(0.25)} solid ${theme.palette.text.primary}`,
         margin: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
@@ -25,7 +25,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 function StatusPhase() {
-    const classes = useStyles();
+    const { classes } = useStyles();
     const { game, playerId } = useGameInfo();
     if (!game) {
         return null;

@@ -4,13 +4,13 @@ import {
     Accordion as MuiAccordion,
     AccordionProps as MuiAccordionProps,
     AccordionActions as MuiAccordionActions,
-    AccordionActionsProps as MuiAccordionActionsProps,
     AccordionDetails as MuiAccordionDetails,
-    AccordionDetailsProps as MuiAccordionDetailsProps,
     AccordionSummary as MuiAccordionSummary,
     AccordionSummaryProps as MuiAccordionSummaryProps,
 } from '@mui/material';
-import { withStyles } from '@mui/styles';
+import type { AccordionActionsProps as MuiAccordionActionsProps } from '@mui/material/AccordionActions';
+import type { AccordionDetailsProps as MuiAccordionDetailsProps } from '@mui/material/AccordionDetails';
+import { styled } from '@mui/material/styles';
 
 // Re-export all other unmodified accordion related components
 export {
@@ -20,16 +20,11 @@ export {
     MuiAccordionDetailsProps as AccordionDetailsProps,
 };
 
-const AccordionNoMargin = withStyles({
-    root: {
-        '&.Mui-expanded': {
-            margin: 0,
-        },
+const AccordionNoMargin = styled(MuiAccordion)({
+    '&.Mui-expanded': {
+        margin: 0,
     },
-    rounded: {},
-    expanded: {},
-    disabled: {},
-})(MuiAccordion);
+});
 
 export interface AccordionProps extends MuiAccordionProps {
     disableMargin?: boolean;
@@ -42,19 +37,14 @@ export function Accordion(props: AccordionProps) {
     return <Component {...AcoordionProps} />;
 }
 
-const AccordionSummaryNoMargin = withStyles({
-    root: {},
-    expanded: {},
-    focusVisible: {},
-    disabled: {},
-    content: {
+const AccordionSummaryNoMargin = styled(MuiAccordionSummary)({
+    '& .MuiAccordionSummary-content': {
         margin: 0,
-        '&Mui-expanded': {
+        '&.Mui-expanded': {
             margin: 0,
         },
     },
-    expandIcon: {},
-})(MuiAccordionSummary);
+});
 
 export interface AccordionSummaryProps extends MuiAccordionSummaryProps {
     disableMargin?: boolean;

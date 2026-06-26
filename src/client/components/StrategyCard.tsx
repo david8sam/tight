@@ -42,14 +42,14 @@ function StrategyCard(props: StrategyCardProps) {
         <Accordion key={name} {...PanelProps}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />} {...SummaryProps}>
                 <Grid container direction="column">
-                    <Grid item>
+                    <Grid>
                         <Grid container direction="row" alignItems="center">
                             {button}
                             <Typography>{`${initiative} - ${name.toUpperCase()}`}</Typography>
                         </Grid>
                     </Grid>
                     {owner && (
-                        <Grid item sx={{ paddingTop: 1 }}>
+                        <Grid sx={{ paddingTop: 1 }}>
                             <Typography display="flex" justifyContent="center">
                                 {owner}
                             </Typography>

@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { FormControl, InputLabel, MenuItem, Select, SelectProps, TextField } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import { Objective } from 'common/Game';
 
@@ -15,17 +15,17 @@ export interface ObjectiveFormProps {
     disabled?: boolean;
 }
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()((theme) => ({
     formControl: {
         paddingBottom: theme.spacing(2),
     },
 }));
 
 function ObjectiveForm(props: ObjectiveFormProps) {
-    const classes = useStyles(props);
+    const { classes } = useStyles();
     const { objective, onChange, disabled = false } = props;
 
-    const onVpChange: SelectProps['onChange'] = e => onChange({ ...objective, vp: Number(e?.target?.value) });
+    const onVpChange: SelectProps<number>['onChange'] = e => onChange({ ...objective, vp: Number(e?.target?.value) });
 
     return (
         <>

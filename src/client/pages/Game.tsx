@@ -21,7 +21,7 @@ import {
     Typography,
     useTheme,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import {
     Game,
@@ -97,7 +97,7 @@ function canNextPhase(game: GameClientData): { canNext: boolean; message: string
     return { canNext, message };
 }
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()((theme) => ({
     appBar: {
         top: HEADER_HEIGHT,
     },
@@ -135,7 +135,7 @@ const useStyles = makeStyles(theme => ({
 
 function Game() {
     const theme = useTheme();
-    const classes = useStyles();
+    const { classes } = useStyles();
     const { sendData } = useAppContext();
     const { gameId, game, playerId } = useGameInfo();
     const navigate = useNavigate();

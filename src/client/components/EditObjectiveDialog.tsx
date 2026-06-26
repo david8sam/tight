@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import CloseIcon from '@mui/icons-material/Close';
 import { AppBar, Button, Dialog, DialogContent, Grid, IconButton, Toolbar, Tooltip, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import { Objective } from 'common/Game';
 
@@ -15,7 +15,7 @@ export interface EditObjectiveDialogProps {
     onSave: (objective: Objective) => void;
 }
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()((theme) => ({
     appBar: {
         flexDirection: 'row',
         position: 'relative',
@@ -32,7 +32,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 function EditObjectiveDialog(props: EditObjectiveDialogProps) {
-    const classes = useStyles(props);
+    const { classes } = useStyles();
     const { defaultObjective, open, onClose, onSave } = props;
     const [objective, setObjective] = useState<Objective>({ ...defaultObjective });
 
@@ -63,7 +63,7 @@ function EditObjectiveDialog(props: EditObjectiveDialogProps) {
             </AppBar>
             <DialogContent dividers>
                 <Grid container justifyContent="center" alignItems="center">
-                    <Grid item xs>
+                    <Grid size="grow">
                         <ObjectiveForm objective={objective} onChange={setObjective} />
                     </Grid>
                 </Grid>

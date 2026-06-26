@@ -34,7 +34,7 @@ export default function initializeGameOperations(router: Router) {
             markGameDirty(game.id, { created: true });
         } else {
             // respond with invalid params error
-            res.status(422);
+            res.status(422).send();
         }
     });
 

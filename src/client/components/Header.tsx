@@ -45,10 +45,10 @@ function Header() {
     if (connectError) {
         connectionStatus = (
             <Grid container justifyContent="center" alignItems="center" spacing={1}>
-                <Grid item>
+                <Grid>
                     <ErroIcon color="error" />
                 </Grid>
-                <Grid item>
+                <Grid>
                     <Button
                         color="secondary"
                         variant="contained"
@@ -63,10 +63,10 @@ function Header() {
     } else if (connecting) {
         connectionStatus = (
             <Grid container justifyContent="center" alignItems="center" spacing={1}>
-                <Grid item>
+                <Grid>
                     <CircularProgress style={{ color: appTheme.palette.text.primary }} size={24} />
                 </Grid>
-                <Grid item>
+                <Grid>
                     <Typography color="textPrimary">Connecting...</Typography>
                 </Grid>
             </Grid>

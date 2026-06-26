@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Table, TableBody, TableCell, TableCellProps, TableHead, TableRow } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import { Biotic, Cybernetic, Influence, Propulsion, Resources, Warfare } from './PlanetIcons';
 
@@ -14,7 +14,7 @@ export interface TotalsTableProps {
     cybernetic: number; // yellow
 }
 
-const useStyle = makeStyles(() => ({
+const useStyle = makeStyles()(() => ({
     tableRow: {
         userSelect: 'none',
     },
@@ -24,7 +24,7 @@ const useStyle = makeStyles(() => ({
 }));
 
 function TotalsTable(props: TotalsTableProps) {
-    const classes = useStyle(props);
+    const { classes } = useStyle();
     const { resources = 0, influence = 0, biotic = 0, warfare = 0, propulsion = 0, cybernetic = 0 } = props;
 
     const cellProps: TableCellProps = { align: 'center' };

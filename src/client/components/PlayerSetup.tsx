@@ -73,11 +73,11 @@ function PlayerSetup() {
                 <Grid container flexDirection="column" alignItems="center">
                     <Grid container justifyContent="flex-end" alignItems="center" spacing={1}>
                         {pending ? (
-                            <Grid item>
+                            <Grid>
                                 <CircularProgress size={24} />
                             </Grid>
                         ) : null}
-                        <Grid item>
+                        <Grid>
                             <Button
                                 color="primary"
                                 variant="contained"

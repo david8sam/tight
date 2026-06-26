@@ -1,22 +1,28 @@
-import React from 'react';
+import React, { ComponentType, Suspense } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
-import loadable, { LoadableComponent } from '@loadable/component';
+import { CircularProgress, Grid } from '@mui/material';
 
 import Header from './components/Header';
 import GameWrapper from './GameWrapper';
 
-const Home = loadable(() => import('./pages/Home'));
-const Game = loadable(() => import('./pages/Game'));
-const GameDeleted = loadable(() => import('./pages/GameDeleted'));
-const Players = loadable(() => import('./pages/Players'));
-const GameResults = loadable(() => import('./pages/GameResults'));
-const Objectives = loadable(() => import('./pages/Objectives'));
-const Planets = loadable(() => import('./pages/Planets'));
-const Factions = loadable(() => import('./pages/Factions'));
-const StrategyCards = loadable(() => import('./pages/StrategyCards'));
+const Home = React.lazy(() => import('./pages/Home'));
+const Game = React.lazy(() => import('./pages/Game'));
+const GameDeleted = React.lazy(() => import('./pages/GameDeleted'));
+const Players = React.lazy(() => import('./pages/Players'));
+const GameResults = React.lazy(() => import('./pages/GameResults'));
+const Objectives = React.lazy(() => import('./pages/Objectives'));
+const Planets = React.lazy(() => import('./pages/Planets'));
+const Factions = React.lazy(() => import('./pages/Factions'));
+const StrategyCards = React.lazy(() => import('./pages/StrategyCards'));
 
-function renderGamePage(page: LoadableComponent<any>) {
+const PageFallback = (
+    <Grid sx={{ height: '100%' }} container justifyContent="center" alignItems="center" direction="column">
+        <CircularProgress size="50vw" />
+    </Grid>
+);
+
+function renderGamePage(page: ComponentType) {
     return <GameWrapper Page={page} />;
 }
 
@@ -24,6 +30,7 @@ function Router() {
     return (
         <BrowserRouter>
             <Header />
+            <Suspense fallback={PageFallback}>
             <Routes>
                 {/* Pages accessible to anonymous users */}
                 <Route path="/" element={renderGamePage(Home)} />
@@ -39,8 +46,9 @@ function Router() {
                 <Route path="/:gameId/deleted" element={<GameDeleted />} />
 
                 {/* Redirect all other pages to home */}
-                <Route element={<Navigate to="/" />} />
+                <Route path="*" element={<Navigate to="/" />} />
             </Routes>
+            </Suspense>
         </BrowserRouter>
     );
 }

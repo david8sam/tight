@@ -55,7 +55,7 @@ export default function GameInfoToolbar(props: GameInfoToolbarProps) {
     return (
         <Toolbar {...toolbarProps}>
             <Grid container justifyContent="space-between" alignItems="center">
-                <Grid item>
+                <Grid>
                     <Grid container justifyContent="center" alignItems="center">
                         <Typography variant="h6">{game.id}</Typography>
                         <Tooltip title="Game Info">
@@ -66,7 +66,7 @@ export default function GameInfoToolbar(props: GameInfoToolbarProps) {
                     </Grid>
                 </Grid>
                 {started && (
-                    <Grid item sx={{ width: '30%' }}>
+                    <Grid sx={{ width: '30%' }}>
                         <Typography variant="h6" align="right">{`Round: ${round}`}</Typography>
                     </Grid>
                 )}

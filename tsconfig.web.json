@@ -2,9 +2,10 @@
     "extends": "./tsconfig.json",
     "exclude": ["src/server"],
     "compilerOptions": {
+        "jsx": "react-jsx",
         "module": "ESNext",
         "moduleResolution": "Bundler",
-        "outDir": "./dist/",
-        "target": "ES6",
+        "target": "ESNext",
+        "types": ["vite/client"],
     },
 }

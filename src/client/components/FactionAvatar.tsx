@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Avatar, AvatarProps, Tooltip, Typography, useTheme } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import { GameFaction } from 'common/Game';
 
@@ -9,7 +9,7 @@ import useTooltipOnClick from '../hooks/useTooltipOnClick';
 
 const AVATAR_SIZE = 30;
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
     avatar: {
         width: AVATAR_SIZE,
         height: AVATAR_SIZE,
@@ -26,7 +26,7 @@ export interface FactionAvatarProps {
 
 export default function FactionAvatar(props: FactionAvatarProps) {
     const theme = useTheme();
-    const classes = useStyles(props);
+    const { classes } = useStyles();
     const { faction, title = '', onClick } = props;
 
     const [open, onOpen, onClose] = useTooltipOnClick({ onTooltipOpen: onClick });

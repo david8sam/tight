@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { AppBar, Button, CircularProgress, Grid, IconButton, Toolbar, Tooltip, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import { Faction } from 'common/Faction';
 
@@ -16,7 +16,7 @@ import { HEADER_HEIGHT } from '../constants';
 // Num accordions
 const COUNT = Object.keys(FactionAccordionIndex).length;
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()((theme) => ({
     appBar: {
         top: HEADER_HEIGHT,
     },
@@ -27,7 +27,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 function Factions() {
-    const classes = useStyles();
+    const { classes } = useStyles();
 
     const [factionInfo, setFactionInfo] = useState<Faction | null>(null);
     const [factionNames, setFactionNames] = useState<string[]>([]);
@@ -100,7 +100,7 @@ function Factions() {
                 </Toolbar>
                 <Toolbar>
                     <Grid container direction="row" justifyContent="flex-start" spacing={1}>
-                        <Grid item>
+                        <Grid>
                             <Button
                                 size="small"
                                 color="primary"
@@ -111,7 +111,7 @@ function Factions() {
                                 <Typography variant="body2">Collapse</Typography>
                             </Button>
                         </Grid>
-                        <Grid item>
+                        <Grid>
                             <Button
                                 size="small"
                                 color="primary"

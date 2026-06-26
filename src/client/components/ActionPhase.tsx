@@ -2,7 +2,7 @@ import confetti from 'canvas-confetti';
 import React from 'react';
 
 import { Button, Card, CardContent, Grid, Toolbar } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import classNames from 'classnames';
 
@@ -16,7 +16,7 @@ import SpeakerSelect from './SpeakerSelect';
 import VictoryPoints from './VictoryPoints';
 import VictoryPointsExtra from './VictoryPointsExtra';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()((theme) => ({
     card: {
         border: `${theme.spacing(0.25)} solid ${theme.palette.text.primary}`,
         margin: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
@@ -52,7 +52,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 function ActionPhase() {
-    const classes = useStyles();
+    const { classes } = useStyles();
     const { sendData } = useAppContext();
     const { game, gameId, playerId } = useGameInfo();
     if (!game) {

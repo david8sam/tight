@@ -3,9 +3,9 @@ import React, { MouseEvent, useEffect, useRef, useState } from 'react';
 import LanguageIcon from '@mui/icons-material/Language';
 import BlockIcon from '@mui/icons-material/Block';
 import { Avatar, AvatarProps, Popover, Typography, colors, useTheme } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from 'tss-react/mui';
 
-const useStyle = makeStyles(theme => ({
+const useStyle = makeStyles()((theme) => ({
     root: {
         height: 24,
         width: 24,
@@ -37,7 +37,7 @@ interface PlanetIconProps extends AvatarProps {
 }
 
 function PlanetIcon(props: PlanetIconProps) {
-    const classes = useStyle(props);
+    const { classes } = useStyle();
     const { children, color, backgroundColor, title, hideTitle, ...otherProps } = props;
     const [open, setOpen] = useState(false);
     const avatarRef = useRef<HTMLDivElement>(null);
