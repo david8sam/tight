@@ -14,7 +14,8 @@
         "start:dev": "cross-env NODE_ENV=development nodemon --inspect ./build/server-dev.js",
         "server:dev": "cross-env NODE_ENV=development webpack --config webpack.config.ts",
         "server:debug": "cross-env NODE_ENV=development LOG_LEVEL=debug webpack --config webpack.config.ts",
-        "client:dev": "vite"
+        "client:dev": "vite",
+        "assets:fetch": "node scripts/fetch-ti4-assets.mjs"
     },
     "dependencies": {
         "@emotion/react": "11.14.0",

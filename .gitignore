@@ -4,3 +4,10 @@
 /dist
 /node_modules
 /data
+
+# TI4 art assets — copyrighted (© FFG/Asmodee), personal/local use only. Never commit.
+# Keep the folder structure (.gitkeep + README) tracked; ignore the images themselves.
+/src/client/public/ti4/**/*.png
+/src/client/public/ti4/**/*.jpg
+/src/client/public/ti4/**/*.jpeg
+/src/client/public/ti4/**/*.webp
