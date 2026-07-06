@@ -26,7 +26,7 @@ function FactionHeader(props: FactionHeaderProps) {
     const { strategyCard } = faction;
 
     const card = hideInitiative ? null : strategyCards.find(s => s.initiative === strategyCard);
-    const cardBackgroundColor = card?.color || '#fff';
+    const cardBackgroundColor = card?.color || theme.palette.grey[700];
     const cardColor = theme.palette.getContrastText(cardBackgroundColor);
     const factionBackgroundColor = faction.color;
     const factionColor = theme.palette.getContrastText(factionBackgroundColor);

@@ -36,7 +36,7 @@ function VictoryPoints(props: VictoryPointsProps) {
     const { publicObjectives: gamePOs, status } = game;
     const { color: factionColor, publicObjectives, secretObjectives } = faction;
 
-    const pc = factionColor || '#fff';
+    const pc = factionColor || theme.palette.grey[700];
     const color = theme.palette.getContrastText(pc);
     const backgroundColor = pc;
 

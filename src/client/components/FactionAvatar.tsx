@@ -32,7 +32,7 @@ export default function FactionAvatar(props: FactionAvatarProps) {
     const [open, onOpen, onClose] = useTooltipOnClick({ onTooltipOpen: onClick });
 
     const { color: pc, name } = faction;
-    const backgroundColor = pc || '#fff';
+    const backgroundColor = pc || theme.palette.grey[700];
     const color = theme.palette.getContrastText(backgroundColor);
 
     const nameParts = name.split(' ');

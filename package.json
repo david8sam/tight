@@ -19,6 +19,8 @@
     "dependencies": {
         "@emotion/react": "11.14.0",
         "@emotion/styled": "11.14.1",
+        "@fontsource/exo-2": "^5.2.8",
+        "@fontsource/orbitron": "^5.2.8",
         "@mui/icons-material": "7.3.11",
         "@mui/material": "7.3.11",
         "@types/canvas-confetti": "1.9.0",
