@@ -119,7 +119,10 @@ export default function reducer(state: State, action: Action): State {
             return { ...state, strategyCards: payload };
 
         case ActionType.setState:
-            return validateState({ ...initialState, ...payload });
+            // Keep already-fetched strategy cards (static data) unless the payload provides them —
+            // BROADCAST_INITIALIZE only contains `game`, and wiping the cards causes a refetch
+            // race in GameWrapper that can leave the app stuck on the loading spinner.
+            return validateState({ ...initialState, strategyCards: state.strategyCards, ...payload });
         case ActionType.updateState:
             return updateState(state, payload);
 

@@ -6,20 +6,14 @@ import { Button, ButtonBase, Popover, Toolbar, Tooltip } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { makeStyles } from 'tss-react/mui';
 
-import { Phase, formatFactionName, getFactionTurn } from 'common/Game';
+import { formatFactionName, getFactionTurn } from 'common/Game';
 
+import { PHASE_LABELS } from '../constants';
 import useGameInfo from '../hooks/useGameInfo';
 
 import { FactionColorChip, PhaseBadge } from './ui';
 import GameSummary from './GameSummary';
 import RestartGameDialog from './RestartGameDialog';
-
-const PHASE_LABELS: Record<Phase, string> = {
-    [Phase.STRATEGY]: 'Strategy',
-    [Phase.ACTION]: 'Action',
-    [Phase.STATUS]: 'Status',
-    [Phase.AGENDA]: 'Agenda',
-};
 
 const useStyles = makeStyles()(theme => ({
     root: {
