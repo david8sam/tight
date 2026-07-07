@@ -12,6 +12,7 @@ import { getFactionColors } from '../utils/faction';
 
 import ColorSelect, { COLOR_NONE } from './ColorSelect';
 import FactionSelect from './FactionSelect';
+import FactionSigil from './FactionSigil';
 import PlayerSelect from './PlayerSelect';
 import { Panel, SectionHeader } from './ui';
 
@@ -99,6 +100,7 @@ function FactionsSetup(props: FactionsSetupProps) {
                     <Panel key={i} className={classes.card} accent={accent}>
                         <div className={classes.header}>
                             <SectionHeader>Seat {i + 1}</SectionHeader>
+                            <FactionSigil name={name} size={30} />
                             <Select
                                 className={classes.orderSelect}
                                 name={`${i}`}

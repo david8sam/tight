@@ -44,6 +44,8 @@ const FACTION_ALIASES = {
     hacan: 'emirates-of-hacan',
     sol: 'federation-of-sol',
     creuss: 'ghosts-of-creuss',
+    ghost: 'ghosts-of-creuss', // hedge: alternate key
+    ghosts: 'ghosts-of-creuss', // hedge: alternate key
     l1z1x: 'l1z1x-mindnet',
     mentak: 'mentak-coalition',
     naalu: 'naalu-collective',
@@ -68,10 +70,14 @@ const FACTION_ALIASES = {
     vuilraith: 'vuilraith-cabal', // hedge: alternate key
 };
 
-const TARGETS = [
-    { dir: 'factions', out: 'factions', aliases: FACTION_ALIASES },
-    { dir: 'planets', out: 'planets', aliases: {} },
-];
+// Note: AsyncTI4 has no per-planet artwork (its planet_cards/ folder holds card *frame parts*
+// that the bot composes, and each planet JSON's cardImagePath is null). Planet images must be
+// sourced by hand — drop them into src/client/public/ti4/planets/<slug>.png.
+// By default only the official base + PoK factions (keys of FACTION_ALIASES) are downloaded;
+// pass --all to also pull the homebrew/Discordant Stars/Franken faction files under raw names.
+const TARGETS = [{ dir: 'factions', out: 'factions', aliases: FACTION_ALIASES }];
+
+const INCLUDE_UNOFFICIAL = process.argv.includes('--all');
 
 const IMAGE_RE = /\.(png|jpe?g|webp)$/i;
 
@@ -99,8 +105,15 @@ for (const target of TARGETS) {
     const outDir = resolve(OUT, target.out);
     await mkdir(outDir, { recursive: true });
 
-    const entries = (await listDir(`${SRC}/${target.dir}`)).filter(e => e.type === 'file' && IMAGE_RE.test(e.name));
-    console.log(`\n${target.dir}: ${entries.length} images`);
+    const entries = (await listDir(`${SRC}/${target.dir}`)).filter(e => {
+        if (e.type !== 'file' || !IMAGE_RE.test(e.name)) {
+            return false;
+        }
+
+        const key = e.name.replace(IMAGE_RE, '').toLowerCase();
+        return INCLUDE_UNOFFICIAL || Boolean(target.aliases[key]);
+    });
+    console.log(`\n${target.dir}: ${entries.length} images${INCLUDE_UNOFFICIAL ? '' : ' (official only)'}`);
 
     let done = 0;
     for (const entry of entries) {
@@ -119,5 +132,5 @@ for (const target of TARGETS) {
 }
 
 console.log('\nDone. These files are gitignored (copyrighted — personal/local use only).');
-console.log('Faction files not in FACTION_ALIASES keep their AsyncTI4 name; align them to the');
-console.log("app's faction slugs (see slugify() in src/client/utils/assets.ts) as needed.\n");
+console.log('Planet art is not available from AsyncTI4 — add planets by hand as');
+console.log('src/client/public/ti4/planets/<slug>.png (see slugify() in src/client/utils/assets.ts).\n');

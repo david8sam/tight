@@ -9,6 +9,7 @@ import { GameFaction, calculateVictoryPoints, formatFactionName } from 'common/G
 import useGameInfo from '../hooks/useGameInfo';
 import { getFactionColors } from '../utils/faction';
 
+import FactionSigil from './FactionSigil';
 import { Panel } from './ui';
 
 export interface FactionCardProps {
@@ -33,11 +34,12 @@ const useStyles = makeStyles()(theme => ({
     },
     header: {
         display: 'flex',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         justifyContent: 'space-between',
         gap: theme.spacing(1),
     },
     name: {
+        flex: 1,
         fontFamily: '"Orbitron", sans-serif',
         fontSize: 12.5,
         fontWeight: 600,
@@ -115,6 +117,7 @@ function FactionCard({ faction, statusPill, active, dimmed, hideVictoryPoints, c
     return (
         <Panel className={classes.root} accent={colors.readable} glow={active} dimmed={dimmed}>
             <div className={classes.header}>
+                <FactionSigil name={faction.name} tint={colors.tint} />
                 <Tooltip title={title}>
                     <Typography className={classes.name} component="h3">
                         {title}
