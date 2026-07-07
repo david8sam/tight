@@ -1,7 +1,9 @@
-import React, { MouseEvent, useEffect, useState } from 'react';
+import React, { MouseEvent, useState } from 'react';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Grid, Toolbar, Typography } from '@mui/material';
+import { Button, Collapse, IconButton, Typography, useTheme } from '@mui/material';
+import { alpha } from '@mui/material/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import {
     StrategyCardIndex,
@@ -13,14 +15,14 @@ import {
 } from 'common/Game';
 import { MessageType } from 'common/message';
 
-import AssignStrategyCardTable from '../components/AssignStrategyCardTable';
-import useGameInfo from '../hooks/useGameInfo';
-import api from '../utils/api';
-
 import { useAppContext } from '../Context';
+import useGameInfo from '../hooks/useGameInfo';
+
+import AssignStrategyCardTable from './AssignStrategyCardTable';
 import { Accordion, AccordionDetails, AccordionSummary } from './Accordion';
 import NaaluZeroSelect from './NaaluZeroSelect';
-import StrategyCard, { StrategyCardProps } from './StrategyCard';
+import StrategyCardDetails from './StrategyCardDetails';
+import { FactionColorChip, Panel, SectionHeader } from './ui';
 
 function getCardOwnwer(
     card: StrategyCardIndex,
@@ -41,15 +43,77 @@ function getCardOwnwer(
     return { owner, card: actualCard };
 }
 
+const useStyles = makeStyles()(theme => ({
+    root: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: theme.spacing(1),
+        padding: theme.spacing(1.5),
+    },
+    cardRow: {
+        padding: theme.spacing(1, 1.25),
+    },
+    rowHeader: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: theme.spacing(1.25),
+        cursor: 'pointer',
+        minWidth: 0,
+    },
+    initiative: {
+        width: 22,
+        height: 22,
+        borderRadius: '50%',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: 11,
+        fontWeight: 700,
+        flexShrink: 0,
+    },
+    name: {
+        fontFamily: '"Orbitron", sans-serif',
+        fontSize: 13,
+        fontWeight: 600,
+        letterSpacing: '0.03em',
+        flexShrink: 0,
+    },
+    owner: {
+        minWidth: 0,
+        flex: 1,
+        color: theme.palette.text.secondary,
+        fontSize: 12.5,
+    },
+    spacer: {
+        flex: 1,
+    },
+    expandIcon: {
+        transition: theme.transitions.create('transform', { duration: theme.transitions.duration.shortest }),
+    },
+    expanded: {
+        transform: 'rotate(180deg)',
+    },
+    details: {
+        paddingTop: theme.spacing(1),
+    },
+    naalu: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: theme.spacing(1.5),
+        padding: theme.spacing(1, 1.25),
+    },
+    naaluLabel: {
+        whiteSpace: 'nowrap',
+    },
+}));
+
 function StrategyPhase() {
+    const { classes, cx } = useStyles();
+    const theme = useTheme();
     const { sendData } = useAppContext();
-    const [strategyCards, setStrategryCards] = useState<StrategyCardType[]>([]);
+    const [expandedCard, setExpandedCard] = useState<string | null>(null);
 
-    useEffect(() => {
-        api.strategyCardList().then(cards => setStrategryCards(cards));
-    }, []);
-
-    const { game, gameId, playerId } = useGameInfo();
+    const { game, gameId, playerId, strategyCards } = useGameInfo();
     if (!game) {
         return null;
     }
@@ -68,64 +132,94 @@ function StrategyPhase() {
         sendData({ type, data: { gameId, factionName: take ? factionName : owner, strategyCard: card } });
     };
 
-    let naaluZeroSelect = null;
-    if (getNaalu(game) && !isSpectator) {
-        naaluZeroSelect = (
-            <>
-                <Toolbar />
-                <Toolbar>
-                    <Grid container justifyContent="space-between" alignItems="center" spacing={1}>
-                        <Grid size={3}>
-                            <Typography align="center">Naalu "0":</Typography>
-                        </Grid>
-                        <Grid size={9}>
-                            <NaaluZeroSelect fullWidth />
-                        </Grid>
-                    </Grid>
-                </Toolbar>
-            </>
-        );
-    }
-
     return (
-        <Grid container direction="column">
+        <div className={classes.root}>
             {strategyCards.map((card?: StrategyCardType) => {
                 if (!card) {
                     return null;
                 }
 
-                const { initiative, name } = card;
+                const { initiative, name, primary, secondary, notes, version } = card;
                 const { owner: cardOwner } = getCardOwnwer(initiative, stratCardOwners);
-                let buttonLabel = cardOwner ? 'Return' : 'Take';
-
-                const ButtonProps: NonNullable<StrategyCardProps['ButtonProps']> = {
-                    disabled: isSpectator || (factionName === 'END' && !Boolean(cardOwner)),
-                    onClick: (e: MouseEvent<HTMLButtonElement>) => onTakeCardClick(e, initiative),
-                };
+                const ownerFaction = cardOwner ? game.factions.find(f => f.name === cardOwner) : null;
+                const isExpanded = expandedCard === name;
 
                 return (
-                    <StrategyCard
-                        key={name}
-                        card={card}
-                        owner={cardOwner}
-                        ButtonProps={ButtonProps}
-                        buttonLabel={buttonLabel}
-                    />
+                    <Panel key={name} className={classes.cardRow}>
+                        <div className={classes.rowHeader} onClick={() => setExpandedCard(isExpanded ? null : name)}>
+                            <span
+                                className={classes.initiative}
+                                style={{
+                                    backgroundColor: card.color,
+                                    color: theme.palette.getContrastText(card.color),
+                                }}
+                            >
+                                {initiative}
+                            </span>
+                            <Typography className={classes.name} component="span">
+                                {name}
+                            </Typography>
+                            {ownerFaction ? (
+                                <FactionColorChip className={classes.owner} faction={ownerFaction} label={cardOwner} />
+                            ) : (
+                                <span className={classes.spacer} />
+                            )}
+                            <Button
+                                size="small"
+                                color="primary"
+                                variant={cardOwner ? 'outlined' : 'contained'}
+                                disabled={isSpectator || (factionName === 'END' && !Boolean(cardOwner))}
+                                onClick={e => onTakeCardClick(e, initiative)}
+                            >
+                                {cardOwner ? 'Return' : 'Take'}
+                            </Button>
+                            <IconButton
+                                size="small"
+                                onClick={e => {
+                                    e.stopPropagation();
+                                    setExpandedCard(isExpanded ? null : name);
+                                }}
+                            >
+                                <ExpandMoreIcon
+                                    className={cx(classes.expandIcon, isExpanded && classes.expanded)}
+                                    fontSize="small"
+                                />
+                            </IconButton>
+                        </div>
+                        <Collapse in={isExpanded}>
+                            <div className={classes.details}>
+                                <StrategyCardDetails
+                                    primary={primary}
+                                    secondary={secondary}
+                                    notes={notes}
+                                    version={version}
+                                />
+                            </div>
+                        </Collapse>
+                    </Panel>
                 );
             })}
-            {naaluZeroSelect}
-            <Toolbar />
+
+            {getNaalu(game) && !isSpectator && (
+                <Panel className={classes.naalu}>
+                    <Typography className={classes.naaluLabel} variant="body2">
+                        Naalu "0":
+                    </Typography>
+                    <NaaluZeroSelect fullWidth />
+                </Panel>
+            )}
+
             {!isSpectator && (
                 <Accordion disableMargin>
                     <AccordionSummary disableMargin expandIcon={<ExpandMoreIcon />}>
-                        <Typography>Assign Cards</Typography>
+                        <SectionHeader>Assign cards</SectionHeader>
                     </AccordionSummary>
                     <AccordionDetails>
                         <AssignStrategyCardTable />
                     </AccordionDetails>
                 </Accordion>
             )}
-        </Grid>
+        </div>
     );
 }
 

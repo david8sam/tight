@@ -1,26 +1,43 @@
 import React, { useState } from 'react';
 
-import {
-    Button,
-    Checkbox,
-    Divider,
-    FormControlLabel,
-    FormGroup,
-    Grid,
-    Switch,
-    Toolbar,
-    Typography,
-} from '@mui/material';
+import { Button, Checkbox, FormControlLabel, FormGroup, Switch, Typography } from '@mui/material';
+import { makeStyles } from 'tss-react/mui';
 
 import { calculateVictoryPoints, isPlayerSpectator } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
 import useGameInfo from '../hooks/useGameInfo';
-import RefreshAllbutton from './RefreshAllButton';
+
 import GameSummary from './GameSummary';
+import RefreshAllbutton from './RefreshAllButton';
+import { Panel, SectionHeader } from './ui';
+
+const useStyles = makeStyles()(theme => ({
+    root: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: theme.spacing(1.25),
+        padding: theme.spacing(1.5),
+    },
+    panel: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: theme.spacing(0.75),
+    },
+    summary: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: theme.spacing(1),
+    },
+    winners: {
+        textAlign: 'center',
+    },
+}));
 
 export default function AgendaPhase() {
+    const { classes } = useStyles();
     const { sendData } = useAppContext();
     const [endGameEarly, setEndGameEarly] = useState(false);
     const { game, gameId, playerId } = useGameInfo();
@@ -69,15 +86,14 @@ export default function AgendaPhase() {
     const winners = factionsAtVp.length ? factionsAtVp.map(f => f.name).join(', ') : '';
 
     return (
-        <Grid container direction="column">
-            <Toolbar>
+        <div className={classes.root}>
+            <Panel className={classes.panel}>
+                <SectionHeader>Agenda</SectionHeader>
                 <FormControlLabel
                     disabled={isSpectator}
                     control={<Switch checked={custodiansRemoved} onChange={onCustodiansRemoved} color="primary" />}
                     label="Mecatol Rex Custodians Removed?"
                 />
-            </Toolbar>
-            <Toolbar>
                 <FormGroup>
                     <FormControlLabel
                         disabled={isSpectator || !custodiansRemoved}
@@ -94,59 +110,46 @@ export default function AgendaPhase() {
                         label="Second Agenda"
                     />
                 </FormGroup>
-            </Toolbar>
-            <Toolbar />
+            </Panel>
+
             <RefreshAllbutton />
-            <Divider orientation="horizontal" />
-            <Toolbar sx={{ display: 'flex', flexDirection: 'column' }}>
-                <Typography display="flex" justifyContent="center" width="100%" variant="h5">
-                    Summary
-                </Typography>
+
+            <Panel className={classes.summary}>
+                <SectionHeader>Summary</SectionHeader>
                 <GameSummary />
-            </Toolbar>
+            </Panel>
+
             {canEndEarly && (
-                <>
-                    <Toolbar />
-                    <Divider orientation="horizontal" sx={{ marginTop: 1 }} />
-                    <Toolbar />
-                    <Toolbar>
-                        <Grid container direction="column" spacing={2}>
-                            {winners && (
-                                <Grid>
-                                    <Typography variant="h5">{`${winners} ${
-                                        factionsAtVp.length === 1 ? 'has' : 'have'
-                                    } at least ${game.numVictoryPoints} VPs`}</Typography>
-                                </Grid>
-                            )}
-                            {!winners && (
-                                <Grid>
-                                    <FormControlLabel
-                                        control={
-                                            <Switch
-                                                checked={endGameEarly}
-                                                onChange={e => setEndGameEarly(e.target.checked)}
-                                                color="primary"
-                                            />
-                                        }
-                                        label="End Game Early?"
-                                    />
-                                </Grid>
-                            )}
-                            <Grid>
-                                <Button
-                                    disabled={!endGameEarly && !winners}
+                <Panel className={classes.panel}>
+                    {winners ? (
+                        <Typography className={classes.winners} variant="h6">
+                            {`${winners} ${factionsAtVp.length === 1 ? 'has' : 'have'} at least ${
+                                game.numVictoryPoints
+                            } VPs`}
+                        </Typography>
+                    ) : (
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={endGameEarly}
+                                    onChange={e => setEndGameEarly(e.target.checked)}
                                     color="primary"
-                                    variant="contained"
-                                    fullWidth
-                                    onClick={onEndGame}
-                                >
-                                    <Typography>End Game</Typography>
-                                </Button>
-                            </Grid>
-                        </Grid>
-                    </Toolbar>
-                </>
+                                />
+                            }
+                            label="End Game Early?"
+                        />
+                    )}
+                    <Button
+                        disabled={!endGameEarly && !winners}
+                        color="primary"
+                        variant="contained"
+                        fullWidth
+                        onClick={onEndGame}
+                    >
+                        End Game
+                    </Button>
+                </Panel>
             )}
-        </Grid>
+        </div>
     );
 }
