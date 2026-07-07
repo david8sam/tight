@@ -95,9 +95,10 @@ See `src/client/public/ti4/README.md`.
   app could deadlock on the loading spinner after refresh (fixed in `95fe74c`).
 - Button-in-button DOM nesting + duplicate `'None'` keys in the old StrategyPhase/Accordion
   (gone with the rebuild, `32ece14`).
-- Planet DB typo: `Rescuion` should be `Resculon` (`src/server/database/planet/TI4.ts`).
-  Aliased in the planet-art script; the proper rename needs a saved-game data migration
-  (planets are keyed by name) and is tracked separately.
+- Planet DB typo: `Rescuion` renamed to the official `Resculon`
+  (`src/server/database/planet/TI4.ts`), with a one-off migration of saved games in
+  `data/tight.db` (planets are keyed by name); the planet-art script alias and the
+  `rescuion.png` art filename went away with it.
 
 ## Conventions for future UI work
 

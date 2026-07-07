@@ -238,7 +238,7 @@ const Planets: readonly Planet[] = [
         influence: 2,
     },
     {
-        name: 'Rescuion',
+        name: 'Resculon',
         trait: Traits.CULTURAL,
         resources: 2,
         influence: 0,

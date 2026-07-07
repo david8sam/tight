@@ -30,15 +30,6 @@ const SHEETS = [
     { id: 'pok', json: 'Templates/card/planet/pok/0.json', image: 'Textures/en/card/planet/pok/0.face.jpg' },
 ];
 
-/**
- * TTPG slug -> the app's slug, for the few spots where the app's planet DB spells a name
- * differently. ('Rescuion' in src/server/database/planet/TI4.ts is a typo of the official
- * 'Resculon' — kept as-is because saved games key planets by name.)
- */
-const PLANET_ALIASES = {
-    resculon: 'rescuion',
-};
-
 /** Keep in sync with slugify() in src/client/utils/assets.ts */
 function slugify(name) {
     return name
@@ -88,7 +79,7 @@ try {
             const x = (i % meta.NumHorizontal) * cellW;
             const y = Math.floor(i / meta.NumHorizontal) * cellH;
             const slug = slugify(name);
-            const out = resolve(OUT, `${PLANET_ALIASES[slug] || slug}.png`);
+            const out = resolve(OUT, `${slug}.png`);
 
             // Crop the card cell, then keep the top square where the planet art lives
             const cardPath = join(tmp, 'card.png');
