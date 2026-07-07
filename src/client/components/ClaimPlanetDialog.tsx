@@ -16,6 +16,7 @@ import { useAppContext } from '../Context';
 import useGameInfo from '../hooks/useGameInfo';
 import { getPlanetValue } from '../utils/planet';
 
+import PlanetDisc from './PlanetDisc';
 import { Legendary } from './PlanetIcons';
 import { FactionColorChip } from './ui';
 
@@ -239,6 +240,11 @@ function ClaimPlanetDialog({ open, onClose, planetMap, claimFactionName }: Claim
 
                             return (
                                 <div key={name} className={classes.row}>
+                                    <PlanetDisc
+                                        name={name}
+                                        size={30}
+                                        fallbackColor={trait ? theme.game.trait[trait] : undefined}
+                                    />
                                     <div className={classes.rowMain}>
                                         <span className={classes.rowName}>
                                             {matchIndex >= 0 ? (

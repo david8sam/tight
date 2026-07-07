@@ -13,6 +13,7 @@ import { PlanetData } from '../types';
 import useGameInfo from '../hooks/useGameInfo';
 import { getPlanetValue } from '../utils/planet';
 
+import PlanetDisc from './PlanetDisc';
 import { Biotic, Cybernetic, DMZPlanet, HomePlanet, Legendary, Propulsion, Warfare } from './PlanetIcons';
 import { FactionColorChip, Panel, SectionHeader } from './ui';
 
@@ -181,6 +182,11 @@ function PlanetList({ planets, canInteract, onToggleRefresh, onEdit }: PlanetLis
                 return (
                     <Panel key={name} className={cx(classes.row, !refreshed && classes.exhausted)}>
                         <span className={classes.name}>
+                            <PlanetDisc
+                                name={name}
+                                size={24}
+                                fallbackColor={traits[0] ? theme.game.trait[traits[0]] : undefined}
+                            />
                             <Typography className={classes.nameText} component="span" title={name}>
                                 {name}
                             </Typography>
