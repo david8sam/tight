@@ -4,7 +4,7 @@ import confetti from 'canvas-confetti';
 
 import FlagIcon from '@mui/icons-material/Flag';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { Button, Toolbar, useTheme } from '@mui/material';
+import { Button, useTheme } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 
 import { GameFaction, StrategyCardIndex, getFactionOrder, getNextFaction, isPlayerSpectator } from 'common/Game';
@@ -40,9 +40,6 @@ const useStyles = makeStyles()(theme => ({
     },
     extra: {
         marginTop: theme.spacing(1),
-    },
-    nextTurn: {
-        gridColumn: '1 / -1',
     },
     vpAccordion: {
         backgroundColor: 'rgba(0,0,0,0)',
@@ -194,20 +191,6 @@ function ActionPhase() {
                     </FactionCard>
                 );
             })}
-            {!isSpectator && (
-                <Toolbar className={classes.nextTurn}>
-                    <Button
-                        disabled={factionOrder.every(p => p.passed) || turn !== StrategyCardIndex.END}
-                        color="primary"
-                        variant="contained"
-                        fullWidth
-                        // Will always be a faction, otherwise the button is disabled and not clickable.
-                        onClick={() => onNextTurn(factionOrder.find(p => !p.passed) as GameFaction, false)}
-                    >
-                        Next Turn
-                    </Button>
-                </Toolbar>
-            )}
         </div>
     );
 }

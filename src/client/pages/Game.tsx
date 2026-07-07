@@ -15,6 +15,7 @@ import {
     Phase,
     StrategyCardIndex,
     formatFactionName,
+    getFactionOrder,
     getFactionTurn,
     isPlayerSpectator,
 } from 'common/Game';
@@ -290,16 +291,37 @@ function Game() {
                 );
             }
         } else {
-            endAction = (
-                <Button
-                    size="small"
-                    variant="contained"
-                    disabled={isSpectator || pending || !canNext}
-                    onClick={e => onPhaseClick(e, true)}
-                >
-                    {`Next: ${PHASE_LABELS[nextPhase]}`}
-                </Button>
-            );
+            // In the Action phase the turn cycle repeats until everyone has passed —
+            // offer Next Turn until then, and only then the move to Status.
+            const nextUnpassed = phase === Phase.ACTION ? getFactionOrder(game).find(f => !f.passed) : undefined;
+            if (nextUnpassed) {
+                endAction = (
+                    <Button
+                        size="small"
+                        variant="contained"
+                        disabled={isSpectator || pending}
+                        onClick={() =>
+                            sendData({
+                                type: MessageType.GAME_STATUS_SET,
+                                data: { gameId, turn: nextUnpassed.strategyCard },
+                            })
+                        }
+                    >
+                        Next Turn
+                    </Button>
+                );
+            } else {
+                endAction = (
+                    <Button
+                        size="small"
+                        variant="contained"
+                        disabled={isSpectator || pending || !canNext}
+                        onClick={e => onPhaseClick(e, true)}
+                    >
+                        {`Next: ${PHASE_LABELS[nextPhase]}`}
+                    </Button>
+                );
+            }
         }
 
         turnBanner = (
