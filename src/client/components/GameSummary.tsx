@@ -1,13 +1,62 @@
-import { Box, Divider, Typography, useTheme } from '@mui/material';
 import React, { ReactElement } from 'react';
 
-import { calculateVictoryPoints } from 'common/Game';
+import { useTheme } from '@mui/material/styles';
+import { makeStyles } from 'tss-react/mui';
+
+import { calculateVictoryPoints, formatFactionName } from 'common/Game';
 
 import useGameInfo from '../hooks/useGameInfo';
-import { getFactionColors } from '../utils/faction';
-import TextWithTooltip from './TextWithTooltip';
+
+import { FactionColorChip, StatPill } from './ui';
+
+const useStyles = makeStyles()(theme => ({
+    root: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: theme.spacing(0.75),
+        width: '100%',
+        minWidth: 220,
+    },
+    header: {
+        display: 'flex',
+        justifyContent: 'center',
+        gap: theme.spacing(1),
+        paddingBottom: theme.spacing(0.5),
+        borderBottom: `1px solid ${theme.palette.divider}`,
+    },
+    row: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: theme.spacing(1),
+    },
+    place: {
+        fontFamily: '"Orbitron", sans-serif',
+        fontSize: 11,
+        color: theme.palette.text.disabled,
+        width: 16,
+        textAlign: 'right',
+        flexShrink: 0,
+    },
+    faction: {
+        flex: 1,
+        minWidth: 0,
+        fontSize: 12.5,
+    },
+    vp: {
+        fontFamily: '"Orbitron", sans-serif',
+        fontSize: 13,
+        fontWeight: 600,
+        whiteSpace: 'nowrap',
+    },
+    vpUnit: {
+        fontSize: 10.5,
+        color: theme.palette.text.disabled,
+        fontWeight: 400,
+    },
+}));
 
 export default function GameSummary(): ReactElement | null {
+    const { classes } = useStyles();
     const theme = useTheme();
     const { game } = useGameInfo();
     if (!game) {
@@ -16,10 +65,13 @@ export default function GameSummary(): ReactElement | null {
 
     const { factions, numRounds, numVictoryPoints } = game;
 
-    const vpMap = factions.reduce((r, f) => {
-        r[f.name] = calculateVictoryPoints(game, f.name);
-        return r;
-    }, {} as Record<string, number>);
+    const vpMap = factions.reduce(
+        (r, f) => {
+            r[f.name] = calculateVictoryPoints(game, f.name);
+            return r;
+        },
+        {} as Record<string, number>,
+    );
 
     // Sort by VP
     const leaderboard = game.status.started
@@ -30,25 +82,22 @@ export default function GameSummary(): ReactElement | null {
         : [];
 
     return (
-        <Box display="flex" flexDirection="column" width="100%">
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography sx={{ marginRight: 2 }}>{`Rounds: ${numRounds}`}</Typography>
-                <Typography>{`VP to win: ${numVictoryPoints}`}</Typography>
-            </Box>
-            {game.status.started && (
-                <>
-                    <Divider sx={{ margin: `${theme.spacing()} 0px` }} />
-                    {leaderboard.map(f => (
-                        <TextWithTooltip
-                            key={f.name}
-                            text={`${f.name}: ${vpMap[f.name]} VP `}
-                            title={f.name}
-                            style={getFactionColors(theme, f)}
-                            sx={{ padding: 1 }}
-                        />
-                    ))}
-                </>
-            )}
-        </Box>
+        <div className={classes.root}>
+            <div className={classes.header}>
+                <StatPill size="small">{numRounds} rounds</StatPill>
+                <StatPill size="small" color={theme.palette.primary.main}>
+                    {numVictoryPoints} VP to win
+                </StatPill>
+            </div>
+            {leaderboard.map((f, i) => (
+                <div key={f.name} className={classes.row}>
+                    <span className={classes.place}>{i + 1}</span>
+                    <FactionColorChip className={classes.faction} faction={f} label={formatFactionName(game, f.name)} />
+                    <span className={classes.vp}>
+                        {vpMap[f.name]} <span className={classes.vpUnit}>VP</span>
+                    </span>
+                </div>
+            ))}
+        </div>
     );
 }

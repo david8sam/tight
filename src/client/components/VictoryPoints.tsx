@@ -26,7 +26,7 @@ function VictoryPoints(props: VictoryPointsProps) {
     // const classes = useStyles(props);
     const { factionName, allowShowSecret = false, disabled = false, AccordionProps, hideExtraVp } = props;
     const { sendData } = useAppContext();
-    const { game, gameId, playerId } = useGameInfo();
+    const { game, gameId } = useGameInfo();
 
     const faction = game?.factions.find(f => f.name === factionName);
     if (!game || !faction) {
@@ -82,7 +82,6 @@ function VictoryPoints(props: VictoryPointsProps) {
         });
     };
 
-    const isCurrentFaction = playerId ? faction.playerIds.includes(playerId) : false;
     const totalvp = calculateVictoryPoints(game, factionName);
 
     return (
@@ -112,7 +111,9 @@ function VictoryPoints(props: VictoryPointsProps) {
                             backgroundColor={backgroundColor}
                             editable
                             disabled={disabled}
-                            allowShowSecret={allowShowSecret || isCurrentFaction || so.cleared || status.ended}
+                            // Secrets stay secret until scored — even on the owner's screen, since
+                            // the table can see it. Owners read/edit theirs on the Objectives page.
+                            allowShowSecret={allowShowSecret || so.cleared || status.ended}
                             objective={so.objective}
                             checked={so.cleared}
                             onChange={onSecretObjectiveCheck}

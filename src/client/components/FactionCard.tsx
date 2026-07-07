@@ -7,7 +7,9 @@ import { makeStyles } from 'tss-react/mui';
 import { GameFaction, calculateVictoryPoints, formatFactionName } from 'common/Game';
 
 import useGameInfo from '../hooks/useGameInfo';
+import usePlanetMap from '../hooks/usePlanetMap';
 import { getFactionColors } from '../utils/faction';
+import { getPlanetValue } from '../utils/planet';
 
 import FactionSigil from './FactionSigil';
 import { Panel } from './ui';
@@ -74,6 +76,21 @@ const useStyles = makeStyles()(theme => ({
         fontSize: 11,
         color: theme.palette.text.disabled,
     },
+    planetStats: {
+        display: 'inline-flex',
+        alignItems: 'baseline',
+        gap: theme.spacing(1),
+        fontFamily: '"Orbitron", sans-serif',
+        fontSize: 13,
+        fontWeight: 600,
+    },
+    planetStatLabel: {
+        fontFamily: '"Exo 2", sans-serif',
+        fontSize: 10.5,
+        fontWeight: 500,
+        color: theme.palette.text.disabled,
+        marginRight: 2,
+    },
     strategyPill: {
         display: 'inline-flex',
         alignItems: 'center',
@@ -103,6 +120,7 @@ function FactionCard({ faction, statusPill, active, dimmed, hideVictoryPoints, c
     const { classes, cx } = useStyles();
     const theme = useTheme();
     const { game, strategyCards } = useGameInfo();
+    const planetMap = usePlanetMap();
 
     if (!game) {
         return null;
@@ -113,6 +131,22 @@ function FactionCard({ faction, statusPill, active, dimmed, hideVictoryPoints, c
     const vp = calculateVictoryPoints(game, faction.name);
 
     const card = strategyCards.find(s => s.initiative === faction.strategyCard);
+
+    // Available (refreshed) resources and influence from the faction's planets
+    let resources = 0;
+    let influence = 0;
+    if (planetMap) {
+        faction.planets.forEach(name => {
+            const gamePlanet = game.planets[name];
+            if (!gamePlanet?.refreshed) {
+                return;
+            }
+
+            const merged = { ...planetMap[name], ...gamePlanet, name };
+            resources += getPlanetValue(merged, 'resources') ?? 0;
+            influence += getPlanetValue(merged, 'influence') ?? 0;
+        });
+    }
 
     return (
         <Panel className={classes.root} accent={colors.readable} glow={active} dimmed={dimmed}>
@@ -134,6 +168,20 @@ function FactionCard({ faction, statusPill, active, dimmed, hideVictoryPoints, c
                         </span>
                         <span className={classes.vpTotal}>/ {game.numVictoryPoints} VP</span>
                     </span>
+                )}
+                {planetMap && (
+                    <Tooltip title="Available resources and influence (refreshed planets)">
+                        <span className={classes.planetStats}>
+                            <span style={{ color: theme.game.resource.soft }}>
+                                <span className={classes.planetStatLabel}>R</span>
+                                {resources}
+                            </span>
+                            <span style={{ color: theme.game.influence.soft }}>
+                                <span className={classes.planetStatLabel}>I</span>
+                                {influence}
+                            </span>
+                        </span>
+                    </Tooltip>
                 )}
                 {card && (
                     <span

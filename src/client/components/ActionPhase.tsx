@@ -14,6 +14,7 @@ import { useAppContext } from '../Context';
 import useGameInfo from '../hooks/useGameInfo';
 
 import FactionCard from './FactionCard';
+import FactionPlanets from './FactionPlanets';
 import SpeakerSelect from './SpeakerSelect';
 import { StatPill } from './ui';
 import VictoryPoints from './VictoryPoints';
@@ -172,6 +173,11 @@ function ActionPhase() {
                                 {factionDone ? 'Undone' : 'Done'}
                             </Button>
                         </div>
+                        <FactionPlanets
+                            faction={faction}
+                            disabled={isSpectator}
+                            AccordionProps={{ className: classes.vpAccordion, elevation: 0 }}
+                        />
                         {isPoliticsAndFlipped && (
                             <SpeakerSelect className={classes.extra} fullWidth disabled={isSpectator} />
                         )}

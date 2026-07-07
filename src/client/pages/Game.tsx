@@ -6,7 +6,7 @@ import { isEqual } from 'lodash-es';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { Button, CircularProgress, IconButton, Tooltip, Typography } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { keyframes, useTheme } from '@mui/material/styles';
 import { makeStyles } from 'tss-react/mui';
 
 import {
@@ -77,6 +77,13 @@ function canNextPhase(game: GameClientData): { canNext: boolean; message: string
     return { canNext, message };
 }
 
+// Quick attention flash when a new turn starts — restarted via the banner's key, not turn-long.
+const turnFlash = keyframes`
+    0% { filter: brightness(1); }
+    50% { filter: brightness(1.9); }
+    100% { filter: brightness(1); }
+`;
+
 const useStyles = makeStyles()(theme => ({
     phaseBar: {
         position: 'sticky',
@@ -107,12 +114,20 @@ const useStyles = makeStyles()(theme => ({
         padding: theme.spacing(0, 1.5, 1),
     },
     turnBanner: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: theme.spacing(1.5),
+        flexWrap: 'wrap',
         textAlign: 'center',
         padding: theme.spacing(0.75, 1.5),
         fontFamily: '"Orbitron", sans-serif',
         fontSize: 13,
         fontWeight: 600,
         letterSpacing: '0.02em',
+    },
+    turnFlash: {
+        animation: `${turnFlash} 0.4s ease-in-out 3`,
     },
     content: {
         paddingBottom: theme.spacing(2),
@@ -246,17 +261,54 @@ function Game() {
     if (currentFactionTurn && turnColors) {
         turnBanner = (
             <div
-                className={classes.turnBanner}
+                // Remount per faction so the flash replays at the start of each turn
+                key={currentFactionTurn.name}
+                className={`${classes.turnBanner} ${classes.turnFlash}`}
                 style={{ backgroundColor: turnColors.base, color: turnColors.on }}
             >{`Turn: ${formatFactionName(game, currentFactionTurn.name)}`}</div>
         );
     } else if (factionTurn === 'END') {
+        // Prominent primary action right next to the end-of-round message
+        let endAction = null;
+        if (phase === Phase.AGENDA) {
+            if (round === game.numRounds) {
+                endAction = (
+                    <Button size="small" variant="contained" disabled={isSpectator || pending} onClick={onEndGame}>
+                        End Game
+                    </Button>
+                );
+            } else if (canNext) {
+                endAction = (
+                    <Button
+                        size="small"
+                        variant="contained"
+                        disabled={isSpectator || pending}
+                        onClick={onStartNextRound}
+                    >
+                        Start Next Round
+                    </Button>
+                );
+            }
+        } else {
+            endAction = (
+                <Button
+                    size="small"
+                    variant="contained"
+                    disabled={isSpectator || pending || !canNext}
+                    onClick={e => onPhaseClick(e, true)}
+                >
+                    {`Next: ${PHASE_LABELS[nextPhase]}`}
+                </Button>
+            );
+        }
+
         turnBanner = (
             <div
                 className={classes.turnBanner}
                 style={{ backgroundColor: theme.game.surface.strip, color: theme.palette.text.secondary }}
             >
                 End of round
+                {endAction}
             </div>
         );
     }

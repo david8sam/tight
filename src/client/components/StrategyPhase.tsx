@@ -21,6 +21,7 @@ import useGameInfo from '../hooks/useGameInfo';
 import AssignStrategyCardTable from './AssignStrategyCardTable';
 import { Accordion, AccordionDetails, AccordionSummary } from './Accordion';
 import NaaluZeroSelect from './NaaluZeroSelect';
+import SpeakerSelect from './SpeakerSelect';
 import StrategyCardDetails from './StrategyCardDetails';
 import { FactionColorChip, Panel, SectionHeader } from './ui';
 
@@ -49,6 +50,9 @@ const useStyles = makeStyles()(theme => ({
         flexDirection: 'column',
         gap: theme.spacing(1),
         padding: theme.spacing(1.5),
+    },
+    speakerPanel: {
+        padding: theme.spacing(1, 1.25),
     },
     cardRow: {
         padding: theme.spacing(1, 1.25),
@@ -122,6 +126,10 @@ function StrategyPhase() {
     const stratCardOwners = buildStrategyCardOwners(game);
     const isSpectator = isPlayerSpectator(game, playerId);
 
+    // Once every faction the viewer controls has a card, they can only return — not take more.
+    const myFactions = game.factions.filter(f => playerId && f.playerIds.includes(playerId));
+    const hasTakenCard = myFactions.length > 0 && myFactions.every(f => f.strategyCard !== StrategyCardIndex.NONE);
+
     const onTakeCardClick = (e: MouseEvent<HTMLButtonElement>, strategyCard: StrategyCardIndex) => {
         e.stopPropagation();
 
@@ -134,6 +142,9 @@ function StrategyPhase() {
 
     return (
         <div className={classes.root}>
+            <Panel className={classes.speakerPanel}>
+                <SpeakerSelect size="small" fullWidth disabled={isSpectator} />
+            </Panel>
             {strategyCards.map((card?: StrategyCardType) => {
                 if (!card) {
                     return null;
@@ -168,7 +179,7 @@ function StrategyPhase() {
                                 size="small"
                                 color="primary"
                                 variant={cardOwner ? 'outlined' : 'contained'}
-                                disabled={isSpectator || (factionName === 'END' && !Boolean(cardOwner))}
+                                disabled={isSpectator || (!cardOwner && (hasTakenCard || factionName === 'END'))}
                                 onClick={e => onTakeCardClick(e, initiative)}
                             >
                                 {cardOwner ? 'Return' : 'Take'}
