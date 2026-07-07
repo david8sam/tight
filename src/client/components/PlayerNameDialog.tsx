@@ -3,51 +3,24 @@ import { useNavigate } from 'react-router-dom';
 
 import CloseIcon from '@mui/icons-material/Close';
 import {
-    AppBar,
     Button,
     CircularProgress,
     Dialog,
     DialogContent,
-    FormControl,
-    Grid,
     IconButton,
     MenuItem,
-    SxProps,
     TextField,
     TextFieldProps,
-    Theme,
-    Toolbar,
-    Tooltip,
     Typography,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import { MessageType } from 'common/message';
 
-import useGameInfo from '../hooks/useGameInfo';
-
 import { useAppContext } from '../Context';
+import useGameInfo from '../hooks/useGameInfo';
 import { ActionType } from '../reducer';
-
-import GameInfoToolbar from './GameInfoToolbar';
-
-const styles: Record<string, SxProps<Theme>> = {
-    appBar: {
-        flexDirection: 'row',
-        position: 'relative',
-        alignItems: 'center',
-        paddingRight: 2,
-    },
-    title: {
-        marginLeft: 2,
-        flex: 1,
-    },
-    gridItem: {
-        width: '100%',
-    },
-    joinButton: {
-        marginTop: 2,
-    },
-};
 
 const CREATE_NEW_PLAYER_VALUE = 'Create New Player';
 
@@ -56,7 +29,38 @@ interface PlayerNameDialogProps {
     onClose?: (canceled: boolean) => void;
 }
 
+const useStyles = makeStyles()(theme => ({
+    title: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: theme.spacing(1),
+        padding: theme.spacing(1.75, 2, 1),
+    },
+    titleText: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: theme.spacing(1.25),
+        minWidth: 0,
+    },
+    gameId: {
+        fontFamily: '"Orbitron", sans-serif',
+        fontSize: 12,
+        letterSpacing: '0.08em',
+        padding: theme.spacing(0.5, 1.125),
+        borderRadius: theme.game.radius.control,
+        backgroundColor: alpha(theme.palette.primary.main, 0.14),
+        color: theme.palette.primary.light,
+    },
+    content: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: theme.spacing(2),
+    },
+}));
+
 export default function PlayerNameDialog(props: PlayerNameDialogProps) {
+    const { classes } = useStyles();
     const { open, onClose } = props;
 
     const { sendData, dispatch } = useAppContext();
@@ -98,10 +102,6 @@ export default function PlayerNameDialog(props: PlayerNameDialogProps) {
         onClose?.(false);
     };
 
-    const onCancel = () => {
-        onClose?.(true);
-    };
-
     const onPlayerNameChange: TextFieldProps['onChange'] = e => {
         const newName = e.target.value;
         setSelectedPlayerId(newName);
@@ -109,74 +109,51 @@ export default function PlayerNameDialog(props: PlayerNameDialogProps) {
     };
 
     return (
-        <Dialog open={open} fullScreen>
-            <AppBar sx={styles.appBar}>
-                <Toolbar>
-                    <Tooltip title="Close">
-                        <IconButton onClick={onCancel} size="large">
-                            <CloseIcon />
-                        </IconButton>
-                    </Tooltip>
-                </Toolbar>
-                <Toolbar>
-                    <Typography variant="h6" sx={styles.title}>
-                        Player
-                    </Typography>
-                </Toolbar>
-            </AppBar>
-            <DialogContent dividers>
-                <GameInfoToolbar game={game} sx={{ marginBottom: 1 }} hideRestartButton />
-                <Grid container direction="column" justifyContent="center" alignItems="center" spacing={2}>
-                    <Grid sx={styles.gridItem}>
-                        <FormControl fullWidth variant="standard">
-                            <TextField
-                                label="Select Player"
-                                select
-                                value={
-                                    game.players.includes(selectedPlayerId) ? selectedPlayerId : CREATE_NEW_PLAYER_VALUE
-                                }
-                                fullWidth
-                                variant="outlined"
-                                onChange={onPlayerNameChange}
-                            >
-                                <MenuItem key={CREATE_NEW_PLAYER_VALUE} value={CREATE_NEW_PLAYER_VALUE} divider>
-                                    Create New Player
-                                </MenuItem>
-                                {game.players.map(playerId => (
-                                    <MenuItem key={playerId} value={playerId}>
-                                        {playerId}
-                                    </MenuItem>
-                                ))}
-                            </TextField>
-                        </FormControl>
-                    </Grid>
-                    {isNewPlayer && (
-                        <Grid sx={styles.gridItem}>
-                            <FormControl fullWidth variant="standard">
-                                <TextField
-                                    color="primary"
-                                    variant="outlined"
-                                    label="Enter Name"
-                                    onChange={e => setSelectedPlayerId(e.target.value)}
-                                />
-                            </FormControl>
-                        </Grid>
-                    )}
-                    <Grid sx={styles.gridItem}>
-                        <FormControl fullWidth variant="standard">
-                            <Button
-                                disabled={!Boolean(selectedPlayerId) || joining}
-                                sx={styles.joinButton}
-                                color="primary"
-                                variant="contained"
-                                size="large"
-                                onClick={onJoinClick}
-                            >
-                                {joining ? <CircularProgress size={24} /> : 'Continue'}
-                            </Button>
-                        </FormControl>
-                    </Grid>
-                </Grid>
+        <Dialog open={open} onClose={() => onClose?.(true)} fullWidth maxWidth="xs">
+            <div className={classes.title}>
+                <span className={classes.titleText}>
+                    <Typography variant="h6">Join game</Typography>
+                    <span className={classes.gameId}>{gameId}</span>
+                </span>
+                <IconButton size="small" onClick={() => onClose?.(true)}>
+                    <CloseIcon fontSize="small" />
+                </IconButton>
+            </div>
+            <DialogContent className={classes.content}>
+                <TextField
+                    label="Select Player"
+                    select
+                    value={game.players.includes(selectedPlayerId) ? selectedPlayerId : CREATE_NEW_PLAYER_VALUE}
+                    fullWidth
+                    onChange={onPlayerNameChange}
+                >
+                    <MenuItem key={CREATE_NEW_PLAYER_VALUE} value={CREATE_NEW_PLAYER_VALUE} divider>
+                        Create New Player
+                    </MenuItem>
+                    {game.players.map(playerId => (
+                        <MenuItem key={playerId} value={playerId}>
+                            {playerId}
+                        </MenuItem>
+                    ))}
+                </TextField>
+                {isNewPlayer && (
+                    <TextField
+                        autoFocus
+                        fullWidth
+                        color="primary"
+                        label="Enter Name"
+                        onChange={e => setSelectedPlayerId(e.target.value)}
+                    />
+                )}
+                <Button
+                    disabled={!Boolean(selectedPlayerId) || selectedPlayerId === CREATE_NEW_PLAYER_VALUE || joining}
+                    color="primary"
+                    variant="contained"
+                    size="large"
+                    onClick={onJoinClick}
+                >
+                    {joining ? <CircularProgress size={24} /> : 'Continue'}
+                </Button>
             </DialogContent>
         </Dialog>
     );

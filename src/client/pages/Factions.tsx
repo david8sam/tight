@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import { AppBar, Button, CircularProgress, Grid, IconButton, Toolbar, Tooltip, Typography } from '@mui/material';
+import { Button, CircularProgress, Grid, IconButton, Tooltip } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 
 import { Faction } from 'common/Faction';
@@ -15,12 +15,23 @@ import api from '../utils/api';
 const COUNT = Object.keys(FactionAccordionIndex).length;
 
 const useStyles = makeStyles()(theme => ({
-    appBar: {
+    header: {
+        position: 'sticky',
         top: 0,
+        zIndex: theme.zIndex.appBar,
+        backgroundColor: theme.palette.background.default,
+        borderBottom: `1px solid ${theme.palette.divider}`,
+        padding: theme.spacing(1, 1.5),
     },
-    toolbar: {
-        width: '100%',
-        margin: `${theme.spacing(1)} 0px`,
+    nav: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: theme.spacing(0.5),
+        marginBottom: theme.spacing(1),
+    },
+    expandControls: {
+        display: 'flex',
+        gap: theme.spacing(1),
     },
 }));
 
@@ -76,10 +87,10 @@ function Factions() {
 
     return (
         <>
-            <AppBar className={classes.appBar} color="inherit" position="sticky">
-                <Toolbar classes={{ root: classes.toolbar }} disableGutters>
+            <div className={classes.header}>
+                <div className={classes.nav}>
                     <Tooltip title={prevFaction}>
-                        <IconButton onClick={() => onFactionChange(prevFaction)} size="large">
+                        <IconButton onClick={() => onFactionChange(prevFaction)}>
                             <NavigateBeforeIcon />
                         </IconButton>
                     </Tooltip>
@@ -91,38 +102,30 @@ function Factions() {
                         hideNone
                     />
                     <Tooltip title={nextFaction}>
-                        <IconButton onClick={() => onFactionChange(nextFaction)} size="large">
+                        <IconButton onClick={() => onFactionChange(nextFaction)}>
                             <NavigateNextIcon />
                         </IconButton>
                     </Tooltip>
-                </Toolbar>
-                <Toolbar>
-                    <Grid container direction="row" justifyContent="flex-start" spacing={1}>
-                        <Grid>
-                            <Button
-                                size="small"
-                                color="primary"
-                                variant="contained"
-                                disabled={expanded.every(e => !e)}
-                                onClick={() => setExpanded(Array(COUNT).fill(false))}
-                            >
-                                <Typography variant="body2">Collapse</Typography>
-                            </Button>
-                        </Grid>
-                        <Grid>
-                            <Button
-                                size="small"
-                                color="primary"
-                                variant="contained"
-                                disabled={expanded.every(e => e)}
-                                onClick={() => setExpanded(Array(COUNT).fill(true))}
-                            >
-                                <Typography variant="body2">Expand</Typography>
-                            </Button>
-                        </Grid>
-                    </Grid>
-                </Toolbar>
-            </AppBar>
+                </div>
+                <div className={classes.expandControls}>
+                    <Button
+                        size="small"
+                        variant="outlined"
+                        disabled={expanded.every(e => !e)}
+                        onClick={() => setExpanded(Array(COUNT).fill(false))}
+                    >
+                        Collapse
+                    </Button>
+                    <Button
+                        size="small"
+                        variant="outlined"
+                        disabled={expanded.every(e => e)}
+                        onClick={() => setExpanded(Array(COUNT).fill(true))}
+                    >
+                        Expand
+                    </Button>
+                </div>
+            </div>
             {pending ? (
                 <Grid sx={{ height: '100%' }} container justifyContent="center" alignItems="center" direction="column">
                     <CircularProgress size={'50vw'} />
