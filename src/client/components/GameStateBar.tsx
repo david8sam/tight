@@ -2,16 +2,17 @@ import React, { useRef, useState } from 'react';
 
 import InfoIcon from '@mui/icons-material/Info';
 import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { Button, ButtonBase, Popover, Toolbar, Tooltip } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { makeStyles } from 'tss-react/mui';
 
-import { formatFactionName, getFactionTurn } from 'common/Game';
+import { formatFactionName, getFactionTurn, isPlayerSpectator } from 'common/Game';
 
 import { PHASE_LABELS } from '../constants';
 import useGameInfo from '../hooks/useGameInfo';
 
-import { FactionColorChip, PhaseBadge } from './ui';
+import { FactionColorChip, PhaseBadge, StatPill } from './ui';
 import GameSummary from './GameSummary';
 import RestartGameDialog from './RestartGameDialog';
 
@@ -73,7 +74,7 @@ const useStyles = makeStyles()(theme => ({
 
 function GameStateBar() {
     const { classes } = useStyles();
-    const { game } = useGameInfo();
+    const { game, playerId } = useGameInfo();
 
     const [infoOpen, setInfoOpen] = useState(false);
     const [restartDialogOpen, setRestartDialogOpen] = useState(false);
@@ -102,6 +103,16 @@ function GameStateBar() {
                     <InfoIcon sx={{ fontSize: 14 }} />
                 </ButtonBase>
             </Tooltip>
+
+            {isPlayerSpectator(game, playerId) && (
+                <Tooltip title="You are not assigned to a faction, so game actions are disabled. Assign yourself to a faction on the Players page.">
+                    <span>
+                        <StatPill size="small" icon={<VisibilityIcon sx={{ fontSize: 13 }} />}>
+                            Spectating
+                        </StatPill>
+                    </span>
+                </Tooltip>
+            )}
 
             {started && (
                 <>
