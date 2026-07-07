@@ -21,11 +21,13 @@ is missing, so the app works with an empty folder and gets richer as you add art
 ## Populating
 
 ```
-npm run assets:fetch
+npm run assets:fetch     # faction sigils (AsyncTI4; official factions only, --all for homebrew)
+npm run assets:planets   # planet art squares (sliced from TI4-TTPG card sprite sheets; macOS-only)
 ```
 
-Downloads faction + planet art from the community [AsyncTI4](https://github.com/AsyncTI4/TI4_map_generator_bot)
-resource set into the folders here. You can also drop files in by hand — just match the slug convention.
+Faction sigils come from [AsyncTI4](https://github.com/AsyncTI4/TI4_map_generator_bot); planet art
+is extracted from [TI4-TTPG](https://github.com/TI4-Online/TI4-TTPG) card sheets. You can also drop
+files in by hand — just match the slug convention.
 
 ## ⚠️ Copyright / do not commit
 
