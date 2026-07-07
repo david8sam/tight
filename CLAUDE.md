@@ -42,19 +42,27 @@ The server prints its network URL on startup (e.g. `http://192.168.x.x/`). Use t
 - `npm run build:server` / `npm run build:client` — build individually
 - `npm run clean` — wipe `build/` and `dist/`
 - `npm run server:debug` — server build with `LOG_LEVEL=debug`
+- `npm run assets:fetch` — download faction sigils (AsyncTI4; official factions only, `--all` for homebrew)
+- `npm run assets:planets` — slice per-planet art from TI4-TTPG card sprite sheets (macOS-only, uses `sips`)
+
+Both asset scripts write into the **gitignored** `src/client/public/ti4/` — the art is copyrighted
+(FFG/Asmodee), personal/local use only, never committed.
 
 ## Project Structure
 
 ```
 src/
 ├── client/
-│   ├── components/       # Reusable UI components (30+)
+│   ├── components/       # Reusable UI components; AppShell/NavRail/BottomNav/GameStateBar form the shell
+│   │   └── ui/           # Design-system primitives (Panel, StatPill, SectionHeader, PhaseBadge, FactionColorChip, PageContainer)
 │   ├── pages/            # Route-level pages (Home, Game, Players, Planets, etc.)
+│   ├── theme/            # Design tokens + light/dark createTheme factories; game tokens on theme.game
 │   ├── hooks/            # useWebSocket, useGameInfo, etc.
-│   ├── utils/            # api.ts (native fetch wrapper), planet.ts helpers
-│   ├── assets/           # TI4-specific static assets
-│   ├── App.tsx           # Root component — MUI theme setup
-│   ├── Router.tsx        # React Router 7 config; all pages lazy-loaded via React.lazy
+│   ├── utils/            # api.ts (fetch wrapper), planet.ts, faction.ts (getFactionColors), assets.ts (art URLs + slugify)
+│   ├── assets/           # TI4-specific static assets (planet trait icon overrides)
+│   ├── public/ti4/       # Gitignored downloaded art (faction sigils, planet renders); served at /ti4/...
+│   ├── App.tsx           # Root component — pure wiring (WS + Context + ThemeProvider)
+│   ├── Router.tsx        # React Router 7 config; AppShell wraps all lazy-loaded pages
 │   ├── reducer.ts        # useReducer state (ActionType enum)
 │   ├── Context.ts        # Global context: { state, dispatch, sendData }
 │   ├── types.ts          # Client-only TypeScript types
@@ -117,6 +125,7 @@ Games live in both an in-memory `GameMap` (zero-latency reads, direct mutation) 
 - **Delete**: `deleteGame()` removes from both memory and SQLite
 
 Schema — one table, full game JSON per row:
+
 ```sql
 CREATE TABLE games (id TEXT PRIMARY KEY, data TEXT NOT NULL, updated_at INTEGER NOT NULL)
 ```
@@ -139,42 +148,45 @@ Games with no WS activity for 4 hours are auto-removed by `removeOldGames()` (ru
 
 All pages are lazy-loaded with `React.lazy` + `Suspense`. Key routes:
 
-| Path | Page |
-|------|------|
-| `/` | Home — create or join a game |
-| `/:gameId` | Active game tracker |
-| `/:gameId/players` | Player/faction setup |
-| `/:gameId/planets` | Planet ownership tracking |
-| `/:gameId/objectives` | Public and secret objectives |
-| `/:gameId/results` | End-game results |
-| `/factions` | Faction reference (no game needed) |
-| `/strategy-cards` | Strategy card reference (no game needed) |
+| Path                  | Page                                     |
+| --------------------- | ---------------------------------------- |
+| `/`                   | Home — create or join a game             |
+| `/:gameId`            | Active game tracker                      |
+| `/:gameId/players`    | Player/faction setup                     |
+| `/:gameId/planets`    | Planet ownership tracking                |
+| `/:gameId/objectives` | Public and secret objectives             |
+| `/:gameId/results`    | End-game results                         |
+| `/factions`           | Faction reference (no game needed)       |
+| `/strategy-cards`     | Strategy card reference (no game needed) |
 
 ## TypeScript Configuration
 
-| File | Used for | Notes |
-|------|----------|-------|
-| `tsconfig.json` | Base | strict mode, `baseUrl: "src"`, `paths: { "common/*": ["common/*"] }` |
-| `tsconfig.server.json` | Server webpack build | NodeNext module resolution |
-| `tsconfig.web.json` | Client Vite build | Bundler resolution, `jsx: react-jsx`, `types: ["vite/client"]` |
+| File                   | Used for             | Notes                                                                |
+| ---------------------- | -------------------- | -------------------------------------------------------------------- |
+| `tsconfig.json`        | Base                 | strict mode, `baseUrl: "src"`, `paths: { "common/*": ["common/*"] }` |
+| `tsconfig.server.json` | Server webpack build | NodeNext module resolution                                           |
+| `tsconfig.web.json`    | Client Vite build    | Bundler resolution, `jsx: react-jsx`, `types: ["vite/client"]`       |
 
 The `ts-node` section in `tsconfig.json` forces `webpack.config.ts` to load as CJS — required because `"type": "module"` is set in `package.json`.
 
 ## Key Technologies
 
 **Frontend:**
+
 - React 18 + React Router 7
 - MUI 7 (`@mui/material`, `@mui/icons-material`) + Emotion
 - `tss-react` — `makeStyles` replacement (MUI v7 removed `@mui/styles`)
 - `canvas-confetti` — end-game animations
 
 **Backend:**
+
 - Express 5
 - `ws` — WebSocket server (port 8080)
 - `better-sqlite3` — synchronous SQLite, stored at `data/tight.db`
 - Node 20.11+
 
 **Build:**
+
 - Vite 8 + `@vitejs/plugin-react` — client
 - Webpack 5 + `ts-loader` — server only
 - TypeScript 5.4
@@ -184,14 +196,16 @@ The `ts-node` section in `tsconfig.json` forces `webpack.config.ts` to load as C
 These changed significantly in v7 and will trip up future edits.
 
 **makeStyles** — use `tss-react/mui`, not `@mui/styles`:
+
 ```ts
 import { makeStyles } from 'tss-react/mui';
-const useStyles = makeStyles()((theme) => ({ root: { color: theme.palette.primary.main } }));
+const useStyles = makeStyles()(theme => ({ root: { color: theme.palette.primary.main } }));
 // Usage:
-const { classes } = useStyles();  // note destructuring, not direct assignment
+const { classes } = useStyles(); // note destructuring, not direct assignment
 ```
 
 **Grid v2** — `item`/`xs`/`sm` props are gone, replaced by `size`:
+
 ```tsx
 // Old (v1):  <Grid item xs={12} sm={6} />
 // New (v2):  <Grid size={{ xs: 12, sm: 6 }} />
@@ -202,10 +216,36 @@ const { classes } = useStyles();  // note destructuring, not direct assignment
 ```
 
 **Vite + MUI barrel imports** — Vite 8 (Rolldown) is stricter about ESM named exports than webpack. If a build fails with `MISSING_EXPORT` for a `*Props` type from `@mui/material`, use `import type` from the component's subpath:
+
 ```ts
 // Instead of: import { AccordionActionsProps } from '@mui/material'
 import type { AccordionActionsProps } from '@mui/material/AccordionActions';
 ```
+
+## Design System (2026 frontend rework)
+
+The client was rebuilt in July 2026 (see `docs/FRONTEND_REWORK.md` for the full narrative and
+decisions log). Conventions for UI work:
+
+- **Compose from primitives**: `src/client/components/ui/` (Panel, StatPill, SectionHeader,
+  PhaseBadge, FactionColorChip, PageContainer). Pages should not invent their own cards/pills.
+- **Game-specific colors come from `theme.game`** (declared in `src/client/theme/tokens.ts`,
+  attached via module augmentation): planet traits, tech specialties, resource/influence,
+  layered surfaces, state opacities, radii. Never hardcode hex values in components.
+- **Faction colors go through `getFactionColors(theme, faction)`** in `utils/faction.ts`.
+  Use `.readable` for anything drawn on panels (it auto-adjusts low-contrast colors, e.g.
+  black on the dark theme, yellow on the light theme); `.tint`/`.border`/`.glow` for fills,
+  rings, and the active-turn emphasis.
+- **Faction display convention**: full `formatFactionName(game, name)` — "Faction (username)" —
+  everywhere, truncated with a tooltip when space runs out. The player id _is_ the username.
+- **Trait vs tech specialty are distinct**: planet type (Cultural/Hazardous/Industrial) and
+  tech-skip icons (biotic/warfare/propulsion/cybernetic) render as separate elements.
+- **Optional art pattern**: `FactionSigil` and `PlanetDisc` try the local image
+  (`utils/assets.ts` URL helpers over gitignored `public/ti4/`) and fall back to generated
+  glyphs/colors. Never require an image file to exist.
+- **The data contract is frozen**: `reducer.ts`, `Context.ts`, `useWebSocket.ts`,
+  `common/message.ts`, `common/Game.ts` keep their shapes — including the `stragetyCardFlipped`
+  typo, which the server depends on.
 
 ## Adding a New WebSocket Message Type
 
