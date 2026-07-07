@@ -1,4 +1,4 @@
-import { Grid, MenuItem, TextField, Toolbar } from '@mui/material';
+import { MenuItem, TextField } from '@mui/material';
 import React, { useMemo, useState } from 'react';
 
 import { Objective as ObjectiveType, isPlayerSpectator } from 'common/Game';
@@ -6,6 +6,7 @@ import { MessageType } from 'common/message';
 
 import Objective from '../components/Objective';
 import PublicObjectives from '../components/PublicObjectives';
+import { PageContainer } from '../components/ui';
 import useAutoNavigate from '../hooks/useAutoNavigate';
 import useGameInfo from '../hooks/useGameInfo';
 
@@ -61,51 +62,43 @@ function StrategyCards() {
     const isPlayer = !isPlayerSpectator(game, playerId);
 
     return (
-        <Grid container direction="column">
-            <Grid>
-                <PublicObjectives
-                    creatable={isPlayer}
-                    deletable={isPlayer}
-                    editable={isPlayer}
-                    publicObjectives={game.publicObjectives}
-                    onChange={onPublicObjectivesChange}
-                    showFactions
-                />
-            </Grid>
+        <PageContainer>
+            <PublicObjectives
+                creatable={isPlayer}
+                deletable={isPlayer}
+                editable={isPlayer}
+                publicObjectives={game.publicObjectives}
+                onChange={onPublicObjectivesChange}
+                showFactions
+            />
             {/* Only players have a secret objective */}
             {isPlayer && (
                 <>
-                    <Toolbar>
-                        <Grid container justifyContent="center">
-                            <TextField
-                                sx={{ marginTop: 2 }}
-                                fullWidth
-                                select
-                                label="My Secret Objectives"
-                                value={factionName}
-                                onChange={e => setFactionName(e.target.value)}
-                            >
-                                {factionNameOptions.map(name => (
-                                    <MenuItem key={name} value={name}>
-                                        {name}
-                                    </MenuItem>
-                                ))}
-                            </TextField>
-                        </Grid>
-                    </Toolbar>
-                    <Grid>
-                        {secretObjectives?.map(so => (
-                            <Objective
-                                key={so.objective.id}
-                                editable={isPlayer}
-                                objective={so.objective}
-                                onChange={onSecretObjectiveChange}
-                            />
+                    <TextField
+                        sx={{ marginTop: 3, marginBottom: 1 }}
+                        fullWidth
+                        select
+                        label="My Secret Objectives"
+                        value={factionName}
+                        onChange={e => setFactionName(e.target.value)}
+                    >
+                        {factionNameOptions.map(name => (
+                            <MenuItem key={name} value={name}>
+                                {name}
+                            </MenuItem>
                         ))}
-                    </Grid>
+                    </TextField>
+                    {secretObjectives?.map(so => (
+                        <Objective
+                            key={so.objective.id}
+                            editable={isPlayer}
+                            objective={so.objective}
+                            onChange={onSecretObjectiveChange}
+                        />
+                    ))}
                 </>
             )}
-        </Grid>
+        </PageContainer>
     );
 }
 

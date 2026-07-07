@@ -1,4 +1,4 @@
-import { Button, Divider, Grid, Toolbar, Typography } from '@mui/material';
+import { Button, Toolbar } from '@mui/material';
 import confetti from 'canvas-confetti';
 import React, { useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -8,6 +8,7 @@ import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
 import Results from '../components/Results';
+import { PageContainer } from '../components/ui';
 import useGameInfo from '../hooks/useGameInfo';
 
 function GameResults() {
@@ -67,20 +68,16 @@ function GameResults() {
     const isSpectator = isPlayerSpectator(game, playerId);
 
     return (
-        <Grid container direction="column" justifyContent="center">
-            <Divider orientation="horizontal" />
+        <PageContainer maxWidth={760}>
             <Results />
-            <Toolbar />
-            <Divider orientation="horizontal" />
-            <Toolbar />
             {!isSpectator && (
-                <Toolbar>
+                <Toolbar sx={{ marginTop: 3 }} disableGutters>
                     <Button fullWidth color="primary" variant="contained" onClick={onResumeGame}>
-                        <Typography>Resume Game</Typography>
+                        Resume Game
                     </Button>
                 </Toolbar>
             )}
-        </Grid>
+        </PageContainer>
     );
 }
 

@@ -14,7 +14,7 @@ import api from '../utils/api';
 // Num accordions
 const COUNT = Object.keys(FactionAccordionIndex).length;
 
-const useStyles = makeStyles()((theme) => ({
+const useStyles = makeStyles()(theme => ({
     appBar: {
         top: 0,
     },

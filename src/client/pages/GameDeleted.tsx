@@ -1,21 +1,37 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Container, Toolbar, Typography } from '@mui/material';
+
+import { Button, Typography } from '@mui/material';
+import { makeStyles } from 'tss-react/mui';
+
+import { PageContainer, Panel } from '../components/ui';
+
+const useStyles = makeStyles()(theme => ({
+    panel: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: theme.spacing(2.5),
+        padding: theme.spacing(4, 3),
+        marginTop: theme.spacing(6),
+        textAlign: 'center',
+    },
+}));
 
 function GameDeleted() {
+    const { classes } = useStyles();
     const { gameId } = useParams();
     const navigate = useNavigate();
 
     return (
-        <Container sx={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center' }}>
-            <Typography variant="h4" align="center">
-                {`Game ${gameId} has been deleted due to inactivity`}
-            </Typography>
-            <Toolbar />
-            <Button sx={{ margin: 1 }} color="primary" variant="contained" size="large" onClick={() => navigate('/')}>
-                Go to Home page
-            </Button>
-        </Container>
+        <PageContainer maxWidth={560}>
+            <Panel className={classes.panel}>
+                <Typography variant="h5">{`Game ${gameId} has been deleted due to inactivity`}</Typography>
+                <Button fullWidth color="primary" variant="contained" size="large" onClick={() => navigate('/')}>
+                    Go to Home page
+                </Button>
+            </Panel>
+        </PageContainer>
     );
 }
 
