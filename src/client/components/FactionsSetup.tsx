@@ -1,16 +1,19 @@
-import { MenuItem, Select, SelectProps, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import React, { useEffect, useState } from 'react';
+
+import { MenuItem, Select, SelectProps, useTheme } from '@mui/material';
+import { makeStyles } from 'tss-react/mui';
 
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
-
 import useGameInfo from '../hooks/useGameInfo';
 import api from '../utils/api';
+import { getFactionColors } from '../utils/faction';
 
-import ColorSelect from './ColorSelect';
+import ColorSelect, { COLOR_NONE } from './ColorSelect';
 import FactionSelect from './FactionSelect';
 import PlayerSelect from './PlayerSelect';
+import { Panel, SectionHeader } from './ui';
 
 interface FactionsSetupProps {
     disableFactionSelect?: boolean;
@@ -18,7 +21,35 @@ interface FactionsSetupProps {
     disableReordering?: boolean;
 }
 
+const useStyles = makeStyles()(theme => ({
+    root: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        gap: theme.spacing(1.5),
+        padding: theme.spacing(1.5),
+    },
+    card: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: theme.spacing(1.5),
+    },
+    header: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: theme.spacing(1),
+    },
+    orderSelect: {
+        minWidth: 64,
+        '& .MuiSelect-select': {
+            padding: theme.spacing(0.5, 1),
+        },
+    },
+}));
+
 function FactionsSetup(props: FactionsSetupProps) {
+    const { classes } = useStyles();
+    const theme = useTheme();
     const { sendData } = useAppContext();
     const { game, gameId } = useGameInfo();
     const { factions, players } = game || {};
@@ -59,25 +90,22 @@ function FactionsSetup(props: FactionsSetupProps) {
     }));
 
     return (
-        <Table>
-            <TableBody>
-                {factions.map(({ name, color, playerIds }, i) => (
-                    <TableRow key={i}>
-                        <TableCell
-                            sx={{
-                                padding: '16px 8px 0px 8px',
-                                width: '60px',
-                                textAlign: 'center',
-                                verticalAlign: 'top',
-                            }}
-                        >
+        <div className={classes.root}>
+            {factions.map((faction, i) => {
+                const { name, color, playerIds } = faction;
+                const accent = color && color !== COLOR_NONE ? getFactionColors(theme, faction).readable : undefined;
+
+                return (
+                    <Panel key={i} className={classes.card} accent={accent}>
+                        <div className={classes.header}>
+                            <SectionHeader>Seat {i + 1}</SectionHeader>
                             <Select
-                                sx={{ padding: 0 }}
+                                className={classes.orderSelect}
                                 name={`${i}`}
                                 value={i}
                                 onChange={onFactionReorder}
-                                inputProps={{ sx: { paddingLeft: '4px' } }}
                                 disabled={disableReordering}
+                                size="small"
                             >
                                 {playerOrderOptions.map(o => (
                                     <MenuItem key={o.value} value={o.value}>
@@ -85,40 +113,29 @@ function FactionsSetup(props: FactionsSetupProps) {
                                     </MenuItem>
                                 ))}
                             </Select>
-                        </TableCell>
-                        <TableCell
-                            sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                width: '100%',
-                                padding: '16px 8px 16px 0px',
-                            }}
-                        >
-                            <FactionSelect
-                                disabled={disableFactionSelect}
-                                sx={{ marginBottom: 1 }}
-                                order={i}
-                                factionNames={factionNames}
-                                value={name}
-                                onChange={name => onFactionChange(i, name)}
-                            />
-                            <ColorSelect
-                                sx={{ marginBottom: 1 }}
-                                order={i}
-                                value={color}
-                                onChange={color => onColorChange(i, color)}
-                                disableNone={disableColorNone}
-                            />
-                            <PlayerSelect
-                                playerNames={players || []}
-                                value={playerIds}
-                                onChange={player => onPlayerChange(i, player)}
-                            />
-                        </TableCell>
-                    </TableRow>
-                ))}
-            </TableBody>
-        </Table>
+                        </div>
+                        <FactionSelect
+                            disabled={disableFactionSelect}
+                            order={i}
+                            factionNames={factionNames}
+                            value={name}
+                            onChange={name => onFactionChange(i, name)}
+                        />
+                        <ColorSelect
+                            order={i}
+                            value={color}
+                            onChange={color => onColorChange(i, color)}
+                            disableNone={disableColorNone}
+                        />
+                        <PlayerSelect
+                            playerNames={players || []}
+                            value={playerIds}
+                            onChange={player => onPlayerChange(i, player)}
+                        />
+                    </Panel>
+                );
+            })}
+        </div>
     );
 }
 

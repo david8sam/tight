@@ -1,7 +1,7 @@
-import { Grid } from '@mui/material';
 import React from 'react';
 
 import FactionsSetup from '../components/FactionsSetup';
+import { PageContainer } from '../components/ui';
 import useGameInfo from '../hooks/useGameInfo';
 
 /**
@@ -15,11 +15,9 @@ function Players() {
     }
 
     return (
-        <Grid container direction="column">
-            <Grid>
-                <FactionsSetup disableFactionSelect disableColorNone />
-            </Grid>
-        </Grid>
+        <PageContainer>
+            <FactionsSetup disableFactionSelect disableColorNone />
+        </PageContainer>
     );
 }
 
