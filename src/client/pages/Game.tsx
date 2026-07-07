@@ -5,7 +5,7 @@ import { isEqual } from 'lodash-es';
 
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import { Button, CircularProgress, IconButton, Toolbar, Tooltip, Typography } from '@mui/material';
+import { Button, CircularProgress, IconButton, Tooltip, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { makeStyles } from 'tss-react/mui';
 
@@ -24,7 +24,6 @@ import ActionPhase from '../components/ActionPhase';
 import AgendaPhase from '../components/AgendaPhase';
 import PlayerNameDialog from '../components/PlayerNameDialog';
 import PlayerSetup from '../components/PlayerSetup';
-import SpeakerSelect from '../components/SpeakerSelect';
 import StatusPhase from '../components/StatusPhase';
 import StrategyPhase from '../components/StrategyPhase';
 import { PhaseBadge } from '../components/ui';
@@ -117,9 +116,6 @@ const useStyles = makeStyles()(theme => ({
     },
     content: {
         paddingBottom: theme.spacing(2),
-    },
-    speakerToolbar: {
-        margin: theme.spacing(2, 0),
     },
 }));
 
@@ -308,12 +304,7 @@ function Game() {
                 {phaseStatus && <div className={classes.phaseStatus}>{phaseStatus}</div>}
                 {turnBanner}
             </div>
-            <div className={classes.content}>
-                {getPhaseContents(phase)}
-                <Toolbar className={classes.speakerToolbar}>
-                    <SpeakerSelect fullWidth disabled={isSpectator} />
-                </Toolbar>
-            </div>
+            <div className={classes.content}>{getPhaseContents(phase)}</div>
         </>
     );
 }

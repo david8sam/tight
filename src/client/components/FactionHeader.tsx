@@ -4,6 +4,8 @@ import { Grid, SxProps, Typography, useTheme } from '@mui/material';
 import { GameFaction, formatFactionName } from 'common/Game';
 
 import useGameInfo from '../hooks/useGameInfo';
+import { getFactionColors } from '../utils/faction';
+
 import InitiativeLabel from './InitiativeLabel';
 
 export interface FactionHeaderProps {
@@ -28,8 +30,8 @@ function FactionHeader(props: FactionHeaderProps) {
     const card = hideInitiative ? null : strategyCards.find(s => s.initiative === strategyCard);
     const cardBackgroundColor = card?.color || theme.palette.grey[700];
     const cardColor = theme.palette.getContrastText(cardBackgroundColor);
-    const factionBackgroundColor = faction.color;
-    const factionColor = theme.palette.getContrastText(factionBackgroundColor);
+    // getFactionColors guards against the 'None' unset-color sentinel, which getContrastText rejects
+    const { base: factionBackgroundColor, on: factionColor } = getFactionColors(theme, faction);
 
     const title = formatFactionName(game, faction.name);
     const factionStyle = card

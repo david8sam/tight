@@ -2,22 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import CloseIcon from '@mui/icons-material/Close';
-import {
-    AppBar,
-    Button,
-    Dialog,
-    DialogContent,
-    IconButton,
-    SxProps,
-    Theme,
-    Toolbar,
-    Tooltip,
-    Typography,
-} from '@mui/material';
+import { Button, CircularProgress, Dialog, DialogContent, IconButton, Typography } from '@mui/material';
+import { makeStyles } from 'tss-react/mui';
 
 import { useAppContext } from '../Context';
 import { ActionType } from '../reducer';
-
 import api from '../utils/api';
 
 import NewGameForm, { GameOptions, DEFAULT_GAME_OPTIONS } from './NewGameForm';
@@ -27,20 +16,22 @@ export interface NewGameDialogProps {
     onClose: () => void;
 }
 
-const styles: Record<string, SxProps<Theme>> = {
-    appBar: {
-        flexDirection: 'row',
-        position: 'relative',
-        alignItems: 'center',
-        paddingRight: 2,
-    },
+const useStyles = makeStyles()(theme => ({
     title: {
-        marginLeft: 2,
-        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: theme.spacing(1.75, 2, 1),
     },
-};
+    content: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: theme.spacing(2),
+    },
+}));
 
 function NewGameDialog(props: NewGameDialogProps) {
+    const { classes } = useStyles();
     const { dispatch } = useAppContext();
     const { open, onClose } = props;
 
@@ -48,10 +39,6 @@ function NewGameDialog(props: NewGameDialogProps) {
     const [creatingGame, setCreatingGame] = useState(false);
 
     const navigate = useNavigate();
-
-    const onCancel = () => {
-        onClose();
-    };
 
     const onSave = () => {
         setCreatingGame(true);
@@ -70,24 +57,24 @@ function NewGameDialog(props: NewGameDialogProps) {
     const hasError = !publicObjectives?.length;
 
     return (
-        <Dialog open={open} fullScreen>
-            <AppBar sx={styles.appBar}>
-                <Toolbar>
-                    <Tooltip title="Close">
-                        <IconButton onClick={onCancel} size="large">
-                            <CloseIcon />
-                        </IconButton>
-                    </Tooltip>
-                </Toolbar>
-                <Typography variant="h6" sx={styles.title}>
-                    Create New Game
-                </Typography>
-                <Button disabled={hasError || creatingGame} autoFocus color="inherit" onClick={onSave}>
-                    Save
-                </Button>
-            </AppBar>
-            <DialogContent dividers>
+        <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+            <div className={classes.title}>
+                <Typography variant="h6">Create game</Typography>
+                <IconButton size="small" onClick={onClose}>
+                    <CloseIcon fontSize="small" />
+                </IconButton>
+            </div>
+            <DialogContent className={classes.content}>
                 <NewGameForm gameOptions={gameOptions} onChange={options => setGameOptions(options)} />
+                <Button
+                    color="primary"
+                    variant="contained"
+                    size="large"
+                    disabled={hasError || creatingGame}
+                    onClick={onSave}
+                >
+                    {creatingGame ? <CircularProgress size={24} /> : 'Create game'}
+                </Button>
             </DialogContent>
         </Dialog>
     );

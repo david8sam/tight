@@ -36,7 +36,8 @@ function VictoryPoints(props: VictoryPointsProps) {
     const { publicObjectives: gamePOs, status } = game;
     const { color: factionColor, publicObjectives, secretObjectives } = faction;
 
-    const pc = factionColor || theme.palette.grey[700];
+    // 'None' is the unset color sentinel — getContrastText would throw on it
+    const pc = !factionColor || factionColor === 'None' ? theme.palette.grey[700] : factionColor;
     const color = theme.palette.getContrastText(pc);
     const backgroundColor = pc;
 
@@ -90,7 +91,7 @@ function VictoryPoints(props: VictoryPointsProps) {
                 <Typography>{`${totalvp} Victory Points`}</Typography>
             </AccordionSummary>
             <AccordionDetails sx={{ padding: `0px ${theme.spacing()}` }}>
-                <Grid container justifyContent="flex-start" alignItems="center" sx={{ width: 'auto' }}>
+                <Grid container direction="column" alignItems="stretch" sx={{ gap: 0.25 }}>
                     {gamePOs.map(po => (
                         <ObjectiveCheckbox
                             key={po.id}

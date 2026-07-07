@@ -1,12 +1,7 @@
-import { Button, Toolbar } from '@mui/material';
 import confetti from 'canvas-confetti';
 import React, { useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { isPlayerSpectator } from 'common/Game';
-import { MessageType } from 'common/message';
-
-import { useAppContext } from '../Context';
 import Results from '../components/Results';
 import { PageContainer } from '../components/ui';
 import useGameInfo from '../hooks/useGameInfo';
@@ -16,8 +11,7 @@ function GameResults() {
     useLocation();
 
     const navigate = useNavigate();
-    const { game, gameId, playerId } = useGameInfo();
-    const { sendData } = useAppContext();
+    const { game, gameId } = useGameInfo();
     const animationIdRef = useRef(0);
 
     const url = window.location.pathname;
@@ -56,27 +50,13 @@ function GameResults() {
         }
     }, [game, gameId, game?.status.ended]);
 
-    const onResumeGame = () => {
-        window.clearInterval(animationIdRef.current);
-        sendData({ type: MessageType.END_GAME, data: { gameId, ended: false } });
-    };
-
     if (!game || !game.status.ended) {
         return null;
     }
 
-    const isSpectator = isPlayerSpectator(game, playerId);
-
     return (
         <PageContainer maxWidth={760}>
             <Results />
-            {!isSpectator && (
-                <Toolbar sx={{ marginTop: 3 }} disableGutters>
-                    <Button fullWidth color="primary" variant="contained" onClick={onResumeGame}>
-                        Resume Game
-                    </Button>
-                </Toolbar>
-            )}
         </PageContainer>
     );
 }
