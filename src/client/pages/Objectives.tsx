@@ -4,7 +4,6 @@ import React, { useMemo, useState } from 'react';
 import { Objective as ObjectiveType, isPlayerSpectator } from 'common/Game';
 import { MessageType } from 'common/message';
 
-import GameInfoToolbar from '../components/GameInfoToolbar';
 import Objective from '../components/Objective';
 import PublicObjectives from '../components/PublicObjectives';
 import useAutoNavigate from '../hooks/useAutoNavigate';
@@ -63,7 +62,6 @@ function StrategyCards() {
 
     return (
         <Grid container direction="column">
-            <GameInfoToolbar game={game} />
             <Grid>
                 <PublicObjectives
                     creatable={isPlayer}

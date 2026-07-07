@@ -7,7 +7,6 @@ import { isPlayerSpectator } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
-import GameInfoToolbar from '../components/GameInfoToolbar';
 import Results from '../components/Results';
 import useGameInfo from '../hooks/useGameInfo';
 
@@ -69,7 +68,6 @@ function GameResults() {
 
     return (
         <Grid container direction="column" justifyContent="center">
-            <GameInfoToolbar game={game} />
             <Divider orientation="horizontal" />
             <Results />
             <Toolbar />

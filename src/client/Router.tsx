@@ -3,7 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 import { CircularProgress, Grid } from '@mui/material';
 
-import Header from './components/Header';
+import AppShell from './components/AppShell';
 import GameWrapper from './GameWrapper';
 
 const Home = React.lazy(() => import('./pages/Home'));
@@ -29,26 +29,27 @@ function renderGamePage(page: ComponentType) {
 function Router() {
     return (
         <BrowserRouter>
-            <Header />
-            <Suspense fallback={PageFallback}>
-            <Routes>
-                {/* Pages accessible to anonymous users */}
-                <Route path="/" element={renderGamePage(Home)} />
-                <Route path="/factions" element={renderGamePage(Factions)} />
-                <Route path="/strategy-cards" element={renderGamePage(StrategyCards)} />
+            <AppShell>
+                <Suspense fallback={PageFallback}>
+                    <Routes>
+                        {/* Pages accessible to anonymous users */}
+                        <Route path="/" element={renderGamePage(Home)} />
+                        <Route path="/factions" element={renderGamePage(Factions)} />
+                        <Route path="/strategy-cards" element={renderGamePage(StrategyCards)} />
 
-                <Route path="/:gameId" element={renderGamePage(Game)} />
-                <Route path="/:gameId/status" element={renderGamePage(Game)} />
-                <Route path="/:gameId/players" element={renderGamePage(Players)} />
-                <Route path="/:gameId/results" element={renderGamePage(GameResults)} />
-                <Route path="/:gameId/objectives" element={renderGamePage(Objectives)} />
-                <Route path="/:gameId/planets" element={renderGamePage(Planets)} />
-                <Route path="/:gameId/deleted" element={<GameDeleted />} />
+                        <Route path="/:gameId" element={renderGamePage(Game)} />
+                        <Route path="/:gameId/status" element={renderGamePage(Game)} />
+                        <Route path="/:gameId/players" element={renderGamePage(Players)} />
+                        <Route path="/:gameId/results" element={renderGamePage(GameResults)} />
+                        <Route path="/:gameId/objectives" element={renderGamePage(Objectives)} />
+                        <Route path="/:gameId/planets" element={renderGamePage(Planets)} />
+                        <Route path="/:gameId/deleted" element={<GameDeleted />} />
 
-                {/* Redirect all other pages to home */}
-                <Route path="*" element={<Navigate to="/" />} />
-            </Routes>
-            </Suspense>
+                        {/* Redirect all other pages to home */}
+                        <Route path="*" element={<Navigate to="/" />} />
+                    </Routes>
+                </Suspense>
+            </AppShell>
         </BrowserRouter>
     );
 }

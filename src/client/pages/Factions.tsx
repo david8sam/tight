@@ -11,14 +11,12 @@ import FactionInfo, { FactionAccordionIndex, FactionInfoProps } from '../compone
 import FactionSelect from '../components/FactionSelect';
 import api from '../utils/api';
 
-import { HEADER_HEIGHT } from '../constants';
-
 // Num accordions
 const COUNT = Object.keys(FactionAccordionIndex).length;
 
 const useStyles = makeStyles()((theme) => ({
     appBar: {
-        top: HEADER_HEIGHT,
+        top: 0,
     },
     toolbar: {
         width: '100%',

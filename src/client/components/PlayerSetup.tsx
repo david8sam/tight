@@ -10,7 +10,6 @@ import useGameInfo from '../hooks/useGameInfo';
 import { COLOR_NONE } from './ColorSelect';
 import { FACTION_NONE } from './FactionSelect';
 import FactionsSetup from './FactionsSetup';
-import GameInfoToolbar from './GameInfoToolbar';
 
 function canStart(game: GameClientData): boolean {
     const { numPlayers } = game;
@@ -68,7 +67,6 @@ function PlayerSetup() {
 
     return (
         <>
-            <GameInfoToolbar game={game} />
             <Toolbar>
                 <Grid container flexDirection="column" alignItems="center">
                     <Grid container justifyContent="flex-end" alignItems="center" spacing={1}>

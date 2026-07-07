@@ -2,7 +2,6 @@ import { Grid } from '@mui/material';
 import React from 'react';
 
 import FactionsSetup from '../components/FactionsSetup';
-import GameInfoToolbar from '../components/GameInfoToolbar';
 import useGameInfo from '../hooks/useGameInfo';
 
 /**
@@ -17,7 +16,6 @@ function Players() {
 
     return (
         <Grid container direction="column">
-            <GameInfoToolbar game={game} />
             <Grid>
                 <FactionsSetup disableFactionSelect disableColorNone />
             </Grid>

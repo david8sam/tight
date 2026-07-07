@@ -23,11 +23,10 @@ import api from '../utils/api';
 import { getPlanetValue } from '../utils/planet';
 
 import { useAppContext } from '../Context';
-import { HEADER_HEIGHT } from '../constants';
 
 const useStyle = makeStyles()(() => ({
     appBar: {
-        top: HEADER_HEIGHT,
+        top: 0,
     },
     title: {
         flex: '1 1 100%',

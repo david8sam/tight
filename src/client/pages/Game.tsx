@@ -12,7 +12,6 @@ import {
     CircularProgress,
     Grid,
     IconButton,
-    Paper,
     Step,
     StepLabel,
     Stepper,
@@ -35,12 +34,10 @@ import {
 import { MessageType } from 'common/message';
 
 import { Accordion, AccordionDetails, AccordionSummary } from '../components/Accordion';
-import GameInfoToolbar from '../components/GameInfoToolbar';
 import PlayerNameDialog from '../components/PlayerNameDialog';
 import PlayerSetup from '../components/PlayerSetup';
 import SpeakerSelect from '../components/SpeakerSelect';
 import TextWithTooltip from '../components/TextWithTooltip';
-import { HEADER_HEIGHT } from '../constants';
 import { useAppContext } from '../Context';
 import useGameInfo from '../hooks/useGameInfo';
 import { getFactionColors } from '../utils/faction';
@@ -99,7 +96,7 @@ function canNextPhase(game: GameClientData): { canNext: boolean; message: string
 
 const useStyles = makeStyles()((theme) => ({
     appBar: {
-        top: HEADER_HEIGHT,
+        top: 0,
     },
     factionTurnText: {
         padding: theme.spacing(),
@@ -276,9 +273,6 @@ function Game() {
     return (
         <>
             <AppBar className={classes.appBar} color="inherit" position="sticky">
-                <Paper>
-                    <GameInfoToolbar game={game} />
-                </Paper>
                 <Accordion
                     className={classes.statusAccordion}
                     disableMargin
