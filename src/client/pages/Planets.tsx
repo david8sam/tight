@@ -1,109 +1,74 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
+import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import SyncIcon from '@mui/icons-material/Sync';
 import SyncDisabledIcon from '@mui/icons-material/SyncDisabled';
-import { AppBar, Divider, IconButton, MenuItem, TextField, Toolbar, Tooltip, Typography } from '@mui/material';
+import { IconButton, MenuItem, TextField, Tooltip } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { makeStyles } from 'tss-react/mui';
 
-import { debounce, isEmpty } from 'lodash-es';
-
-import { GamePlanetMap } from 'common/Game';
+import { isPlayerSpectator } from 'common/Game';
 import { MessageType } from 'common/message';
 import { PlanetMap } from 'common/Planet';
 
 import AddPlanetDialog from '../components/AddPlanetDialog';
+import ClaimPlanetDialog from '../components/ClaimPlanetDialog';
+import EditPlanetDialog from '../components/EditPlanetDialog';
 import PlanetIconInfoButton from '../components/PlanetIconInfoButton';
-import PlanetsTable from '../components/PlanetsTable';
-import TotalsTable, { TotalsTableProps } from '../components/TotalsTable';
+import PlanetList from '../components/PlanetList';
+import { PageContainer, StatPill } from '../components/ui';
+import { useAppContext } from '../Context';
 import useAutoNavigate from '../hooks/useAutoNavigate';
 import useGameInfo from '../hooks/useGameInfo';
-import { SendDataFunction } from '../hooks/useWebSocket';
+import { PlanetData } from '../types';
 import api from '../utils/api';
 import { getPlanetValue } from '../utils/planet';
 
-import { useAppContext } from '../Context';
+const ALL_FACTIONS = '';
 
-const useStyle = makeStyles()(() => ({
-    appBar: {
-        top: 0,
+const useStyles = makeStyles()(theme => ({
+    toolbar: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: theme.spacing(1),
+        marginBottom: theme.spacing(1.5),
+        flexWrap: 'wrap',
     },
-    title: {
-        flex: '1 1 100%',
+    filter: {
+        flex: 1,
+        minWidth: 180,
+    },
+    totals: {
+        display: 'flex',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: theme.spacing(1),
+        marginTop: theme.spacing(1.5),
+        justifyContent: 'center',
     },
 }));
 
-interface PlanetStateMap {
-    [name: string]: string;
-}
-
-interface SyncPlanetsParms {
-    sendData: SendDataFunction;
-    refreshed: PlanetStateMap;
-    exhausted: PlanetStateMap;
-    gameId: string;
-    factionName: string;
-    planets: GamePlanetMap;
-}
-
-function syncPlanetsFunc({ sendData, refreshed, exhausted, gameId, factionName, planets }: SyncPlanetsParms) {
-    const refreshedArray = Object.keys(refreshed).filter(r => !planets[r].refreshed);
-    if (refreshedArray.length) {
-        sendData({
-            type: MessageType.REFRESH_PLANET,
-            data: { gameId, factionName, planetId: refreshedArray },
-        });
-    }
-
-    const exhaustedArray = Object.keys(exhausted).filter(e => planets[e].refreshed);
-    if (exhaustedArray.length) {
-        sendData({
-            type: MessageType.EXHAUST_PLANET,
-            data: { gameId, factionName, planetId: exhaustedArray },
-        });
-    }
-}
-
 function Planets() {
-    const { classes } = useStyle();
+    const { classes } = useStyles();
+    const theme = useTheme();
     const { sendData } = useAppContext();
     const { game, gameId, playerId } = useGameInfo();
+
     const [planetMap, setPlanetMap] = useState<PlanetMap>({});
     const [pending, setPending] = useState(true);
-    const [factionName, setFactionName] = useState(() => {
+    const [claimOpen, setClaimOpen] = useState(false);
+    const [bulkOpen, setBulkOpen] = useState(false);
+    const [editPlanet, setEditPlanet] = useState<PlanetData | null>(null);
+
+    // The viewer's own faction (first, if playing multiple)
+    const myFactionName = useMemo(() => {
         const faction = playerId && game ? game.factions.find(f => f.playerIds.includes(playerId)) : null;
         return faction?.name || '';
-    });
-
-    const factionNameOptions = useMemo(() => {
-        const factionsArray = playerId && game ? game.factions.filter(f => f.playerIds.includes(playerId)) : [];
-        return factionsArray.map(f => f.name);
     }, [game, playerId]);
 
-    const [openAddDialog, setOpenAddDialog] = useState(false);
-    const [planetState, setPlanetState] = useState({
-        refreshed: {} as PlanetStateMap,
-        exhausted: {} as PlanetStateMap,
-    });
-
-    const serverSyncRef = useRef(false);
-
-    // Delay sending updates to the server until all changes are done.
-    const syncPlanets = useMemo(
-        () =>
-            debounce((args: SyncPlanetsParms) => {
-                // Don't send updates to server if currently syncing from server.
-                if (!serverSyncRef.current) {
-                    syncPlanetsFunc(args);
-                }
-            }, 2000),
-        [],
-    );
-
-    // Get all planets owned by this faction
-    const gamePlanets = game?.planets;
-    const faction = game?.factions.find(f => f.name === factionName);
-    const factionPlanetNames = faction?.planets || [];
+    // Owner filter defaults to the viewer's faction; spectators see all planets
+    const [factionFilter, setFactionFilter] = useState(myFactionName || ALL_FACTIONS);
 
     useAutoNavigate({ to: `/`, condition: () => !gameId || !playerId, deps: [gameId, playerId] });
 
@@ -114,202 +79,164 @@ function Planets() {
         });
     }, []);
 
-    // Sync with store data
-    useEffect(
-        () => {
-            serverSyncRef.current = true;
-
-            if (!gamePlanets) {
-                if (!isEmpty(planetState.refreshed) && !isEmpty(planetState.exhausted)) {
-                    setPlanetState({ refreshed: {}, exhausted: {} });
-                }
-
-                serverSyncRef.current = false;
-                return;
-            }
-
-            let hasChange: boolean = false;
-
-            const refreshed: PlanetStateMap = {};
-            const exhausted: PlanetStateMap = {};
-            factionPlanetNames.forEach(p => {
-                if (gamePlanets[p].refreshed) {
-                    refreshed[p] = p;
-                    hasChange = hasChange || Boolean(planetState.refreshed[p]) === false;
-                } else {
-                    exhausted[p] = p;
-                    hasChange = hasChange || Boolean(planetState.exhausted[p]) === false;
-                }
-            });
-
-            if (!hasChange) {
-                const totalPlanets =
-                    Object.keys(planetState.refreshed).length + Object.keys(planetState.exhausted).length;
-                hasChange = hasChange || totalPlanets !== factionPlanetNames.length;
-            }
-
-            if (hasChange) {
-                setPlanetState({ refreshed, exhausted });
-            }
-
-            serverSyncRef.current = false;
-        },
-        // Update on any planet change from the server
-        [gamePlanets, factionPlanetNames],
-    );
-
-    if (pending) {
+    if (pending || !game) {
         return null;
     }
 
-    // Compute totals
-    const refreshedPlanets = Object.keys(planetState.refreshed);
-    const exhaustedPlanets = Object.keys(planetState.exhausted);
-    const totals: TotalsTableProps = {
-        resources: 0,
-        influence: 0,
-        biotic: 0,
-        warfare: 0,
-        propulsion: 0,
-        cybernetic: 0,
-    };
+    const isSpectator = isPlayerSpectator(game, playerId);
+    const canInteract = !isSpectator;
 
-    factionPlanetNames.forEach(p => {
-        const planet = { ...planetMap[p], ...gamePlanets?.[p] };
-        const refreshed = refreshedPlanets.includes(p);
+    const filteredFactions =
+        factionFilter === ALL_FACTIONS ? game.factions : game.factions.filter(f => f.name === factionFilter);
 
-        totals.resources += refreshed ? getPlanetValue(planet, 'resources') : 0;
-        totals.influence += refreshed ? getPlanetValue(planet, 'influence') : 0;
+    // Merge static planet data with per-game state for every owned planet in the filter
+    const planets: PlanetData[] = filteredFactions.flatMap(faction =>
+        faction.planets
+            .map(name => ({ ...planetMap[name], ...game.planets[name], name }))
+            .filter(p => p.owner === faction.name),
+    );
 
-        // Must exhaust planet to use tech bonus (New in TI4)
-        totals.biotic += refreshed ? getPlanetValue(planet, 'biotic') ?? 0 : 0;
-        totals.warfare += refreshed ? getPlanetValue(planet, 'warfare') ?? 0 : 0;
-        totals.propulsion += refreshed ? getPlanetValue(planet, 'propulsion') ?? 0 : 0;
-        totals.cybernetic += refreshed ? getPlanetValue(planet, 'cybernetic') ?? 0 : 0;
+    // Refreshed planets contribute to totals; tech skips require an unexhausted planet
+    const totals = { resources: 0, influence: 0, biotic: 0, warfare: 0, propulsion: 0, cybernetic: 0 };
+    planets.forEach(planet => {
+        if (!planet.refreshed) {
+            return;
+        }
+
+        totals.resources += getPlanetValue(planet, 'resources') ?? 0;
+        totals.influence += getPlanetValue(planet, 'influence') ?? 0;
+        totals.biotic += getPlanetValue(planet, 'biotic') ?? 0;
+        totals.warfare += getPlanetValue(planet, 'warfare') ?? 0;
+        totals.propulsion += getPlanetValue(planet, 'propulsion') ?? 0;
+        totals.cybernetic += getPlanetValue(planet, 'cybernetic') ?? 0;
     });
 
-    // Handle click events to refresh or exhaust planets
-    const onPlanetClick = (name: string) => {
-        const planet = gamePlanets && gamePlanets[name];
-        if (!planet || !gameId || !factionName) {
+    const onToggleRefresh = (planet: PlanetData) => {
+        if (!planet.owner) {
             return;
         }
 
-        const refreshed: PlanetStateMap = { ...planetState.refreshed };
-        const exhausted: PlanetStateMap = { ...planetState.exhausted };
-        if (refreshed[name]) {
-            delete refreshed[name];
-            exhausted[name] = name;
-        } else {
-            delete exhausted[name];
-            refreshed[name] = name;
-        }
-
-        syncPlanets({ sendData, gameId, factionName, exhausted, refreshed, planets: gamePlanets });
-        setPlanetState({ refreshed, exhausted });
+        sendData({
+            type: planet.refreshed ? MessageType.EXHAUST_PLANET : MessageType.REFRESH_PLANET,
+            data: { gameId, factionName: planet.owner, planetId: [planet.name] },
+        });
     };
 
-    // Handle refresh or exahust all planets
     const onRefreshAll = (refresh: boolean) => {
-        if (!gameId || !factionName) {
-            return;
-        }
-
-        // Convert array to object map
-        const planets = factionPlanetNames.reduce((a: PlanetStateMap, n: string) => {
-            a[n] = n;
-            return a;
-        }, {});
-
-        let refreshed = {};
-        let exhausted = {};
-        if (refresh) {
-            refreshed = planets;
-        } else {
-            exhausted = planets;
-        }
-
-        syncPlanets({ sendData, gameId, factionName, exhausted, refreshed, planets: gamePlanets || {} });
-        setPlanetState({ refreshed, exhausted });
+        filteredFactions.forEach(faction => {
+            const planetIds = faction.planets.filter(name =>
+                refresh ? !game.planets[name].refreshed : game.planets[name].refreshed,
+            );
+            if (planetIds.length) {
+                sendData({
+                    type: refresh ? MessageType.REFRESH_PLANET : MessageType.EXHAUST_PLANET,
+                    data: { gameId, factionName: faction.name, planetId: planetIds },
+                });
+            }
+        });
     };
+
+    const exhaustedCount = planets.filter(p => !p.refreshed).length;
+
+    // Claims go to the selected faction when it's the viewer's; otherwise to the viewer's faction
+    const claimFactionName = factionFilter && factionFilter === myFactionName ? factionFilter : myFactionName;
 
     return (
-        <>
-            <AppBar className={classes.appBar} color="inherit" position="sticky">
-                <Toolbar>
-                    <TextField
-                        sx={{ marginTop: 2 }}
-                        fullWidth
-                        select
-                        label={factionNameOptions.length ? 'My Factions' : 'No Factions'}
-                        value={factionName}
-                        onChange={e => setFactionName(e.target.value)}
-                    >
-                        {factionNameOptions.map(name => (
-                            <MenuItem key={name} value={name}>
-                                {name}
-                            </MenuItem>
-                        ))}
-                    </TextField>
-                    <Tooltip title="Refresh All Planets">
-                        <span>
-                            <IconButton
-                                disabled={exhaustedPlanets.length === 0 || factionPlanetNames.length === 0}
-                                onClick={() => onRefreshAll(true)}
-                                size="large"
-                            >
-                                <SyncIcon />
-                            </IconButton>
-                        </span>
-                    </Tooltip>
-                    <Tooltip title="Exhaust All Planets">
-                        <span>
-                            <IconButton
-                                disabled={exhaustedPlanets.length === factionPlanetNames.length}
-                                onClick={() => onRefreshAll(false)}
-                                size="large"
-                            >
-                                <SyncDisabledIcon />
-                            </IconButton>
-                        </span>
-                    </Tooltip>
-                    <Divider orientation="vertical" />
-                    <PlanetIconInfoButton />
-                    <Divider orientation="vertical" />
-                    <Tooltip title="Add/Remove Planets">
-                        <span>
-                            <IconButton
-                                disabled={!gameId || !factionName}
-                                onClick={() => setOpenAddDialog(true)}
-                                size="large"
-                            >
-                                <EditIcon />
-                            </IconButton>
-                        </span>
-                    </Tooltip>
-                </Toolbar>
-                <TotalsTable {...totals} />
-            </AppBar>
-            {factionName && (
-                <PlanetsTable
+        <PageContainer>
+            <div className={classes.toolbar}>
+                <TextField
+                    className={classes.filter}
+                    select
+                    size="small"
+                    label="Owner"
+                    value={factionFilter}
+                    onChange={e => setFactionFilter(e.target.value)}
+                >
+                    <MenuItem value={ALL_FACTIONS}>All factions</MenuItem>
+                    {game.factions.map(f => (
+                        <MenuItem key={f.name} value={f.name}>
+                            {f.name}
+                        </MenuItem>
+                    ))}
+                </TextField>
+                <Tooltip title="Refresh all">
+                    <span>
+                        <IconButton disabled={!canInteract || exhaustedCount === 0} onClick={() => onRefreshAll(true)}>
+                            <SyncIcon />
+                        </IconButton>
+                    </span>
+                </Tooltip>
+                <Tooltip title="Exhaust all">
+                    <span>
+                        <IconButton
+                            disabled={!canInteract || exhaustedCount === planets.length || planets.length === 0}
+                            onClick={() => onRefreshAll(false)}
+                        >
+                            <SyncDisabledIcon />
+                        </IconButton>
+                    </span>
+                </Tooltip>
+                <PlanetIconInfoButton />
+                <Tooltip title="Bulk add/remove">
+                    <span>
+                        <IconButton disabled={!canInteract || !claimFactionName} onClick={() => setBulkOpen(true)}>
+                            <EditIcon />
+                        </IconButton>
+                    </span>
+                </Tooltip>
+                <Tooltip title="Add planet">
+                    <span>
+                        <IconButton
+                            color="primary"
+                            disabled={!canInteract || !claimFactionName}
+                            onClick={() => setClaimOpen(true)}
+                        >
+                            <AddIcon />
+                        </IconButton>
+                    </span>
+                </Tooltip>
+            </div>
+
+            <PlanetList
+                planets={planets}
+                canInteract={canInteract}
+                onToggleRefresh={onToggleRefresh}
+                onEdit={setEditPlanet}
+            />
+
+            <div className={classes.totals}>
+                <StatPill color={theme.game.resource.main}>Resources {totals.resources}</StatPill>
+                <StatPill color={theme.game.influence.main}>Influence {totals.influence}</StatPill>
+                {totals.biotic > 0 && <StatPill color={theme.game.specialty.biotic}>Biotic {totals.biotic}</StatPill>}
+                {totals.warfare > 0 && (
+                    <StatPill color={theme.game.specialty.warfare}>Warfare {totals.warfare}</StatPill>
+                )}
+                {totals.propulsion > 0 && (
+                    <StatPill color={theme.game.specialty.propulsion}>Propulsion {totals.propulsion}</StatPill>
+                )}
+                {totals.cybernetic > 0 && (
+                    <StatPill color={theme.game.specialty.cybernetic}>Cybernetic {totals.cybernetic}</StatPill>
+                )}
+            </div>
+
+            {claimOpen && claimFactionName && (
+                <ClaimPlanetDialog
+                    open={claimOpen}
+                    onClose={() => setClaimOpen(false)}
                     planetMap={planetMap}
-                    columns={['name', 'resources', 'influence']}
-                    filterByPlanetOnly
-                    factionName={factionName}
-                    PlanetNameCellProps={{ owner: factionName }}
-                    onPlanetClick={onPlanetClick}
-                    selection={exhaustedPlanets}
+                    claimFactionName={claimFactionName}
                 />
             )}
-            {openAddDialog && factionName ? (
+            {bulkOpen && claimFactionName && (
                 <AddPlanetDialog
-                    open={openAddDialog}
-                    onClose={() => setOpenAddDialog(false)}
+                    open={bulkOpen}
+                    onClose={() => setBulkOpen(false)}
                     planetMap={planetMap}
-                    factionName={factionName}
+                    factionName={claimFactionName}
                 />
-            ) : null}
-        </>
+            )}
+            {editPlanet && <EditPlanetDialog open onClose={() => setEditPlanet(null)} planet={editPlanet} />}
+        </PageContainer>
     );
 }
 
