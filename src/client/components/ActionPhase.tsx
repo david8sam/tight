@@ -1,47 +1,47 @@
-import confetti from 'canvas-confetti';
 import React from 'react';
 
-import { Button, Card, CardContent, Grid, Toolbar } from '@mui/material';
-import { makeStyles } from 'tss-react/mui';
+import confetti from 'canvas-confetti';
 
-import classNames from 'classnames';
+import FlagIcon from '@mui/icons-material/Flag';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import { Button, Toolbar, useTheme } from '@mui/material';
+import { makeStyles } from 'tss-react/mui';
 
 import { GameFaction, StrategyCardIndex, getFactionOrder, getNextFaction, isPlayerSpectator } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
 import useGameInfo from '../hooks/useGameInfo';
-import FactionHeader from './FactionHeader';
+
+import FactionCard from './FactionCard';
 import SpeakerSelect from './SpeakerSelect';
+import { StatPill } from './ui';
 import VictoryPoints from './VictoryPoints';
 import VictoryPointsExtra from './VictoryPointsExtra';
 
-const useStyles = makeStyles()((theme) => ({
-    card: {
-        border: `${theme.spacing(0.25)} solid ${theme.palette.text.primary}`,
-        margin: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
-        position: 'relative',
+const useStyles = makeStyles()(theme => ({
+    root: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+        gap: theme.spacing(1.25),
+        padding: theme.spacing(1.5),
     },
-    cardContent: {
-        padding: 0,
-        '&:last-child': {
-            paddingBottom: 0,
-        },
+    actions: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: theme.spacing(0.5),
+        flexWrap: 'wrap',
+        marginTop: 'auto',
     },
-    doneBackground: {
-        backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.5)',
+    actionButton: {
+        padding: theme.spacing(0.5, 1),
     },
-    toolbarGutters: {
-        padding: theme.spacing(1),
-    },
-    toolbarRegular: {
-        minHeight: 'auto',
-    },
-    button: {
-        padding: theme.spacing(0.5),
-    },
-    speakerSelect: {
+    extra: {
         marginTop: theme.spacing(1),
+    },
+    nextTurn: {
+        gridColumn: '1 / -1',
     },
     vpAccordion: {
         backgroundColor: 'rgba(0,0,0,0)',
@@ -53,6 +53,7 @@ const useStyles = makeStyles()((theme) => ({
 
 function ActionPhase() {
     const { classes } = useStyles();
+    const theme = useTheme();
     const { sendData } = useAppContext();
     const { game, gameId, playerId } = useGameInfo();
     if (!game) {
@@ -98,86 +99,97 @@ function ActionPhase() {
         turn === StrategyCardIndex.END ? factionOrder.length : factionOrder.findIndex(f => f.strategyCard === turn);
 
     return (
-        <Grid container direction="column">
+        <div className={classes.root}>
             {factionOrder.map((faction: GameFaction) => {
                 const { name: factionName } = faction;
                 const factionIndex = factionOrder.findIndex(f => f.name === factionName);
+                const isTurn = factionIndex === currentFactionIndex;
                 const factionDone = faction.passed || currentFactionIndex > factionIndex;
                 const isPoliticsAndFlipped =
                     faction.strategyCard === StrategyCardIndex.POLITICS && faction.stragetyCardFlipped;
                 const isImperialAndFlipped =
                     faction.strategyCard === StrategyCardIndex.IMPERIAL && faction.stragetyCardFlipped;
 
+                let statusPill = <StatPill size="small">Waiting</StatPill>;
+                if (faction.passed) {
+                    statusPill = (
+                        <StatPill size="small" icon={<FlagIcon sx={{ fontSize: 12 }} />}>
+                            Passed
+                        </StatPill>
+                    );
+                } else if (isTurn) {
+                    statusPill = (
+                        <StatPill
+                            size="small"
+                            color={theme.palette.primary.main}
+                            icon={<PlayArrowIcon sx={{ fontSize: 13 }} />}
+                        >
+                            Active
+                        </StatPill>
+                    );
+                } else if (factionDone) {
+                    statusPill = <StatPill size="small">Done</StatPill>;
+                }
+
                 return (
-                    <Card key={factionName} variant="outlined" classes={{ root: classes.card }}>
-                        <CardContent classes={{ root: classes.cardContent }}>
-                            <FactionHeader faction={faction} />
-                        </CardContent>
-                        <CardContent classes={{ root: classes.cardContent }}>
-                            <Toolbar
-                                classes={{
-                                    root: classNames({ [classes.doneBackground]: factionDone }),
-                                    gutters: classes.toolbarGutters,
-                                    regular: classes.toolbarRegular,
-                                }}
+                    <FactionCard
+                        key={factionName}
+                        faction={faction}
+                        statusPill={statusPill}
+                        active={isTurn && !faction.passed}
+                        dimmed={factionDone && !isTurn}
+                    >
+                        <div className={classes.actions}>
+                            <VictoryPointsExtra factionName={factionName} disabled={isSpectator} />
+                            <Button
+                                className={classes.actionButton}
+                                size="small"
+                                color="primary"
+                                variant="outlined"
+                                onClick={() => onFlipCardClick(factionName, !faction.stragetyCardFlipped)}
+                                disabled={isSpectator}
                             >
-                                <Grid container direction="column">
-                                    <Grid container direction="row" justifyContent="space-between" alignItems="center">
-                                        <VictoryPointsExtra factionName={factionName} disabled={isSpectator} />
-                                        <Button
-                                            classes={{ root: classes.button }}
-                                            color="primary"
-                                            variant="contained"
-                                            onClick={() => onPassClick(factionName, !faction.passed)}
-                                            disabled={isSpectator || !faction.stragetyCardFlipped}
-                                        >
-                                            {faction.passed ? 'UNPASS' : 'PASS'}
-                                        </Button>
-                                        <Button
-                                            classes={{ root: classes.button }}
-                                            color="primary"
-                                            variant="contained"
-                                            onClick={() => onFlipCardClick(factionName, !faction.stragetyCardFlipped)}
-                                            disabled={isSpectator}
-                                        >
-                                            {faction.stragetyCardFlipped ? 'UNFLIP' : 'FLIP'}
-                                        </Button>
-                                        <Button
-                                            classes={{ root: classes.button }}
-                                            color="primary"
-                                            variant="contained"
-                                            disabled={isSpectator || faction.passed}
-                                            onClick={() => onNextTurn(faction, !factionDone)}
-                                        >
-                                            {factionDone ? 'UNDONE' : 'DONE'}
-                                        </Button>
-                                    </Grid>
-                                    {isPoliticsAndFlipped && (
-                                        <SpeakerSelect
-                                            className={classes.speakerSelect}
-                                            fullWidth
-                                            disabled={isSpectator}
-                                        />
-                                    )}
-                                    {isImperialAndFlipped && (
-                                        <VictoryPoints
-                                            factionName={factionName}
-                                            AccordionProps={{
-                                                className: classes.vpAccordion,
-                                                elevation: 0,
-                                            }}
-                                            hideExtraVp
-                                        />
-                                    )}
-                                </Grid>
-                            </Toolbar>
-                        </CardContent>
-                    </Card>
+                                {faction.stragetyCardFlipped ? 'Unflip' : 'Flip'}
+                            </Button>
+                            <Button
+                                className={classes.actionButton}
+                                size="small"
+                                color="primary"
+                                variant="outlined"
+                                onClick={() => onPassClick(factionName, !faction.passed)}
+                                disabled={isSpectator || !faction.stragetyCardFlipped}
+                            >
+                                {faction.passed ? 'Unpass' : 'Pass'}
+                            </Button>
+                            <Button
+                                className={classes.actionButton}
+                                size="small"
+                                color="primary"
+                                variant="contained"
+                                disabled={isSpectator || faction.passed}
+                                onClick={() => onNextTurn(faction, !factionDone)}
+                            >
+                                {factionDone ? 'Undone' : 'Done'}
+                            </Button>
+                        </div>
+                        {isPoliticsAndFlipped && (
+                            <SpeakerSelect className={classes.extra} fullWidth disabled={isSpectator} />
+                        )}
+                        {isImperialAndFlipped && (
+                            <VictoryPoints
+                                factionName={factionName}
+                                AccordionProps={{
+                                    className: classes.vpAccordion,
+                                    elevation: 0,
+                                }}
+                                hideExtraVp
+                            />
+                        )}
+                    </FactionCard>
                 );
             })}
-            <Toolbar />
             {!isSpectator && (
-                <Toolbar>
+                <Toolbar className={classes.nextTurn}>
                     <Button
                         disabled={factionOrder.every(p => p.passed) || turn !== StrategyCardIndex.END}
                         color="primary"
@@ -190,7 +202,7 @@ function ActionPhase() {
                     </Button>
                 </Toolbar>
             )}
-        </Grid>
+        </div>
     );
 }
 

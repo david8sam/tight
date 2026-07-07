@@ -5,51 +5,35 @@ import { isEqual } from 'lodash-es';
 
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import {
-    AppBar,
-    Box,
-    Button,
-    CircularProgress,
-    Grid,
-    IconButton,
-    Step,
-    StepLabel,
-    Stepper,
-    Toolbar,
-    Tooltip,
-    Typography,
-    useTheme,
-} from '@mui/material';
+import { Button, CircularProgress, IconButton, Toolbar, Tooltip, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { makeStyles } from 'tss-react/mui';
 
 import {
-    Game,
     GameClientData,
     GameStatus,
-    getFactionTurn,
-    isPlayerSpectator,
     Phase,
     StrategyCardIndex,
+    formatFactionName,
+    getFactionTurn,
+    isPlayerSpectator,
 } from 'common/Game';
 import { MessageType } from 'common/message';
 
-import { Accordion, AccordionDetails, AccordionSummary } from '../components/Accordion';
+import ActionPhase from '../components/ActionPhase';
+import AgendaPhase from '../components/AgendaPhase';
 import PlayerNameDialog from '../components/PlayerNameDialog';
 import PlayerSetup from '../components/PlayerSetup';
 import SpeakerSelect from '../components/SpeakerSelect';
-import TextWithTooltip from '../components/TextWithTooltip';
+import StatusPhase from '../components/StatusPhase';
+import StrategyPhase from '../components/StrategyPhase';
+import { PhaseBadge } from '../components/ui';
+import { PHASE_LABELS } from '../constants';
 import { useAppContext } from '../Context';
 import useGameInfo from '../hooks/useGameInfo';
 import { getFactionColors } from '../utils/faction';
 
-import ActionPhase from '../components/ActionPhase';
-import AgendaPhase from '../components/AgendaPhase';
-import FactionHeader from '../components/FactionHeader';
-import StatusPhase from '../components/StatusPhase';
-import StrategyPhase from '../components/StrategyPhase';
-
-const PHASE_KEYS = Object.keys(Phase);
-const STEPS = PHASE_KEYS.slice(PHASE_KEYS.length / 2);
+const PHASES = [Phase.STRATEGY, Phase.ACTION, Phase.STATUS, Phase.AGENDA];
 
 const PHASE_COMPONENTS: React.ComponentType[] = [StrategyPhase, ActionPhase, StatusPhase, AgendaPhase];
 
@@ -94,39 +78,48 @@ function canNextPhase(game: GameClientData): { canNext: boolean; message: string
     return { canNext, message };
 }
 
-const useStyles = makeStyles()((theme) => ({
-    appBar: {
+const useStyles = makeStyles()(theme => ({
+    phaseBar: {
+        position: 'sticky',
         top: 0,
+        zIndex: theme.zIndex.appBar,
+        backgroundColor: theme.palette.background.default,
+        borderBottom: `1px solid ${theme.palette.divider}`,
     },
-    factionTurnText: {
-        padding: theme.spacing(),
-        width: '100%',
+    phaseNav: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: theme.spacing(0.5),
+        padding: theme.spacing(1, 1.5, 0.5),
+    },
+    phaseBadges: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: theme.spacing(0.75),
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        flex: 1,
+    },
+    phaseStatus: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: theme.spacing(0, 1.5, 1),
+    },
+    turnBanner: {
         textAlign: 'center',
+        padding: theme.spacing(0.75, 1.5),
+        fontFamily: '"Orbitron", sans-serif',
+        fontSize: 13,
+        fontWeight: 600,
+        letterSpacing: '0.02em',
+    },
+    content: {
+        paddingBottom: theme.spacing(2),
     },
     speakerToolbar: {
-        margin: `${theme.spacing(2)} 0px`,
-    },
-    statusAccordion: {
-        width: '100%', // TODO: Why is this necessary? Pixel width doesn't actually change...
-    },
-    statusSummary: {
-        padding: `0px ${theme.spacing(1)}`,
-    },
-    phaseToolbar: {
-        minHeight: 0,
-    },
-    phaseActionDetails: {
-        padding: 0,
-    },
-    phaseStepPanel: {
-        width: '100%',
-    },
-    stepper: {
-        width: '100%',
-        padding: theme.spacing(1),
-    },
-    stepLabelAlternativeLabel: {
-        marginTop: theme.spacing(1),
+        margin: theme.spacing(2, 0),
     },
 }));
 
@@ -151,7 +144,6 @@ function Game() {
         agenda2Voted: false,
     });
     const [pending, setPending] = useState(false);
-    const [actionExpanded, setActionExpaned] = useState(false);
 
     useEffect(() => {
         const { status } = game || {};
@@ -190,8 +182,8 @@ function Game() {
     const canBack = round > 1 || (round === 1 && phase > Phase.STRATEGY);
     const { canNext, message } = canNextPhase(game);
 
-    const prevPhase = phase === Phase.STRATEGY ? Phase.AGENDA : phase - 1;
-    const nextPhase = phase === Phase.AGENDA ? Phase.STRATEGY : phase + 1;
+    const prevPhase: Phase = phase === Phase.STRATEGY ? Phase.AGENDA : phase - 1;
+    const nextPhase: Phase = phase === Phase.AGENDA ? Phase.STRATEGY : phase + 1;
 
     const onPhaseClick = (e: MouseEvent<HTMLButtonElement>, next: boolean) => {
         e.stopPropagation();
@@ -227,7 +219,7 @@ function Game() {
 
     let phaseStatus = null;
     if (message) {
-        phaseStatus = <Typography>{message}</Typography>;
+        phaseStatus = <Typography variant="body2">{message}</Typography>;
     } else if (phase === Phase.AGENDA) {
         if (round === game.numRounds) {
             phaseStatus = (
@@ -249,108 +241,79 @@ function Game() {
         }
     }
 
-    let stepperToolbar = null;
-    if (phaseStatus) {
-        stepperToolbar = (
-            <Toolbar classes={{ root: classes.phaseToolbar }}>
-                <Grid container justifyContent="center" alignItems="center">
-                    {phaseStatus}
-                </Grid>
-            </Toolbar>
-        );
-    }
-
     const factionTurn = getFactionTurn(game);
     const currentFactionTurn =
         factionTurn && factionTurn !== 'END' ? game.factions.find(f => f.name === factionTurn) : null;
-    const currentFactionTurnStyle = currentFactionTurn
-        ? getFactionColors(theme, currentFactionTurn)
-        : {
-              backgroundColor: theme.palette.text.primary,
-              color: theme.palette.getContrastText(theme.palette.text.primary),
-          };
+    const turnColors = currentFactionTurn ? getFactionColors(theme, currentFactionTurn) : null;
+
+    let turnBanner = null;
+    if (currentFactionTurn && turnColors) {
+        turnBanner = (
+            <div
+                className={classes.turnBanner}
+                style={{ backgroundColor: turnColors.base, color: turnColors.on }}
+            >{`Turn: ${formatFactionName(game, currentFactionTurn.name)}`}</div>
+        );
+    } else if (factionTurn === 'END') {
+        turnBanner = (
+            <div
+                className={classes.turnBanner}
+                style={{ backgroundColor: theme.game.surface.strip, color: theme.palette.text.secondary }}
+            >
+                End of round
+            </div>
+        );
+    }
 
     return (
         <>
-            <AppBar className={classes.appBar} color="inherit" position="sticky">
-                <Accordion
-                    className={classes.statusAccordion}
-                    disableMargin
-                    expanded={actionExpanded}
-                    onChange={(_e, expanded) => setActionExpaned(expanded)}
-                >
-                    <AccordionSummary disableMargin classes={{ root: classes.statusSummary }}>
-                        <Grid container justifyContent="space-between" alignItems="center">
-                            <Tooltip title={Phase[prevPhase]}>
-                                <span>
-                                    <IconButton
-                                        disabled={isSpectator || pending || !canBack || phase === Phase.STRATEGY}
-                                        onClick={e => onPhaseClick(e, false)}
-                                        size="large"
-                                    >
-                                        <NavigateBeforeIcon />
-                                    </IconButton>
-                                </span>
-                            </Tooltip>
-                            {pending ? (
-                                <CircularProgress size="24" />
-                            ) : (
-                                <Button variant="contained" color="primary">
-                                    <Typography align="center">{`${Phase[phase]}`}</Typography>
-                                </Button>
-                            )}
-                            <Tooltip title={Phase[nextPhase]}>
-                                <span>
-                                    <IconButton
-                                        disabled={isSpectator || pending || !canNext || phase === Phase.AGENDA}
-                                        onClick={e => onPhaseClick(e, true)}
-                                        size="large"
-                                    >
-                                        <NavigateNextIcon />
-                                    </IconButton>
-                                </span>
-                            </Tooltip>
-                        </Grid>
-                    </AccordionSummary>
-                    <AccordionDetails classes={{ root: classes.phaseActionDetails }}>
-                        <Grid container direction="column">
-                            {stepperToolbar}
-                            <Stepper classes={{ root: classes.stepper }} activeStep={phase} alternativeLabel>
-                                {STEPS.map(label => (
-                                    <Step classes={{ alternativeLabel: classes.stepLabelAlternativeLabel }} key={label}>
-                                        <StepLabel>{label}</StepLabel>
-                                    </Step>
-                                ))}
-                            </Stepper>
-                        </Grid>
-                    </AccordionDetails>
-                </Accordion>
-                <Toolbar sx={{ display: 'flex', width: '100%', height: '100%', padding: 1 }}>
-                    {currentFactionTurn && currentFactionTurn.strategyCard ? (
-                        <FactionHeader
-                            faction={currentFactionTurn}
-                            sx={{ justifyContent: 'center', padding: '4px' }}
-                            prefixText={'Turn: '}
-                            hideInitiativeNumber
-                        />
-                    ) : (
-                        <TextWithTooltip
-                            text={`Turn: ${factionTurn}`}
-                            className={classes.factionTurnText}
-                            style={currentFactionTurnStyle}
-                        />
-                    )}
-                </Toolbar>
-            </AppBar>
-            <Grid container direction="column">
-                <Box sx={{ marginBottom: 1 }} />
+            <div className={classes.phaseBar}>
+                <div className={classes.phaseNav}>
+                    <Tooltip title={PHASE_LABELS[prevPhase]}>
+                        <span>
+                            <IconButton
+                                disabled={isSpectator || pending || !canBack || phase === Phase.STRATEGY}
+                                onClick={e => onPhaseClick(e, false)}
+                                size="small"
+                            >
+                                <NavigateBeforeIcon />
+                            </IconButton>
+                        </span>
+                    </Tooltip>
+                    <div className={classes.phaseBadges}>
+                        {pending ? (
+                            <CircularProgress size={24} />
+                        ) : (
+                            PHASES.map(p => (
+                                <PhaseBadge
+                                    key={p}
+                                    label={PHASE_LABELS[p]}
+                                    state={p < phase ? 'complete' : p === phase ? 'active' : 'pending'}
+                                />
+                            ))
+                        )}
+                    </div>
+                    <Tooltip title={PHASE_LABELS[nextPhase]}>
+                        <span>
+                            <IconButton
+                                disabled={isSpectator || pending || !canNext || phase === Phase.AGENDA}
+                                onClick={e => onPhaseClick(e, true)}
+                                size="small"
+                            >
+                                <NavigateNextIcon />
+                            </IconButton>
+                        </span>
+                    </Tooltip>
+                </div>
+                {phaseStatus && <div className={classes.phaseStatus}>{phaseStatus}</div>}
+                {turnBanner}
+            </div>
+            <div className={classes.content}>
                 {getPhaseContents(phase)}
-                <Toolbar />
                 <Toolbar className={classes.speakerToolbar}>
                     <SpeakerSelect fullWidth disabled={isSpectator} />
                 </Toolbar>
-                <Toolbar />
-            </Grid>
+            </div>
         </>
     );
 }
