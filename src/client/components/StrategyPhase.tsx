@@ -1,7 +1,7 @@
 import React, { MouseEvent, useState } from 'react';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Button, Collapse, IconButton, Typography, useTheme } from '@mui/material';
+import { Button, Collapse, IconButton, Tooltip, Typography, useTheme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { makeStyles } from 'tss-react/mui';
 
@@ -213,9 +213,11 @@ function StrategyPhase() {
 
             {getNaalu(game) && !isSpectator && (
                 <Panel className={classes.naalu}>
-                    <Typography className={classes.naaluLabel} variant="body2">
-                        Naalu "0":
-                    </Typography>
+                    <Tooltip title='Whoever holds the Naalu "0" token acts first in the action phase, before initiative 1. The Naalu Collective can pass it to another player via Gift of Prescience.'>
+                        <Typography className={classes.naaluLabel} variant="body2">
+                            Naalu 0 token holder
+                        </Typography>
+                    </Tooltip>
                     <NaaluZeroSelect fullWidth />
                 </Panel>
             )}
