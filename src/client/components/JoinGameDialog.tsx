@@ -142,7 +142,7 @@ export default function JoinGameDialog(props: JoinGameDialogProps) {
                                         size="large"
                                         onClick={e => onJoinClick(e, currentGameId)}
                                     >
-                                        {joining ? <CircularProgress size={24} /> : `Rejoin ${currentGameId}`}
+                                        {joining ? <CircularProgress size={24} /> : `Rejoin "${currentGameId}"`}
                                     </Button>
                                 </FormControl>
                             </Grid>
@@ -162,7 +162,7 @@ export default function JoinGameDialog(props: JoinGameDialogProps) {
                                         {joining ? (
                                             <CircularProgress size={24} />
                                         ) : (
-                                            `Rejoin ${currentGameId} as new player`
+                                            `Rejoin "${currentGameId}" as new player`
                                         )}
                                     </Button>
                                 </FormControl>

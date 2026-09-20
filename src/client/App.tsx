@@ -27,11 +27,14 @@ const DARK_THEME = createTheme({
     },
 });
 
+const isHttps = window.location.protocol.split(':')[0].toLowerCase() === 'https';
+const wsProtocol = isHttps ? 'wss' : 'ws';
+
 function App() {
     const [state, dispatch] = useReducer(reducer, initialState);
 
     const { sendData } = useWebSocket({
-        url: `ws://${window.location.hostname}:${WSS_PORT}/`,
+        url: `${wsProtocol}://${window.location.hostname}:${WSS_PORT}/`,
         dispatch,
         state,
     });

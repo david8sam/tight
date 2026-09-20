@@ -15,6 +15,10 @@ const serverDir = path.resolve(cwd, './src/server');
 
 const tsconfigFile = web ? path.resolve(cwd, 'tsconfig.web.json') : path.resolve(cwd, 'tsconfig.server.json');
 
+const isHttps = !(process.env.TIGHT_USE_HTTP?.toLowerCase() === 'true');
+const protocol = isHttps ? 'https' : 'http';
+const localhost = `${protocol}://localhost`;
+
 let config: Configuration | ConfigurationDev = {
     target,
     mode,
@@ -113,14 +117,20 @@ if (dev) {
             proxy: [
                 {
                     context: '/api',
-                    target: 'http://localhost:3001',
-                    router: () => 'http://localhost',
+                    target: `${localhost}:3001`,
+                    router: () => localhost,
+                    secure: false,
+                    changeOrigin: isHttps ? true : undefined,
                 },
                 {
                     context: '*',
-                    target: 'http://localhost',
+                    target: localhost,
+                    secure: false,
+                    changeOrigin: isHttps ? true : undefined,
                 },
             ],
+            server: protocol,
+            port: isHttps ? 443 : 80,
         };
     }
 }

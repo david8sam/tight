@@ -1,4 +1,4 @@
-import { Grid, MenuItem, TextField, Toolbar } from '@mui/material';
+import { Grid, MenuItem, TextField, Toolbar, Typography } from '@mui/material';
 import React, { useMemo, useState } from 'react';
 
 import { Objective as ObjectiveType, isPlayerSpectator } from 'common/Game';
@@ -66,8 +66,6 @@ function StrategyCards() {
             <GameInfoToolbar game={game} />
             <Grid item>
                 <PublicObjectives
-                    creatable={isPlayer}
-                    deletable={isPlayer}
                     editable={isPlayer}
                     publicObjectives={game.publicObjectives}
                     onChange={onPublicObjectivesChange}
@@ -93,6 +91,7 @@ function StrategyCards() {
                                     </MenuItem>
                                 ))}
                             </TextField>
+                            <Typography>Other players cannot read these until the end of the game</Typography>
                         </Grid>
                     </Toolbar>
                     <Grid item>

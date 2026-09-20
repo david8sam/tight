@@ -1,5 +1,6 @@
 import { Application } from 'express';
 import http, { IncomingMessage } from 'http';
+import https from 'https';
 import { parse } from 'url';
 import { WebSocketServer as WSServer, WebSocket as WebSocketType } from 'ws';
 
@@ -10,6 +11,7 @@ import uuidv4 from 'common/uuidv4.js';
 import { getGameForClient } from './database/game.js';
 
 import { WebSocket, WebSocketServer, broadcastChangeData, getWebSocketLogId, sendData } from './WebSocket.js';
+import { cert, key } from './certs.js';
 import { getDirtyGameData, isDirty, removeOldGames, setDirty } from './dirty.js';
 import handleMessage from './handleMessage.js';
 import log from './log.js';
@@ -30,9 +32,6 @@ function onConnection({ wss, ws, request }: OnConnectionParam) {
     const queryParams = request.url ? parse(request.url, true).query : null;
     const { gameId, playerId } = queryParams || {};
     ws.gameId = (gameId as string) || null;
-
-    // const wsKey = request.headers['sec-websocket-key'];
-    // const idMsg = ws.playerId ? `${wsKey} (${ws.playerId})` : wsKey;
 
     ws.isAlive = true;
     if (!ws.socketId) {
@@ -70,7 +69,7 @@ export default function initialize(app: Application) {
     }
 
     // Create server for websocket connections
-    const server = http.createServer(app);
+    const server = key && cert ? https.createServer({ key, cert }, app) : http.createServer(app);
 
     wss = new WSServer({ server });
     wss.on('connection', (ws: WebSocket, request: IncomingMessage) => onConnection({ wss, ws, request }));

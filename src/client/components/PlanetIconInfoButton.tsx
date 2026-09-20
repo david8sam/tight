@@ -14,6 +14,7 @@ import {
     Hazardous,
     Industrial,
     Legendary,
+    DMZPlanet,
 } from './PlanetIcons';
 
 const ICONS: { Component: React.ElementType; label: string }[] = [
@@ -60,6 +61,10 @@ const ICONS: { Component: React.ElementType; label: string }[] = [
     {
         Component: Legendary,
         label: 'Legendary Planet',
+    },
+    {
+        Component: DMZPlanet,
+        label: 'DMZ Planet',
     },
 ];
 

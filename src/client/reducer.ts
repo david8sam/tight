@@ -14,6 +14,7 @@ export enum ActionType {
 
 export interface State {
     theme: AppTheme;
+    initialized: boolean;
     connecting: boolean;
     connectError: boolean;
     reconnect: boolean;
@@ -28,6 +29,7 @@ export interface Action {
 }
 
 export const initialState: State = {
+    initialized: false, // state is populated from server data.
     connecting: false,
     connectError: false,
     reconnect: false,
@@ -105,6 +107,8 @@ function validateState(state: State): State {
 export default function reducer(state: State, action: Action): State {
     const { type, payload } = action;
 
+    // console.log(`action: ${ActionType[type]}`);
+
     // TODO: Type payloads per action type
     switch (type) {
         case ActionType.setConnecting:
@@ -119,7 +123,7 @@ export default function reducer(state: State, action: Action): State {
             return { ...state, strategyCards: payload };
 
         case ActionType.setState:
-            return validateState({ ...initialState, ...payload });
+            return validateState({ ...initialState, ...payload, initialized: true });
         case ActionType.updateState:
             return updateState(state, payload);
 

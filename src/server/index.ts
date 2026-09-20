@@ -1,18 +1,20 @@
 import chalk from 'chalk';
 import cors from 'cors';
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response } from 'express';
+import https from 'https';
 import ip from 'ip';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import initializeRouter from './rest-api/router.js';
 import initializeWebSocketServer from './WebSocketServer.js';
+import { cert, key } from './certs.js';
+import initializeRouter from './rest-api/router.js';
 
 // workaround for import.meta.dirname being undefined in node 20
 const dirname = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const app = express();
-const port = process.env.PORT || 80;
+let port = process.env.PORT || 80;
 const distDir = path.join(dirname, '../dist');
 const html = path.join(distDir, 'index.html');
 
@@ -30,8 +32,18 @@ app.get('*', (req: Request, res: Response) => {
     res.sendFile(html);
 });
 
-app.listen(port, () => {
-    const ipAddress = chalk.cyanBright(`http://${ip.address()}/`);
+let protocol = 'http';
+let server: ReturnType<typeof express> | ReturnType<typeof https.createServer> = app;
+if (key && cert) {
+    server = https.createServer({ key, cert }, app);
+    protocol = 'https';
+    if (port === 80) {
+        port = 443;
+    }
+}
+
+server.listen(port, () => {
+    const ipAddress = chalk.cyanBright(`${protocol}://${ip.address()}/`);
     console.log(`Server listening on port: ${port}`);
     console.log(`Server running on: ${ipAddress}`);
 });

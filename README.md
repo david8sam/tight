@@ -1,8 +1,17 @@
 # TIGHT
 
-Twilight Imperium Game Helper and Tracker
+## Twilight Imperium Game Helper and Tracker
 
 # Build and Run
+
+### Prerequisites
+
+For HTTPS, set environment variables for the paths to key and crt files:
+
+- SSL_TIGHT_KEY_PATH
+- SSL_TIGHT_CRT_PATH
+
+To use HTTP instead, set the environment variable TIGHT_USE_HTTP=true.
 
 ### 1. Install node modules
 
@@ -38,4 +47,4 @@ Sometimes changes to server files don't hot reload correctly. Run `rs` in this c
 
 `npm run client:dev`
 
-Access the client at http://localhost:3001/
+Access the client at https://localhost:3001/

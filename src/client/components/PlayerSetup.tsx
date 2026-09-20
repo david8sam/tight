@@ -1,4 +1,4 @@
-import { Button, CircularProgress, Grid, Toolbar } from '@mui/material';
+import { Button, CircularProgress, Grid, Toolbar, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 
 import { GameClientData, isPlayerSpectator } from 'common/Game';
@@ -65,12 +65,18 @@ function PlayerSetup() {
     };
 
     const isSpectator = isPlayerSpectator(game, playerId);
+    const factionsHavePlayers = game.factions.some(f => f.playerIds.length > 0);
 
     return (
         <>
             <GameInfoToolbar game={game} />
             <Toolbar>
-                <Grid container flexDirection="column" alignItems="center">
+                <Grid container flexDirection="row" alignItems="center" wrap="nowrap">
+                    <Grid container justifyContent="flex-start" alignItems="center" spacing={1}>
+                        {!factionsHavePlayers ? (
+                            <Typography color="red">Must assign at least one player</Typography>
+                        ) : null}
+                    </Grid>
                     <Grid container justifyContent="flex-end" alignItems="center" spacing={1}>
                         {pending ? (
                             <Grid item>
