@@ -5,8 +5,9 @@
     "exports": "./index.jsx",
     "scripts": {
         "clean:server": "rimraf ./build/server.js && rimraf ./build/hot",
+        "clean:server:dev": "rimraf ./build/server-dev.js && rimraf ./build/server-dev.js.map",
         "clean:client": "rimraf ./dist",
-        "clean": "npm run clean:server && npm run clean:client",
+        "clean": "npm run clean:server && npm run clean:server:dev && npm run clean:client",
         "build:server": "npm run clean:server && cross-env TARGET=node NODE_ENV=production webpack --config webpack.config.ts",
         "build:client": "npm run clean:client && cross-env TARGET=web NODE_ENV=production webpack --config webpack.config.ts",
         "build": "npm run build:server && npm run build:client",

@@ -3,8 +3,6 @@ import React, { useReducer } from 'react';
 import { CssBaseline } from '@mui/material';
 import { createTheme, ThemeProvider, Theme, StyledEngineProvider } from '@mui/material/styles';
 
-import { WSS_PORT } from 'common/constants';
-
 import Context from './Context';
 import AppContent from './AppContent';
 import reducer, { initialState } from './reducer';
@@ -34,7 +32,7 @@ function App() {
     const [state, dispatch] = useReducer(reducer, initialState);
 
     const { sendData } = useWebSocket({
-        url: `${wsProtocol}://${window.location.hostname}:${WSS_PORT}/`,
+        url: `${wsProtocol}://${window.location.hostname}/`,
         dispatch,
         state,
     });

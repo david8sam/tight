@@ -130,7 +130,6 @@ if (dev) {
                 },
             ],
             server: protocol,
-            port: isHttps ? 443 : 80,
         };
     }
 }

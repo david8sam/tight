@@ -1,17 +1,14 @@
-import { Application } from 'express';
-import http, { IncomingMessage } from 'http';
-import https from 'https';
+import { IncomingMessage, type Server as HttpServer } from 'http';
+import { type Server as HttpsServer } from 'https';
 import { parse } from 'url';
 import { WebSocketServer as WSServer, WebSocket as WebSocketType } from 'ws';
 
-import { WSS_PORT } from 'common/constants.js';
 import { MessageType, PartialData } from 'common/message.js';
 import uuidv4 from 'common/uuidv4.js';
 
 import { getGameForClient } from './database/game.js';
 
 import { WebSocket, WebSocketServer, broadcastChangeData, getWebSocketLogId, sendData } from './WebSocket.js';
-import { cert, key } from './certs.js';
 import { getDirtyGameData, isDirty, removeOldGames, setDirty } from './dirty.js';
 import handleMessage from './handleMessage.js';
 import log from './log.js';
@@ -63,13 +60,10 @@ function onConnection({ wss, ws, request }: OnConnectionParam) {
     sendData({ ws, type: MessageType.BROADCAST_INITIALIZE, data });
 }
 
-export default function initialize(app: Application) {
+export default function initialize(server: HttpServer | HttpsServer) {
     if (wss) {
         return wss;
     }
-
-    // Create server for websocket connections
-    const server = key && cert ? https.createServer({ key, cert }, app) : http.createServer(app);
 
     wss = new WSServer({ server });
     wss.on('connection', (ws: WebSocket, request: IncomingMessage) => onConnection({ wss, ws, request }));
@@ -110,10 +104,6 @@ export default function initialize(app: Application) {
             broadcastChangeData({ wss, dirtyGames });
         }
     }, BROADCAST_INTERVAL);
-
-    server.listen(WSS_PORT, () => {
-        console.log(`WebSocket server started on port: ${WSS_PORT}`);
-    });
 
     return wss;
 }
