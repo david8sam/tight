@@ -1,7 +1,5 @@
-import React, { MouseEvent, useEffect, useState } from 'react';
+import React, { MouseEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-import { isEqual } from 'lodash-es';
 
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
@@ -10,6 +8,7 @@ import {
     Box,
     Button,
     CircularProgress,
+    Collapse,
     Grid,
     IconButton,
     Paper,
@@ -23,18 +22,9 @@ import {
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import {
-    Game,
-    GameClientData,
-    GameStatus,
-    getFactionTurn,
-    isPlayerSpectator,
-    Phase,
-    StrategyCardIndex,
-} from 'common/Game';
+import { Game, GameClientData, getFactionTurn, Phase, StrategyCardIndex } from 'common/Game';
 import { MessageType } from 'common/message';
 
-import { Accordion, AccordionDetails, AccordionSummary } from '../components/Accordion';
 import GameInfoToolbar from '../components/GameInfoToolbar';
 import PlayerNameDialog from '../components/PlayerNameDialog';
 import PlayerSetup from '../components/PlayerSetup';
@@ -136,39 +126,17 @@ const useStyles = makeStyles(theme => ({
 function Game() {
     const theme = useTheme();
     const classes = useStyles();
-    const { sendData } = useAppContext();
-    const { gameId, game, playerId } = useGameInfo();
+    const {
+        sendData,
+        state: { pendingCommands },
+    } = useAppContext();
+    const { gameId, game, playerId, isHost, canEditTable } = useGameInfo();
     const navigate = useNavigate();
 
-    const [statusState, setStatusState] = useState<GameStatus>({
-        started: true,
-        ended: false,
-        round: 1,
-        phase: Phase.STRATEGY,
-        turn: StrategyCardIndex.NONE,
-        speaker: '',
-        pickOrder: [],
-        pickTurn: 0,
-        custodiansRemoved: false,
-        agenda1Voted: false,
-        agenda2Voted: false,
-    });
-    const [pending, setPending] = useState(false);
+    const pending = pendingCommands > 0;
     const [actionExpanded, setActionExpaned] = useState(false);
 
-    useEffect(() => {
-        const { status } = game || {};
-        if (!status) {
-            return;
-        }
-
-        if (!isEqual(status, statusState)) {
-            setStatusState({ ...status });
-            setPending(false);
-        }
-    });
-
-    if (!playerId && game) {
+    if (!playerId && game && isHost) {
         const onClose = (canceled: boolean) => {
             if (canceled) {
                 navigate(`/`);
@@ -178,7 +146,7 @@ function Game() {
         return <PlayerNameDialog open onClose={onClose} />;
     }
 
-    if (!game || !playerId) {
+    if (!game || (!playerId && isHost)) {
         return null;
     }
 
@@ -187,9 +155,9 @@ function Game() {
         return <PlayerSetup />;
     }
 
-    const isSpectator = isPlayerSpectator(game, playerId);
+    const isSpectator = !canEditTable;
 
-    const { round, phase } = statusState;
+    const { round, phase } = status;
     const canBack = round > 1 || (round === 1 && phase > Phase.STRATEGY);
     const { canNext, message } = canNextPhase(game);
 
@@ -205,7 +173,6 @@ function Game() {
         const newPhase = next ? nextPhase : prevPhase;
 
         sendData({ type: MessageType.GAME_STATUS_SET, data: { gameId, phase: newPhase } });
-        setPending(true);
     };
 
     const onStartNextRound = (e: MouseEvent<HTMLButtonElement>) => {
@@ -215,7 +182,6 @@ function Game() {
         }
 
         sendData({ type: MessageType.GAME_NEXT_ROUND, data: { gameId } });
-        setPending(true);
     };
 
     const onEndGame = (e: MouseEvent<HTMLButtonElement>) => {
@@ -225,7 +191,6 @@ function Game() {
         }
 
         sendData({ type: MessageType.END_GAME, data: { gameId } });
-        setPending(true);
     };
 
     let phaseStatus = null;
@@ -233,9 +198,9 @@ function Game() {
         phaseStatus = <Typography>{message}</Typography>;
     } else if (phase === Phase.AGENDA) {
         if (round === game.numRounds) {
-            phaseStatus = (
-                <Button disabled={isSpectator} color="primary" variant="contained" onClick={onEndGame}>
-                    {pending ? <CircularProgress size="24" /> : 'End Game'}
+            phaseStatus = !isHost ? <Typography>Ask the host to end this game.</Typography> : (
+                <Button disabled={pending} color="primary" variant="contained" onClick={onEndGame}>
+                    {pending ? <CircularProgress aria-label="Saving game" size="24" /> : 'End Game'}
                 </Button>
             );
         } else if (canNext) {
@@ -246,7 +211,7 @@ function Game() {
                     variant="contained"
                     onClick={e => onStartNextRound(e)}
                 >
-                    {pending ? <CircularProgress size="24" /> : 'Start Next Round'}
+                    {pending ? <CircularProgress aria-label="Saving game" size="24" /> : 'Start Next Round'}
                 </Button>
             );
         }
@@ -279,17 +244,13 @@ function Game() {
                 <Paper>
                     <GameInfoToolbar game={game} />
                 </Paper>
-                <Accordion
-                    className={classes.statusAccordion}
-                    disableMargin
-                    expanded={actionExpanded}
-                    onChange={(_e, expanded) => setActionExpaned(expanded)}
-                >
-                    <AccordionSummary disableMargin classes={{ root: classes.statusSummary }}>
+                <Box className={classes.statusAccordion}>
+                    <Toolbar classes={{ root: classes.statusSummary }}>
                         <Grid container justifyContent="space-between" alignItems="center">
                             <Tooltip title={Phase[prevPhase]}>
                                 <span>
                                     <IconButton
+                                        aria-label={`Previous phase: ${Phase[prevPhase]}`}
                                         disabled={isSpectator || pending || !canBack || phase === Phase.STRATEGY}
                                         onClick={e => onPhaseClick(e, false)}
                                         size="large"
@@ -299,15 +260,22 @@ function Game() {
                                 </span>
                             </Tooltip>
                             {pending ? (
-                                <CircularProgress size="24" />
+                                <CircularProgress aria-label="Saving game" size="24" />
                             ) : (
-                                <Button variant="contained" color="primary">
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    aria-label={`${Phase[phase]} phase details`}
+                                    aria-expanded={actionExpanded}
+                                    onClick={() => setActionExpaned(expanded => !expanded)}
+                                >
                                     <Typography align="center">{`${Phase[phase]}`}</Typography>
                                 </Button>
                             )}
                             <Tooltip title={Phase[nextPhase]}>
                                 <span>
                                     <IconButton
+                                        aria-label={`Next phase: ${Phase[nextPhase]}`}
                                         disabled={isSpectator || pending || !canNext || phase === Phase.AGENDA}
                                         onClick={e => onPhaseClick(e, true)}
                                         size="large"
@@ -317,20 +285,25 @@ function Game() {
                                 </span>
                             </Tooltip>
                         </Grid>
-                    </AccordionSummary>
-                    <AccordionDetails classes={{ root: classes.phaseActionDetails }}>
-                        <Grid container direction="column">
-                            {stepperToolbar}
-                            <Stepper classes={{ root: classes.stepper }} activeStep={phase} alternativeLabel>
-                                {STEPS.map(label => (
-                                    <Step classes={{ alternativeLabel: classes.stepLabelAlternativeLabel }} key={label}>
-                                        <StepLabel>{label}</StepLabel>
-                                    </Step>
-                                ))}
-                            </Stepper>
-                        </Grid>
-                    </AccordionDetails>
-                </Accordion>
+                    </Toolbar>
+                    {stepperToolbar}
+                    <Collapse in={actionExpanded}>
+                        <Box className={classes.phaseActionDetails}>
+                            <Grid container direction="column">
+                                <Stepper classes={{ root: classes.stepper }} activeStep={phase} alternativeLabel>
+                                    {STEPS.map(label => (
+                                        <Step
+                                            classes={{ alternativeLabel: classes.stepLabelAlternativeLabel }}
+                                            key={label}
+                                        >
+                                            <StepLabel>{label}</StepLabel>
+                                        </Step>
+                                    ))}
+                                </Stepper>
+                            </Grid>
+                        </Box>
+                    </Collapse>
+                </Box>
                 <Toolbar sx={{ display: 'flex', width: '100%', height: '100%', padding: 1 }}>
                     {currentFactionTurn && currentFactionTurn.strategyCard ? (
                         <FactionHeader

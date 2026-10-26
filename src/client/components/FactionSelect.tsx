@@ -1,25 +1,28 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { TextField, MenuItem, TextFieldProps as TextFieldPropsType, IconButton, Tooltip } from '@mui/material';
 import DiceIcon from '@mui/icons-material/Casino';
 
 import useGameInfo from '../hooks/useGameInfo';
 
 export const FACTION_NONE = 'None';
+export type FactionSelectSource = 'selection' | 'random';
 
 export interface FactionSelectProps extends Omit<TextFieldPropsType<'outlined'>, 'variant' | 'onChange'> {
     value: string;
     factionNames: string[];
-    onChange: (factionName: string) => void;
+    onChange: (factionName: string, source: FactionSelectSource) => void;
+    randomizeRef?: React.Ref<HTMLButtonElement>;
     order?: number;
     hideNone?: boolean;
 }
 
 function FactionSelect(props: FactionSelectProps) {
-    const { factionNames, onChange, order = -1, hideNone = false, disabled = false, ...TextFieldProps } = props;
+    const id = useId();
+    const { factionNames, onChange, randomizeRef, order = -1, hideNone = false, disabled = false, ...TextFieldProps } = props;
     const { game } = useGameInfo();
 
     const onSelectChange: TextFieldPropsType['onChange'] = e => {
-        onChange(e.target.value);
+        onChange(e.target.value, 'selection');
     };
 
     const onRandomizeClick = () => {
@@ -34,7 +37,7 @@ function FactionSelect(props: FactionSelectProps) {
             factionName = randomize();
         }
 
-        onChange(factionName);
+        onChange(factionName, 'random');
     };
 
     let errorMessage = '';
@@ -52,6 +55,7 @@ function FactionSelect(props: FactionSelectProps) {
 
     return (
         <TextField
+            id={id}
             defaultValue={FACTION_NONE}
             error={Boolean(errorMessage)}
             fullWidth
@@ -63,7 +67,7 @@ function FactionSelect(props: FactionSelectProps) {
             InputProps={{
                 endAdornment: disabled ? null : (
                     <Tooltip title="Randomize">
-                        <IconButton onClick={onRandomizeClick}>
+                        <IconButton ref={randomizeRef} onClick={onRandomizeClick}>
                             <DiceIcon fontSize="large" />
                         </IconButton>
                     </Tooltip>

@@ -67,7 +67,7 @@ function FactionInfo(props: FactionInfoProps) {
             <AccordionTextFields
                 {...getAccordionProps(FactionAccordionIndex.Commodities)}
                 summary="Commodities"
-                texts={commodities ? [{ value: commodities }] : null}
+                texts={commodities ? [{ label: 'Commodities', value: commodities }] : null}
             />
             <FactionAbilitiesAccordion {...getAccordionProps(FactionAccordionIndex.Abilities)} abilities={abilities} />
             <AccordionTextFields

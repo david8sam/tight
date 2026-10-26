@@ -1,7 +1,7 @@
-import { Button, CircularProgress, Grid, Toolbar, Typography } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import { Box, Button, CircularProgress, Grid, Toolbar, Typography } from '@mui/material';
+import React from 'react';
 
-import { GameClientData, isPlayerSpectator } from 'common/Game';
+import { GameClientData } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
@@ -31,72 +31,72 @@ function canStart(game: GameClientData): boolean {
 }
 
 function PlayerSetup() {
-    const { sendData } = useAppContext();
-    const { gameId, game, playerId } = useGameInfo();
+    const {
+        sendData,
+        state: { pendingCommands },
+    } = useAppContext();
+    const { gameId, game, playerId, isHost } = useGameInfo();
 
-    const [pending, setPending] = useState(false);
-
-    useEffect(() => {
-        if (!pending || !game) {
-            return;
-        }
-
-        if (game.status.started) {
-            // Reset pending when game has started
-            setPending(false);
-        }
-    });
+    const pending = pendingCommands > 0;
 
     if (!game) {
         return null;
     }
 
     const onStartClick = () => {
-        const start = !pending;
-        setPending(!pending);
-
-        if (start) {
-            const speaker = game.factions[0].name;
-            const pickOrder = game.factions.map(f => f.name);
-            sendData({ type: MessageType.GAME_STATUS_SET, data: { gameId, pickOrder, speaker } });
-        }
-
-        sendData({ type: start ? MessageType.START_GAME : MessageType.STOP_GAME, data: { gameId } });
+        if (pending) return;
+        const speaker = game.factions[0].name;
+        const pickOrder = game.factions.map(f => f.name);
+        sendData({ type: MessageType.GAME_STATUS_SET, data: { gameId, pickOrder, speaker } });
+        sendData({ type: MessageType.START_GAME, data: { gameId } });
     };
 
-    const isSpectator = isPlayerSpectator(game, playerId);
+    const isSpectator = !isHost;
     const factionsHavePlayers = game.factions.some(f => f.playerIds.length > 0);
 
     return (
         <>
-            <GameInfoToolbar game={game} />
-            <Toolbar>
-                <Grid container flexDirection="row" alignItems="center" wrap="nowrap">
-                    <Grid container justifyContent="flex-start" alignItems="center" spacing={1}>
-                        {!factionsHavePlayers ? (
-                            <Typography color="red">Must assign at least one player</Typography>
-                        ) : null}
-                    </Grid>
-                    <Grid container justifyContent="flex-end" alignItems="center" spacing={1}>
-                        {pending ? (
+            <Box sx={{ display: { xs: 'block', md: 'flex' }, alignItems: 'center' }}>
+                <GameInfoToolbar
+                    game={game}
+                    sx={{
+                        flex: 1,
+                        minWidth: 0,
+                        minHeight: { md: 40 },
+                        '& .MuiIconButton-root': { minWidth: { md: 44 }, minHeight: { md: 44 }, p: { md: 0.5 } },
+                        '& > .MuiButton-root': { whiteSpace: 'nowrap', flexShrink: 0 },
+                    }}
+                />
+                <Toolbar
+                    sx={{ minHeight: { md: 40 }, flexShrink: 0, '& .MuiGrid-container': { width: { md: 'auto' } } }}
+                >
+                    <Grid container flexDirection="row" alignItems="center" wrap="nowrap">
+                        <Grid container justifyContent="flex-start" alignItems="center" spacing={1}>
+                            {!factionsHavePlayers ? (
+                                <Typography color="red">Must assign at least one player</Typography>
+                            ) : null}
+                        </Grid>
+                        <Grid container justifyContent="flex-end" alignItems="center" spacing={1}>
+                            {pending ? (
+                                <Grid item>
+                                    <CircularProgress aria-label="Saving changes" size={24} />
+                                </Grid>
+                            ) : null}
                             <Grid item>
-                                <CircularProgress size={24} />
+                                <Button
+                                    color="primary"
+                                    variant="contained"
+                                    disabled={isSpectator || pending || !canStart(game)}
+                                    onClick={onStartClick}
+                                >
+                                    Start
+                                </Button>
                             </Grid>
-                        ) : null}
-                        <Grid item>
-                            <Button
-                                color="primary"
-                                variant="contained"
-                                disabled={isSpectator || pending || !canStart(game)}
-                                onClick={onStartClick}
-                            >
-                                Start
-                            </Button>
                         </Grid>
                     </Grid>
-                </Grid>
-            </Toolbar>
-            {!pending ? <FactionsSetup /> : null}
+                </Toolbar>
+            </Box>
+            <FactionsSetup />
         </>
     );
 }

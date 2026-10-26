@@ -65,7 +65,7 @@ function AddPlanetDialog(props: AddPlanetDialogProps) {
     };
 
     return (
-        <Dialog open={open} fullScreen>
+        <Dialog PaperProps={{ 'aria-label': 'Add planet' }} open={open} onClose={onCancel} fullScreen>
             <AppBar classes={{ root: classes.appBar }}>
                 <Toolbar>
                     <Tooltip title="Close">

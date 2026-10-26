@@ -142,7 +142,12 @@ function PublicObjectives(props: PublicObjectivesProps) {
                         </Grid>
                         {(creatable || deletable) && (
                             <Grid item>
-                                <IconButton ref={optionsRef} onClick={() => setOptionsOpen(true)} size="large">
+                                <IconButton
+                                    aria-label="Public objective options"
+                                    ref={optionsRef}
+                                    onClick={() => setOptionsOpen(true)}
+                                    size="large"
+                                >
                                     <MoreVertIcon />
                                 </IconButton>
                             </Grid>

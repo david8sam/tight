@@ -1,9 +1,12 @@
+import { GameVersion } from 'common/gameVersion';
+import { sessionHints } from './utils/sessionHints';
 import { GameClientData, GamePlayer, StrategyCard } from 'common/Game';
 import { ChangeData } from 'common/message';
 import { AppTheme } from './types';
 
 export enum ActionType {
     setConnecting,
+    setCommandStatus,
     setTheme,
     setPlayerId,
     setStrategyCards,
@@ -12,9 +15,19 @@ export enum ActionType {
     updateState,
 }
 
+export interface CommandNotice {
+    kind: 'failed' | 'unconfirmed';
+    message: string;
+}
+
 export interface State {
+    gameVersion: GameVersion | null;
+    pendingCommands: number;
+    saveStatus: 'idle' | 'pending' | 'saved' | 'unconfirmed' | 'failed';
+    commandNotice: CommandNotice | null;
     theme: AppTheme;
     initialized: boolean;
+    snapshotSequence: number;
     connecting: boolean;
     connectError: boolean;
     reconnect: boolean;
@@ -29,14 +42,19 @@ export interface Action {
 }
 
 export const initialState: State = {
+    gameVersion: null,
+    pendingCommands: 0,
+    saveStatus: 'idle',
+    commandNotice: null,
     initialized: false, // state is populated from server data.
+    snapshotSequence: 0,
     connecting: false,
     connectError: false,
     reconnect: false,
     strategyCards: [],
     game: null,
-    playerId: sessionStorage.getItem('playerId') || null,
-    theme: (sessionStorage.getItem('theme') as AppTheme) || 'light',
+    playerId: sessionHints.getItem('playerId') || null,
+    theme: sessionHints.getItem('theme') === 'dark' ? 'dark' : 'light',
 };
 
 /**
@@ -53,7 +71,7 @@ function updateState(state: State, payload: ChangeData): State {
     // Update changes to game
     const { created, deleted, status, planets, players, factions, publicObjectives } = game;
     if (deleted) {
-        return { ...state, game: null };
+        return { ...state, game: null, gameVersion: null };
     }
 
     // TODO: Investigate even more granular updates?
@@ -87,7 +105,7 @@ function updateState(state: State, payload: ChangeData): State {
         updatedGame.publicObjectives = [...publicObjectives];
     }
 
-    return { ...state, game: updatedGame };
+    return { ...state, game: updatedGame, gameVersion: payload.gameVersion };
 }
 
 function validateState(state: State): State {
@@ -111,19 +129,29 @@ export default function reducer(state: State, action: Action): State {
 
     // TODO: Type payloads per action type
     switch (type) {
+        case ActionType.setCommandStatus:
         case ActionType.setConnecting:
             return { ...state, ...payload };
         case ActionType.setTheme:
-            sessionStorage.setItem('theme', payload);
+            sessionHints.setItem('theme', payload);
             return { ...state, theme: payload };
         case ActionType.setPlayerId:
-            sessionStorage.setItem('playerId', payload ?? '');
+            sessionHints.setItem('playerId', payload ?? '');
             return { ...state, playerId: payload };
         case ActionType.setStrategyCards:
             return { ...state, strategyCards: payload };
 
-        case ActionType.setState:
-            return validateState({ ...initialState, ...payload, initialized: true });
+        case ActionType.setState: {
+            // A missing-game response still needs to be observed when game was already null.
+            const next = validateState({
+                ...state,
+                ...payload,
+                initialized: true,
+                snapshotSequence: state.snapshotSequence + 1,
+            });
+            sessionHints.setItem('playerId', next.playerId ?? '');
+            return next;
+        }
         case ActionType.updateState:
             return updateState(state, payload);
 

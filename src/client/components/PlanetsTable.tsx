@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode, useEffect, useRef, useState } from 'react';
 
 import { Edit } from '@mui/icons-material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -101,6 +101,7 @@ export interface PlanetsTableProps {
     filterByPlanetOnly?: boolean;
 
     showCheckbox?: boolean;
+    disabled?: boolean;
     selection?: string[];
     onSelectionChange?: (selection: string[]) => void;
     onPlanetClick?: (id: string) => void | null;
@@ -111,7 +112,7 @@ export interface PlanetsTableProps {
 
 function PlanetsTable(props: PlanetsTableProps) {
     const classes = useStyle(props);
-    const { game } = useGameInfo();
+    const { game, canEditTable } = useGameInfo();
 
     const {
         planetMap,
@@ -120,6 +121,7 @@ function PlanetsTable(props: PlanetsTableProps) {
         columns = DEFAULT_COLUMNS,
         filterByPlanetOnly,
         showCheckbox = false,
+        disabled = false,
         selection = [],
         onSelectionChange = () => {},
         onPlanetClick = () => {},
@@ -129,6 +131,16 @@ function PlanetsTable(props: PlanetsTableProps) {
     const [nameFilter, setNameFilter] = useState('');
     const [sortBy, setSortBy] = useState<{ key: ColumnType; asc: boolean }>({ key: 'name', asc: true });
     const [editPlanet, setEditPlanet] = useState<PlanetData | null>(null);
+    const editOpener = useRef<HTMLButtonElement | null>(null);
+
+    useEffect(() => {
+        if (editPlanet || disabled || !canEditTable) return;
+        // Saving temporarily disables the opener, so the dialog cannot restore it on close.
+        if (document.activeElement === document.body && editOpener.current?.isConnected) {
+            editOpener.current.focus();
+        }
+        editOpener.current = null;
+    }, [editPlanet, disabled, canEditTable]);
 
     const { planets = {} } = game || {};
     let names = Object.keys(planets);
@@ -190,6 +202,7 @@ function PlanetsTable(props: PlanetsTableProps) {
 
     // Handle row click events
     const onRowClick = (name: string) => {
+        if (disabled) return;
         if (showCheckbox) {
             const index = selection.findIndex(s => s === name);
             if (index < 0) {
@@ -206,6 +219,7 @@ function PlanetsTable(props: PlanetsTableProps) {
 
     // Handle select/deselect all
     const onSelectAll = () => {
+        if (disabled) return;
         const newSelection = filteredSelection.length === names.length ? [] : names;
 
         let finalSelection = newSelection;
@@ -229,6 +243,7 @@ function PlanetsTable(props: PlanetsTableProps) {
         headerCheckbox = (
             <TableCell sx={{ top: FILTER_BY_NAME_HEIGHT }} padding="checkbox">
                 <Checkbox
+                    disabled={disabled}
                     indeterminate={filteredSelection.length > 0 && filteredSelection.length < names.length}
                     checked={filteredSelection.length > 0 && filteredSelection.length === names.length}
                     onChange={onSelectAll}
@@ -329,7 +344,7 @@ function PlanetsTable(props: PlanetsTableProps) {
                         if (showCheckbox) {
                             rowCheckbox = (
                                 <TableCell padding="checkbox">
-                                    <Checkbox checked={selection.includes(name)} />
+                                    <Checkbox disabled={disabled} checked={selection.includes(name)} />
                                 </TableCell>
                             );
                         }
@@ -338,6 +353,7 @@ function PlanetsTable(props: PlanetsTableProps) {
                         return (
                             <TableRow
                                 selected={selected}
+                                aria-disabled={disabled || undefined}
                                 classes={{ root: classes.tableRow }}
                                 key={name}
                                 onClick={e => onRowClick(name)}
@@ -347,9 +363,12 @@ function PlanetsTable(props: PlanetsTableProps) {
                                 <TableCell align="center">
                                     <Tooltip title="Edit">
                                         <IconButton
+                                            aria-label={`Edit ${planet.name}`}
+                                            disabled={!canEditTable || disabled}
                                             onClick={e => {
                                                 e.stopPropagation();
                                                 e.preventDefault();
+                                                editOpener.current = e.currentTarget;
                                                 setEditPlanet(planet);
                                             }}
                                         >

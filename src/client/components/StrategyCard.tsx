@@ -1,7 +1,7 @@
 import React from 'react';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Button, ButtonProps, Grid, Typography } from '@mui/material';
+import { Box, Button, ButtonProps, Grid, Typography } from '@mui/material';
 
 import { StrategyCard } from 'common/Game';
 import {
@@ -39,28 +39,32 @@ function StrategyCard(props: StrategyCardProps) {
     }
 
     return (
-        <Accordion key={name} {...PanelProps}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />} {...SummaryProps}>
-                <Grid container direction="column">
-                    <Grid item>
-                        <Grid container direction="row" alignItems="center">
-                            {button}
-                            <Typography>{`${initiative} - ${name.toUpperCase()}`}</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+            {button && <Box sx={{ pt: 1, pl: 1 }}>{button}</Box>}
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Accordion key={name} {...PanelProps}>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />} {...SummaryProps}>
+                        <Grid container direction="column">
+                            <Grid item>
+                                <Grid container direction="row" alignItems="center">
+                                    <Typography>{`${initiative} - ${name.toUpperCase()}`}</Typography>
+                                </Grid>
+                            </Grid>
+                            {owner && (
+                                <Grid item sx={{ paddingTop: 1 }}>
+                                    <Typography display="flex" justifyContent="center">
+                                        {owner}
+                                    </Typography>
+                                </Grid>
+                            )}
                         </Grid>
-                    </Grid>
-                    {owner && (
-                        <Grid item sx={{ paddingTop: 1 }}>
-                            <Typography display="flex" justifyContent="center">
-                                {owner}
-                            </Typography>
-                        </Grid>
-                    )}
-                </Grid>
-            </AccordionSummary>
-            <AccordionDetails {...DetailsProps}>
-                <StrategyCardDetails primary={primary} secondary={secondary} notes={notes} version={version} />
-            </AccordionDetails>
-        </Accordion>
+                    </AccordionSummary>
+                    <AccordionDetails {...DetailsProps}>
+                        <StrategyCardDetails primary={primary} secondary={secondary} notes={notes} version={version} />
+                    </AccordionDetails>
+                </Accordion>
+            </Box>
+        </Box>
     );
 }
 

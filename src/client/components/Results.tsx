@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, Divider, Grid, Toolbar, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import { GameFaction, calculateVictoryPoints, isPlayerSpectator } from 'common/Game';
+import { GameFaction, calculateVictoryPoints } from 'common/Game';
 
 import useGameInfo from '../hooks/useGameInfo';
 import FactionHeader from './FactionHeader';
@@ -37,7 +37,7 @@ const useStyles = makeStyles(theme => ({
 
 function Results() {
     const classes = useStyles();
-    const { game, playerId } = useGameInfo();
+    const { game, playerId, canEditPublicFaction } = useGameInfo();
     if (!game) {
         return null;
     }
@@ -89,7 +89,7 @@ function Results() {
                         <VictoryPoints
                             factionName={faction.name}
                             allowShowSecret
-                            disabled={isPlayerSpectator(game, playerId) || game.status.ended}
+                            disabled={!canEditPublicFaction(faction.name) || game.status.ended}
                         />
                     </CardContent>
                 </Card>

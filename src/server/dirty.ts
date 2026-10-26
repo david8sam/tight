@@ -5,9 +5,6 @@ import { GameChangeData, GameChangeDataMap, GameFaction, GamePlanet, GamePlanetM
 import { getGame, listGames, deleteGame } from './database/game.js';
 import log from './log.js';
 
-const REMOVE_GAME_TIME_THRESHOLD = 1000 * 60 * 60 * 4; // 4 hours
-const _gameTimestampMap = new Map<string, number>();
-
 export interface DirtyGameParts {
     created?: boolean;
     deleted?: boolean;
@@ -38,6 +35,16 @@ export function isDirty(): boolean {
     return !isEmpty(dirty.games);
 }
 
+export function deleteGameAndNotify(gameId: string): boolean {
+    if (!getGame(gameId)) {
+        return false;
+    }
+
+    const deleted = deleteGame(gameId);
+    if (deleted) dirty.games[gameId] = { deleted: true };
+    return deleted;
+}
+
 // Helper to mark parts of a Game object to be broadcasted out.
 export function markGameDirty(
     gameId: string,
@@ -55,9 +62,13 @@ export function markGameDirty(
         return;
     }
 
-    _gameTimestampMap.set(gameId, Date.now());
-
     const prevDirtyParts = dirty.games[gameId];
+
+    // Full snapshots supersede older queued changes, including a reused code's deletion.
+    if (dirtyParts.created) {
+        dirty.games[gameId] = { created: true };
+        return;
+    }
 
     // Game is deleted, don't process any other dirty flags
     if (prevDirtyParts?.deleted || dirtyParts.deleted) {
@@ -100,8 +111,7 @@ export function getDirtyGameData(): GameChangeDataMap | null {
         const gameData: GameChangeData = { id: gameId };
         const { created, deleted, status, planets, players, factions, publicObjectives } = dirtyParts;
         if (deleted) {
-            log(`Removing old game: ${gameId}`);
-            deleteGame(gameId);
+            log(`Deleting game: ${gameId}`);
             gameData.deleted = true;
             gameDataMap[gameId] = gameData;
             return;
@@ -176,14 +186,4 @@ export function formatChangePlanets(
     const changedFactions = [...changedFactionsSet.values()];
 
     return { changedPlanets, changedFactions };
-}
-
-export function removeOldGames() {
-    const now = Date.now();
-    _gameTimestampMap.forEach((timestamp, gameId) => {
-        if (now - timestamp > REMOVE_GAME_TIME_THRESHOLD) {
-            _gameTimestampMap.delete(gameId);
-            markGameDirty(gameId, { deleted: true });
-        }
-    });
 }

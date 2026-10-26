@@ -1,0 +1,97 @@
+name: Build and regression tests
+on:
+  push:
+    branches: [master]
+  pull_request:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            node: '24.19.0'
+          - os: windows-latest
+            node: '24.19.0'
+          - os: ubuntu-latest
+            node: '22.15.0'
+    runs-on: ${{ matrix.os }}
+    # Slow OS package downloads must leave time for the browser and native gates.
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - name: Use pinned npm
+        run: npm install --global npm@11.9.0 --no-audit --no-fund
+      - run: npm ci --no-audit --no-fund
+      - name: Verify frozen installation
+        run: git diff --exit-code -- package.json package-lock.json
+      - run: npm run typecheck
+      - run: npm run audit:runtime
+      - name: Audit development and runtime dependencies
+        run: npm audit --audit-level=low
+      - run: node scripts/run-ci-tests.mjs
+        env:
+          TIGHT_USE_HTTP: 'true'
+      - run: npm run build:client
+        env:
+          TIGHT_USE_HTTP: 'true'
+      - run: npm run typecheck:browser
+      - name: Install Chromium
+        if: runner.os == 'Linux' && matrix.node == '24.19.0'
+        run: npx playwright install --with-deps chromium
+      - name: Browser regression tests
+        if: runner.os == 'Linux' && matrix.node == '24.19.0'
+        run: node scripts/run-ci-tests.mjs browser
+      - name: Build bundled desktop backend
+        if: matrix.node == '24.19.0'
+        run: npm run build:desktop-backend
+      - name: Electron integration tests on Linux
+        if: runner.os == 'Linux' && matrix.node == '24.19.0'
+        run: xvfb-run --auto-servernum node scripts/run-ci-tests.mjs desktop
+        env:
+          TIGHT_ELECTRON_TEST_NO_SANDBOX: 'true'
+      - name: Electron integration tests on Windows
+        if: runner.os == 'Windows'
+        run: node scripts/run-ci-tests.mjs desktop
+      - name: Package Windows preview
+        if: runner.os == 'Windows'
+        run: node scripts/run-ci-tests.mjs package
+      - name: Stage preview in a path with spaces and Unicode
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: Copy-Item -Path release/TIGHT-win32-x64 -Destination "$env:RUNNER_TEMP/TIGHT preview 测试" -Recurse
+      - name: Test packaged Windows executable
+        if: runner.os == 'Windows'
+        run: node scripts/run-ci-tests.mjs desktop
+        env:
+          TIGHT_DESKTOP_EXECUTABLE: ${{ runner.temp }}\TIGHT preview 测试\TIGHT.exe
+      - name: Build unsigned per-user Windows installer
+        if: runner.os == 'Windows'
+        run: node scripts/run-ci-tests.mjs installer
+      - name: Install, launch, uninstall, and reinstall preview
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: node scripts/run-ci-tests.mjs installer-lifecycle
+      - uses: actions/upload-artifact@v4
+        if: runner.os == 'Windows'
+        with:
+          name: TIGHT-windows-x64-preview
+          path: |
+            release/TIGHT-win32-x64/
+            release/installer/*-preview-setup.exe
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-results-${{ matrix.os }}-${{ matrix.node }}
+          path: test-results/
+          if-no-files-found: ignore

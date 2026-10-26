@@ -12,7 +12,7 @@ import {
     Typography,
 } from '@mui/material';
 
-import { calculateVictoryPoints, isPlayerSpectator } from 'common/Game';
+import { calculateVictoryPoints } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
@@ -23,7 +23,7 @@ import GameSummary from './GameSummary';
 export default function AgendaPhase() {
     const { sendData } = useAppContext();
     const [endGameEarly, setEndGameEarly] = useState(false);
-    const { game, gameId, playerId } = useGameInfo();
+    const { game, gameId, playerId, isHost, canEditTable } = useGameInfo();
 
     if (!game) {
         return null;
@@ -62,8 +62,8 @@ export default function AgendaPhase() {
         numRounds,
     } = game;
 
-    const isSpectator = isPlayerSpectator(game, playerId);
-    const canEndEarly = round < numRounds && !isSpectator;
+    const isSpectator = !canEditTable;
+    const canEndEarly = round < numRounds && isHost;
 
     const factionsAtVp = factions.filter(f => calculateVictoryPoints(game, f.name) >= game.numVictoryPoints);
     const winners = factionsAtVp.length ? factionsAtVp.map(f => f.name).join(', ') : '';
@@ -134,7 +134,7 @@ export default function AgendaPhase() {
                             )}
                             <Grid item>
                                 <Button
-                                    disabled={!endGameEarly && !winners}
+                                    disabled={!isHost || (!endGameEarly && !winners)}
                                     color="primary"
                                     variant="contained"
                                     fullWidth

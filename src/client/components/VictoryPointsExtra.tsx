@@ -26,9 +26,10 @@ interface VictoryPointsExtraProps {
 
 function VictoryPointsExtra(props: VictoryPointsExtraProps) {
     const classes = useStyles(props);
-    const { factionName, disabled = false } = props;
+    const { factionName, disabled: explicitlyDisabled = false } = props;
     const { sendData } = useAppContext();
-    const { game, gameId } = useGameInfo();
+    const { game, gameId, canEditPublicFaction } = useGameInfo();
+    const disabled = explicitlyDisabled || !canEditPublicFaction(factionName);
 
     const faction = game?.factions.find(f => f.name === factionName);
     if (!faction) {
@@ -47,6 +48,7 @@ function VictoryPointsExtra(props: VictoryPointsExtraProps) {
                 <span>
                     <IconButton
                         classes={{ root: classes.iconButton }}
+                        aria-label={`Remove a victory point from ${factionName}`}
                         disabled={disabled || victoryPoints < 1}
                         onClick={() => onVictoryPointsChange(victoryPoints - 1)}
                         size="large"
@@ -68,6 +70,7 @@ function VictoryPointsExtra(props: VictoryPointsExtraProps) {
                 <span>
                     <IconButton
                         classes={{ root: classes.iconButton }}
+                        aria-label={`Add a victory point to ${factionName}`}
                         onClick={() => onVictoryPointsChange(victoryPoints + 1)}
                         disabled={disabled}
                         size="large"

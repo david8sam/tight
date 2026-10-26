@@ -29,6 +29,7 @@ export default function NaaluZeroSelect(props: NaaluZeroSelectProps) {
 
     return (
         <Select
+            inputProps={{ 'aria-label': 'Naalu zero token owner' }}
             variant="outlined"
             {...props}
             value={factionWithZeroToken.name}

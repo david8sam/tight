@@ -3,7 +3,6 @@ import confetti from 'canvas-confetti';
 import React, { useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { isPlayerSpectator } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import { useAppContext } from '../Context';
@@ -16,7 +15,7 @@ function GameResults() {
     useLocation();
 
     const navigate = useNavigate();
-    const { game, gameId, playerId } = useGameInfo();
+    const { game, gameId, playerId, isHost } = useGameInfo();
     const { sendData } = useAppContext();
     const animationIdRef = useRef(0);
 
@@ -65,7 +64,7 @@ function GameResults() {
         return null;
     }
 
-    const isSpectator = isPlayerSpectator(game, playerId);
+    const isSpectator = !isHost;
 
     return (
         <Grid container direction="column" justifyContent="center">

@@ -4,6 +4,7 @@
     "compilerOptions": {
         "module": "ESNext",
         "moduleResolution": "Bundler",
+        "types": ["webpack-env"],
         "outDir": "./dist/",
         "target": "ES6",
     },

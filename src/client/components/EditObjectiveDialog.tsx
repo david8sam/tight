@@ -45,7 +45,7 @@ function EditObjectiveDialog(props: EditObjectiveDialogProps) {
     };
 
     return (
-        <Dialog open={open} fullScreen>
+        <Dialog PaperProps={{ 'aria-label': 'Edit objective' }} open={open} onClose={onClose} fullScreen>
             <AppBar classes={{ root: classes.appBar }}>
                 <Toolbar>
                     <Tooltip title="Close">

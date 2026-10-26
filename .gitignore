@@ -3,3 +3,13 @@
 /build
 /dist
 /node_modules
+
+/test-results
+/playwright-report
+
+# Local game saves
+.tight-data/
+
+# Desktop packaging output
+/release
+/.desktop-stage

@@ -8,7 +8,6 @@ import {
     CardActions,
     CardContent,
     Checkbox,
-    FormControlLabel,
     Grid,
     IconButton,
     Popover,
@@ -74,24 +73,28 @@ function ObjectiveCheckbox(props: ObjectiveCheckboxProps) {
 
     return (
         <>
-            <FormControlLabel
-                key={id}
-                control={
-                    <Checkbox
-                        disabled={disabled}
-                        checked={checked}
-                        onChange={e => onChange(id, e.target.checked)}
-                        color="primary"
-                    />
-                }
-                label={
-                    <IconButton ref={buttonRef} onClick={onInfoOpen} size="large">
-                        <Avatar style={{ color, backgroundColor }}>
-                            <Typography>{id < 0 ? `S${-id}` : id}</Typography>
-                        </Avatar>
-                    </IconButton>
-                }
-            />
+            <Grid component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                <Checkbox
+                    inputProps={{
+                        'aria-label': `Score ${isSecret ? 'secret' : 'public'} objective ${isSecret ? `S${-id}` : id}`,
+                    }}
+                    disabled={disabled}
+                    checked={checked}
+                    onChange={e => onChange(id, e.target.checked)}
+                    color="primary"
+                />
+                <IconButton
+                    aria-label={`Details for ${isSecret ? 'secret' : 'public'} objective ${isSecret ? `S${-id}` : id}`}
+                    ref={buttonRef}
+                    onClick={onInfoOpen}
+                    disabled={isSecret && !allowShowSecret}
+                    size="large"
+                >
+                    <Avatar style={{ color, backgroundColor }}>
+                        <Typography>{id < 0 ? `S${-id}` : id}</Typography>
+                    </Avatar>
+                </IconButton>
+            </Grid>
             <Popover
                 open={infoOpen}
                 onClose={() => setInfoOpen(false)}

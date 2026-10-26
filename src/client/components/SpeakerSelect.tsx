@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 
 import { MenuItem, TextField, TextFieldProps, Typography } from '@mui/material';
 
@@ -10,6 +10,7 @@ import useGameInfo from '../hooks/useGameInfo';
 export interface SpeakerSelectProps extends Omit<TextFieldProps, 'value' | 'onChange' | 'variant'> {}
 
 export default function SpeakerSelect(props: SpeakerSelectProps) {
+    const selectId = useId();
     const { sendData } = useAppContext();
     const { game, gameId } = useGameInfo();
 
@@ -26,6 +27,7 @@ export default function SpeakerSelect(props: SpeakerSelectProps) {
 
     return (
         <TextField
+            id={selectId}
             select
             label="Speaker"
             variant="outlined"

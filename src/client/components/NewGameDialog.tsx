@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router';
 import CloseIcon from '@mui/icons-material/Close';
 import {
     AppBar,
+    Alert,
     Button,
     Dialog,
     DialogContent,
@@ -19,6 +20,7 @@ import { useAppContext } from '../Context';
 import { ActionType } from '../reducer';
 
 import api from '../utils/api';
+import useDialogRequest from '../hooks/useDialogRequest';
 
 import NewGameForm, { GameOptions, DEFAULT_GAME_OPTIONS } from './NewGameForm';
 
@@ -45,32 +47,32 @@ function NewGameDialog(props: NewGameDialogProps) {
     const { open, onClose } = props;
 
     const [gameOptions, setGameOptions] = useState<GameOptions>(() => ({ ...DEFAULT_GAME_OPTIONS }));
-    const [creatingGame, setCreatingGame] = useState(false);
+    const { pending: creatingGame, error: createError, run, cancel } = useDialogRequest(open);
 
     const navigate = useNavigate();
 
     const onCancel = () => {
+        cancel();
         onClose();
     };
 
-    const onSave = () => {
-        setCreatingGame(true);
-        api.gameCreate(gameOptions).then(gameCode => {
-            if (gameCode) {
-                dispatch({ type: ActionType.setPlayerId, payload: null });
-                navigate(`/${gameCode}`);
-            }
-
-            setCreatingGame(false);
-            onClose();
-        });
-    };
+    const onSave = () =>
+        run(
+            signal => api.gameCreate(gameOptions, { signal }),
+            gameCode => {
+                if (gameCode) {
+                    dispatch({ type: ActionType.setPlayerId, payload: null });
+                    navigate(`/${gameCode}`);
+                }
+                onClose();
+            },
+        );
 
     const { publicObjectives } = gameOptions;
     const hasError = !publicObjectives?.length;
 
     return (
-        <Dialog open={open} fullScreen>
+        <Dialog PaperProps={{ 'aria-label': 'Create new game' }} open={open} onClose={onCancel} fullScreen>
             <AppBar sx={styles.appBar}>
                 <Toolbar>
                     <Tooltip title="Close">
@@ -87,6 +89,12 @@ function NewGameDialog(props: NewGameDialogProps) {
                 </Button>
             </AppBar>
             <DialogContent dividers>
+                {createError && (
+                    <Alert severity="error">
+                        Could not create the game or confirm it was saved. Close this dialog and check saved games
+                        before trying again.
+                    </Alert>
+                )}
                 <NewGameForm gameOptions={gameOptions} onChange={options => setGameOptions(options)} />
             </DialogContent>
         </Dialog>

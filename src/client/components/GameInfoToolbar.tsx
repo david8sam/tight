@@ -17,15 +17,21 @@ import { GameClientData } from 'common/Game';
 
 import GameSummary from './GameSummary';
 import RestartGameDialog from './RestartGameDialog';
+import PairDeviceDialog from './PairDeviceDialog';
+import { useSession } from '../SessionGate';
 
 export interface GameInfoToolbarProps extends ToolbarProps {
     game: GameClientData;
     onInfoClick?: IconButtonProps['onClick'];
     hideRestartButton?: boolean;
+    hidePairButton?: boolean;
 }
 
 export default function GameInfoToolbar(props: GameInfoToolbarProps) {
-    const { game, onInfoClick, hideRestartButton, ...toolbarProps } = props;
+    const { game, onInfoClick, hideRestartButton: requestedHideRestart, hidePairButton, ...toolbarProps } = props;
+    const isHost = useSession().role === 'host';
+    const hideRestartButton = requestedHideRestart || !isHost;
+    const [pairOpen, setPairOpen] = useState(false);
     const { status } = game;
 
     const [restartDialogOpen, setRestartDialogOpen] = useState(false);
@@ -71,6 +77,10 @@ export default function GameInfoToolbar(props: GameInfoToolbarProps) {
                     </Grid>
                 )}
             </Grid>
+            {isHost && !hidePairButton && <Button onClick={() => setPairOpen(true)}>Pair a device</Button>}
+            {isHost && !hidePairButton && (
+                <PairDeviceDialog open={pairOpen} gameId={game.id} onClose={() => setPairOpen(false)} />
+            )}
             <Popover
                 open={infoOpen}
                 onClose={() => setInfoOpen(false)}

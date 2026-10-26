@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 
 import { FormControl, InputLabel, MenuItem, Select, SelectProps, TextField } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -22,6 +22,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 function ObjectiveForm(props: ObjectiveFormProps) {
+    const labelId = useId();
     const classes = useStyles(props);
     const { objective, onChange, disabled = false } = props;
 
@@ -41,10 +42,10 @@ function ObjectiveForm(props: ObjectiveFormProps) {
                 />
             </FormControl>
             <FormControl fullWidth variant="outlined">
-                <InputLabel id="num-vps">Victory Points</InputLabel>
+                <InputLabel id={labelId}>Victory Points</InputLabel>
                 <Select
                     variant="standard"
-                    labelId="num-vps"
+                    labelId={labelId}
                     value={objective.vp}
                     onChange={onVpChange}
                     label="Victory Points"

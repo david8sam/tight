@@ -3,7 +3,7 @@ import React, { MouseEvent, useState } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Grid, IconButton, TextField, Toolbar, Tooltip, Typography } from '@mui/material';
+import { Box, Grid, IconButton, TextField, Toolbar, Tooltip, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import { calculateVictoryPoints, GameFaction, Objective } from 'common/Game';
@@ -84,62 +84,69 @@ export default function Objective(props: ObjectiveProps) {
 
     return (
         <>
-            <Accordion disableMargin {...AccordionProps}>
-                <AccordionSummary
-                    classes={{ content: classes.summaryContent }}
-                    disableMargin
-                    expandIcon={<ExpandMoreIcon />}
-                >
-                    <Grid container direction="column">
-                        <Toolbar className={classes.toolbar} disableGutters>
-                            <Typography>{`Objective ${id < 0 ? `S${-id}` : id} (${vp} VP)`}</Typography>
-                            {deletable && (
-                                <Tooltip title="Delete">
-                                    <IconButton onClick={onDeleteClick} size="large">
-                                        <DeleteIcon />
-                                    </IconButton>
-                                </Tooltip>
-                            )}
-                            {editable && (
-                                <Tooltip title="Edit">
-                                    <IconButton onClick={onEditOpenClick} size="large">
-                                        <EditIcon />
-                                    </IconButton>
-                                </Tooltip>
-                            )}
-                        </Toolbar>
-                        <Toolbar className={classes.toolbar} disableGutters>
-                            {factions.map(faction => (
-                                <div key={faction.name} className={classes.avatarContainer}>
-                                    <FactionAvatar
-                                        faction={faction}
-                                        title={
-                                            game
-                                                ? `${faction.name}: ${calculateVictoryPoints(game, faction.name)} VPs`
-                                                : undefined
-                                        }
-                                        // Prevent click from expanding accordion
-                                        onClick={e => e.stopPropagation()}
-                                    />
-                                </div>
-                            ))}
-                        </Toolbar>
-                    </Grid>
-                </AccordionSummary>
-                <AccordionDetails>
-                    <TextField
-                        InputProps={{ readOnly: true }}
-                        fullWidth
-                        multiline
-                        variant="outlined"
-                        label="Description"
-                        value={description}
-                        // Workaround for known MUI TextField label overlap limitation:
-                        // https://mui.com/components/text-fields/#limitations
-                        InputLabelProps={{ shrink: Boolean(description) }}
-                    />
-                </AccordionDetails>
-            </Accordion>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Accordion disableMargin {...AccordionProps}>
+                        <AccordionSummary
+                            classes={{ content: classes.summaryContent }}
+                            disableMargin
+                            expandIcon={<ExpandMoreIcon />}
+                        >
+                            <Grid container direction="column">
+                                <Toolbar className={classes.toolbar} disableGutters>
+                                    <Typography>{`Objective ${id < 0 ? `S${-id}` : id} (${vp} VP)`}</Typography>
+                                </Toolbar>
+                                <Toolbar className={classes.toolbar} disableGutters>
+                                    {factions.map(faction => (
+                                        <div key={faction.name} className={classes.avatarContainer}>
+                                            <FactionAvatar
+                                                faction={faction}
+                                                title={
+                                                    game
+                                                        ? `${faction.name}: ${calculateVictoryPoints(game, faction.name)} VPs`
+                                                        : undefined
+                                                }
+                                                // Prevent click from expanding accordion
+                                                onClick={e => e.stopPropagation()}
+                                            />
+                                        </div>
+                                    ))}
+                                </Toolbar>
+                            </Grid>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <TextField
+                                InputProps={{ readOnly: true }}
+                                fullWidth
+                                multiline
+                                variant="outlined"
+                                label="Description"
+                                value={description}
+                                // Workaround for known MUI TextField label overlap limitation:
+                                // https://mui.com/components/text-fields/#limitations
+                                InputLabelProps={{ shrink: Boolean(description) }}
+                            />
+                        </AccordionDetails>
+                    </Accordion>
+                </Box>
+                <Box sx={{ display: 'flex', pt: 0.5 }}>
+                    {' '}
+                    {deletable && (
+                        <Tooltip title="Delete">
+                            <IconButton aria-label={`Delete objective ${id}`} onClick={onDeleteClick} size="large">
+                                <DeleteIcon />
+                            </IconButton>
+                        </Tooltip>
+                    )}
+                    {editable && (
+                        <Tooltip title="Edit">
+                            <IconButton aria-label={`Edit objective ${id}`} onClick={onEditOpenClick} size="large">
+                                <EditIcon />
+                            </IconButton>
+                        </Tooltip>
+                    )}
+                </Box>
+            </Box>
             {editOpen && (
                 <EditObjectiveDialog
                     open={editOpen}

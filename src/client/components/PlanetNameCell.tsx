@@ -42,7 +42,7 @@ export interface PlanetNameCellProps {
 export default function PlanetNameCell(props: PlanetNameCellProps) {
     const classes = useStyle(props);
     const { sendData } = useAppContext();
-    const { gameId } = useGameInfo();
+    const { gameId, canEditPublicFaction } = useGameInfo();
     const { planet, owner, hideAbility } = props;
     const { name, home, legendary, modifiers } = planet;
 
@@ -123,7 +123,7 @@ export default function PlanetNameCell(props: PlanetNameCellProps) {
                 <Grid item>
                     <Grid container justifyContent="center" alignItems="center" className={classes.grid}>
                         <FormControlLabel
-                            control={<Switch color="primary" checked={abilityExhausted} onChange={onExhaustChange} />}
+                            control={<Switch disabled={!canEditPublicFaction(owner || null)} color="primary" checked={abilityExhausted} onChange={onExhaustChange} />}
                             label={
                                 <Grid container direction="column" justifyContent="center" alignItems="center">
                                     <Typography variant="subtitle2">Exhaust</Typography>

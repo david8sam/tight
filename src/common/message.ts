@@ -1,7 +1,9 @@
+import { GameVersion } from './gameVersion.js';
 import { GameChangeData, GameClientData, GamePlayer, StrategyCard } from './Game.js';
 
 export interface AllData {
     socketId: string;
+    gameVersion: GameVersion | null;
     game: GameClientData | null;
     playerId: string | null;
     strategyCards: StrategyCard[];
@@ -11,6 +13,7 @@ export interface PartialData extends Partial<AllData> {}
 
 export interface ChangeData {
     game: GameChangeData;
+    gameVersion: GameVersion | null;
     playerId?: string;
 }
 
@@ -84,4 +87,7 @@ export enum MessageType {
     REFRESH_PLANET_ABILITY,
 
     UPDATE_PLANET,
+
+    COMMAND_RESULT,
+    COMMAND_BATCH,
 }

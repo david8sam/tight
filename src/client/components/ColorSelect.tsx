@@ -1,5 +1,5 @@
 import { MenuItem, TextField, TextFieldProps as TextFieldPropsType, useTheme } from '@mui/material';
-import React from 'react';
+import React, { useId } from 'react';
 
 import useGameInfo from '../hooks/useGameInfo';
 import { FactionColor, FactionColorValue } from '../utils/faction';
@@ -19,6 +19,7 @@ interface ColorSelectProps extends Omit<TextFieldPropsType<'outlined'>, 'variant
 }
 
 export default function ColorSelect(props: ColorSelectProps) {
+    const id = useId();
     const { value: color = COLOR_NONE, onChange, order = -1, disableNone = false, ...TextFieldProps } = props;
     const theme = useTheme();
 
@@ -57,6 +58,7 @@ export default function ColorSelect(props: ColorSelectProps) {
 
     return (
         <TextField
+            id={id}
             defaultValue={COLOR_NONE}
             error={Boolean(errorMessage)}
             fullWidth

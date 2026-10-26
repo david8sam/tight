@@ -20,8 +20,76 @@ import { Planets } from './planet/index.js';
 import { GameCreateParams, GameRestartParams } from 'common/api.js';
 import { generateGameCode } from '../utils/game.js';
 
-// Map of all games
+import { GameStore, CommandIdentity, CommandCommit } from './GameStore.js';
+import { GameVersion } from 'common/gameVersion.js';
+import { GuestSession } from 'common/session.js';
+
+let store: GameStore | null = null;
 let _games: GameMap = {};
+
+export function initializeGameStorage(directory: string, onWriteError?: (error: unknown) => void): void {
+    if (store) throw new Error('Game storage is already initialized');
+    const next = new GameStore(directory, onWriteError);
+    try {
+        _games = next.load();
+        store = next;
+    } catch (error) {
+        next.close();
+        throw error;
+    }
+}
+export function closeGameStorage(): void {
+    store?.close();
+    store = null;
+    _games = {};
+}
+function storage(): GameStore {
+    if (!store) throw new Error('Game storage is not initialized');
+    return store;
+}
+
+export function revokeAccessSessions(gameId: string): void {
+    storage().revokeAccessSessions(gameId);
+}
+export function findAccessSession(hash: string): GuestSession | null {
+    return storage().findAccessSession(hash);
+}
+export function saveAccessSession(hash: string, session: GuestSession): void {
+    storage().saveAccessSession(hash, session);
+}
+
+export function getGameVersion(id: string): GameVersion | null {
+    return storage().version(id);
+}
+
+export function commitGameCommand(id: string, identity: CommandIdentity, change: () => void): CommandCommit {
+    const game = _games[id];
+    if (!game) return { status: 'missing' };
+    const previous = structuredClone(game);
+    try {
+        const result = storage().commitCommand(id, identity, () => {
+            change();
+            return _games[id];
+        });
+        if (result.status === 'saved') _games[id] = result.game;
+        return result;
+    } catch (error) {
+        _games[id] = previous;
+        throw error;
+    }
+}
+
+export function mutateGame(id: string, change: () => void): void {
+    const previous = structuredClone(_games[id]);
+    const before = JSON.stringify(previous);
+    try {
+        change();
+        if (JSON.stringify(_games[id]) !== before) _games[id] = storage().save(_games[id]);
+    } catch (error) {
+        _games[id] = previous;
+        throw error;
+    }
+}
 
 // Default setting for all planets in a new game
 const DEFAULT_GAME_PLANETS: Readonly<GamePlanetMap> = Planets.reduce((result: GamePlanetMap, planet: Planet) => {
@@ -85,13 +153,13 @@ export function createGame({
 
     const game = initializeGame({ id, version, numPlayers, numRounds, numVictoryPoints, publicObjectives });
 
-    if (_games) {
-        _games[game.id] = game;
-    } else {
-        _games = { [game.id]: game };
-    }
+    _games[game.id] = storage().save(game);
 
     return game;
+}
+
+export function importGame(game: Game): void {
+    _games[game.id] = storage().save(game);
 }
 
 export function restartGame(options: GameRestartParams): Game | null {
@@ -113,18 +181,26 @@ export function restartGame(options: GameRestartParams): Game | null {
         ...otherGameOptions,
     };
     const newGame = initializeGame(combinedOptions);
-    _games[id] = newGame;
+    _games[id] = storage().save(newGame);
 
     return newGame;
 }
 
 export function deleteGame(id: string): boolean {
     if (_games && _games[id]) {
+        storage().delete(id);
         delete _games[id];
         return true;
     }
 
     return false;
+}
+
+export function listSavedGames() {
+    return storage().savedGames();
+}
+export function organizeSavedGame(id: string, change: { name: string | null } | { archived: boolean }): boolean {
+    return storage().organize(id, change);
 }
 
 export function listGames(): Readonly<GameMap> {

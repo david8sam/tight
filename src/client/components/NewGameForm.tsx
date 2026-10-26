@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useId } from 'react';
 import { Divider, FormControl, Grid, InputLabel, MenuItem, Select, SxProps, Theme } from '@mui/material';
 
 import { generateBlankPublicObjectives, Objective } from 'common/Game';
@@ -46,6 +46,7 @@ interface NewGameFormProps {
 }
 
 function NewGameForm(props: NewGameFormProps) {
+    const id = useId();
     const { gameOptions = DEFAULT_GAME_OPTIONS, onChange } = props;
     const { numPlayers, numRounds, numVictoryPoints, publicObjectives } = gameOptions;
 
@@ -56,10 +57,10 @@ function NewGameForm(props: NewGameFormProps) {
             <Grid container direction="column" justifyContent="center" alignItems="center" spacing={2}>
                 <Grid item sx={styles.gridItem}>
                     <FormControl fullWidth variant="outlined">
-                        <InputLabel id="num-players">Number of Players</InputLabel>
+                        <InputLabel id={`${id}-players`}>Number of Players</InputLabel>
                         <Select
                             variant="standard"
-                            labelId="num-players"
+                            labelId={`${id}-players`}
                             value={numPlayers}
                             onChange={e => onGameOptionChange({ numPlayers: Number(e?.target?.value) })}
                             label="Number of Players"
@@ -74,13 +75,13 @@ function NewGameForm(props: NewGameFormProps) {
                 </Grid>
                 <Grid item sx={styles.gridItem}>
                     <FormControl fullWidth variant="outlined">
-                        <InputLabel id="num-rounds">Number of Rounds</InputLabel>
+                        <InputLabel id={`${id}-rounds`}>Number of Rounds</InputLabel>
                         <Select
                             variant="standard"
-                            labelId="num-rounds"
+                            labelId={`${id}-rounds`}
                             value={numRounds}
                             onChange={e => onGameOptionChange({ numRounds: Number(e?.target?.value) })}
-                            label="Number of Players"
+                            label="Number of Rounds"
                         >
                             {NUM_ROUNDS_OPTIONS.map(({ label, value }) => (
                                 <MenuItem key={value} value={value}>
@@ -92,10 +93,10 @@ function NewGameForm(props: NewGameFormProps) {
                 </Grid>
                 <Grid item sx={styles.gridItem}>
                     <FormControl fullWidth variant="outlined">
-                        <InputLabel id="num-vps">Victory Points To Win</InputLabel>
+                        <InputLabel id={`${id}-vps`}>Victory Points To Win</InputLabel>
                         <Select
                             variant="standard"
-                            labelId="num-vps"
+                            labelId={`${id}-vps`}
                             value={numVictoryPoints}
                             onChange={e => onGameOptionChange({ numVictoryPoints: Number(e?.target?.value) })}
                             label="Victory Points To Win"

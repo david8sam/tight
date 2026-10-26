@@ -9,7 +9,7 @@ function GameDeleted() {
     return (
         <Container sx={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center' }}>
             <Typography variant="h4" align="center">
-                {`Game ${gameId} has been deleted due to inactivity`}
+                {`Game ${gameId} was not found or is no longer available`}
             </Typography>
             <Toolbar />
             <Button sx={{ margin: 1 }} color="primary" variant="contained" size="large" onClick={() => navigate('/')}>

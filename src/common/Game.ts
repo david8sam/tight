@@ -206,22 +206,19 @@ export function getFactionTurn(game: Game | GameClientData) {
  */
 export function getFactionOrder(game: Game | GameClientData, checkNaalu: boolean = true) {
     return [...game.factions].sort((f1: GameFaction, f2: GameFaction) => {
-        if (checkNaalu) {
-            if (f1.hasNaaluZeroToken) {
-                return -1;
-            } else if (f2.hasNaaluZeroToken) {
-                return 1;
-            }
+        if (checkNaalu && f1.hasNaaluZeroToken !== f2.hasNaaluZeroToken) {
+            return f1.hasNaaluZeroToken ? -1 : 1;
         }
-
-        // Players that have not picked a strategy card are last.
+        if (f1.strategyCard === f2.strategyCard) {
+            return 0;
+        }
         if (f1.strategyCard === StrategyCardIndex.NONE) {
             return 1;
-        } else if (f2.strategyCard === StrategyCardIndex.NONE) {
-            return 1;
         }
-
-        return f1.strategyCard < f2.strategyCard ? -1 : 1;
+        if (f2.strategyCard === StrategyCardIndex.NONE) {
+            return -1;
+        }
+        return f1.strategyCard - f2.strategyCard;
     });
 }
 
@@ -261,27 +258,22 @@ export function buildStrategyCardOwners(game: Game | GameClientData): string[] {
     return stratCardOwners;
 }
 
-/**
- * Check if a strategy card, or other versions of it, is currently owned by a faction.
- */
+export function getStrategyCardOwner(
+    stratCardOwners: string[],
+    initiative: number,
+): { owner: string; card: number } | null {
+    const family = Object.entries(StrategyCardsWithVersions).find(([base]) => Number(base) === Math.floor(initiative));
+    const variants = family ? [Number(family[0]), ...family[1]] : [];
+    const cards = [initiative, ...variants.filter(card => card !== initiative)];
+    for (const card of cards) {
+        const owner = stratCardOwners[card];
+        if (owner) return { owner, card };
+    }
+    return null;
+}
+
 export function strategyCardHasOwner(stratCardOwners: string[], initiative: number): boolean {
-    let hasOwner = false;
-
-    // Check base version first
-    const baseInitiative = Math.floor(initiative) as keyof typeof StrategyCardsWithVersions;
-    if (baseInitiative === initiative) {
-        hasOwner = Boolean(stratCardOwners[baseInitiative]);
-    }
-
-    // Check all other versions
-    if (!hasOwner) {
-        const otherVersions = StrategyCardsWithVersions[baseInitiative];
-        if (otherVersions) {
-            hasOwner = otherVersions.some(v => stratCardOwners[v]);
-        }
-    }
-
-    return hasOwner;
+    return getStrategyCardOwner(stratCardOwners, initiative) !== null;
 }
 
 /**
@@ -292,7 +284,10 @@ export function calculateVictoryPoints(game: Game | GameClientData, factionName:
     const { publicObjectives: gamePOs } = game;
     const { publicObjectives, secretObjectives, victoryPoints } = faction;
 
-    const povp = publicObjectives.reduce((total, po, i) => total + (po === true ? gamePOs[i].vp : 0), 0);
+    const povp = gamePOs.reduce(
+        (total, objective) => total + (publicObjectives[objective.id - 1] ? objective.vp : 0),
+        0,
+    );
     const sovp = secretObjectives.reduce((total, so, i) => total + (so.cleared ? so.objective.vp : 0), 0);
     const totalvp = povp + sovp + victoryPoints;
 

@@ -1,11 +1,11 @@
 import HtmlWebPackPlugin from 'html-webpack-plugin';
 import path from 'path';
 import { Configuration } from 'webpack';
-import { Configuration as ConfigurationDev } from 'webpack-dev-server';
 import nodeExternals from 'webpack-node-externals';
 
 const dev = process.env.NODE_ENV === 'development';
 const web = process.env.TARGET === 'web';
+const desktop = process.env.TARGET === 'desktop';
 const target = web ? 'web' : 'node';
 const mode = dev ? 'development' : 'production';
 
@@ -15,11 +15,7 @@ const serverDir = path.resolve(cwd, './src/server');
 
 const tsconfigFile = web ? path.resolve(cwd, 'tsconfig.web.json') : path.resolve(cwd, 'tsconfig.server.json');
 
-const isHttps = !(process.env.TIGHT_USE_HTTP?.toLowerCase() === 'true');
-const protocol = isHttps ? 'https' : 'http';
-const localhost = `${protocol}://localhost`;
-
-let config: Configuration | ConfigurationDev = {
+let config: Configuration = {
     target,
     mode,
     module: {
@@ -62,8 +58,10 @@ if (web) {
         ...config,
         entry: path.resolve(clientDir, 'index.tsx'),
         output: {
-            filename: 'js/bundle.js',
-            chunkFilename: 'js/[name].chunk.js',
+            filename: dev ? 'js/bundle.js' : 'js/bundle.[contenthash].js',
+            chunkFilename: dev ? 'js/[name].chunk.js' : 'js/[name].[contenthash].chunk.js',
+            hashFunction: 'sha256',
+            hashDigestLength: 20,
             publicPath: '/',
             path: path.resolve(cwd, 'dist'),
         },
@@ -77,9 +75,15 @@ if (web) {
 } else {
     config = {
         ...config,
-        entry: path.resolve(serverDir, 'index.ts'),
+        entry: desktop
+            ? path.resolve(serverDir, 'bootstrap.ts')
+            : {
+                  [dev ? 'server-dev' : 'server']: path.resolve(serverDir, 'index.ts'),
+                  backend: path.resolve(serverDir, 'bootstrap.ts'),
+              },
+        module: { ...config.module, parser: { javascript: { importMeta: false } } },
         output: {
-            filename: dev ? 'server-dev.js' : 'server.js',
+            filename: desktop ? 'desktop-backend.js' : '[name].js',
             library: {
                 type: 'module',
             },
@@ -91,7 +95,7 @@ if (web) {
         experiments: {
             outputModule: true,
         },
-        externals: [nodeExternals({ importType: 'module' })],
+        externals: desktop ? [] : [nodeExternals({ importType: 'module' })],
         watch: dev,
     };
 }
@@ -101,37 +105,6 @@ if (dev) {
         ...config,
         devtool: 'cheap-module-source-map',
     };
-
-    config.output = {
-        ...config.output,
-        hotUpdateChunkFilename: 'hot/[id].[fullhash].hot-update.js',
-        hotUpdateMainFilename: 'hot/[runtime].[fullhash].hot-update.json',
-    };
-
-    if (web) {
-        config.devServer = {
-            static: {
-                directory: path.resolve(cwd, 'dist'),
-            },
-            hot: true,
-            proxy: [
-                {
-                    context: '/api',
-                    target: `${localhost}:3001`,
-                    router: () => localhost,
-                    secure: false,
-                    changeOrigin: isHttps ? true : undefined,
-                },
-                {
-                    context: '*',
-                    target: localhost,
-                    secure: false,
-                    changeOrigin: isHttps ? true : undefined,
-                },
-            ],
-            server: protocol,
-        };
-    }
 }
 
 export default config;

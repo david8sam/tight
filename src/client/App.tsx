@@ -4,9 +4,11 @@ import { CssBaseline } from '@mui/material';
 import { createTheme, ThemeProvider, Theme, StyledEngineProvider } from '@mui/material/styles';
 
 import Context from './Context';
+import { useSession } from './SessionGate';
 import AppContent from './AppContent';
 import reducer, { initialState } from './reducer';
 import useWebSocket from './hooks/useWebSocket';
+import { getWebSocketUrl } from './utils/urls';
 
 declare module '@mui/styles/defaultTheme' {
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -16,23 +18,26 @@ declare module '@mui/styles/defaultTheme' {
 const LIGHT_THEME = createTheme({
     palette: {
         mode: 'light',
+        contrastThreshold: 4.5,
     },
 });
 
 const DARK_THEME = createTheme({
     palette: {
         mode: 'dark',
+        contrastThreshold: 4.5,
     },
 });
 
-const isHttps = window.location.protocol.split(':')[0].toLowerCase() === 'https';
-const wsProtocol = isHttps ? 'wss' : 'ws';
-
 function App() {
-    const [state, dispatch] = useReducer(reducer, initialState);
+    const session = useSession();
+    const [state, dispatch] = useReducer(reducer, initialState, saved => ({
+        ...saved,
+        playerId: session.role === 'player' ? session.playerId : session.role === 'spectator' ? null : saved.playerId,
+    }));
 
     const { sendData } = useWebSocket({
-        url: `${wsProtocol}://${window.location.hostname}/`,
+        url: getWebSocketUrl(window.location.origin),
         dispatch,
         state,
     });

@@ -1,0 +1,142 @@
+{
+  "R01": {
+    "number": 1,
+    "url": "https://github.com/alvinxiao/tight/issues/1",
+    "title": "[R01][P0] Persist games and recover from interrupted writes"
+  },
+  "R02": {
+    "number": 2,
+    "url": "https://github.com/alvinxiao/tight/issues/2",
+    "title": "[R02][P0] Contain invalid WebSocket messages without crashing the host"
+  },
+  "R03": {
+    "number": 3,
+    "url": "https://github.com/alvinxiao/tight/issues/3",
+    "title": "[R03][P0] Validate REST and WebSocket input at the boundary"
+  },
+  "R04": {
+    "number": 4,
+    "url": "https://github.com/alvinxiao/tight/issues/4",
+    "title": "[R04][P0] Give hosts, players, and spectators enforceable permissions"
+  },
+  "R05": {
+    "number": 5,
+    "url": "https://github.com/alvinxiao/tight/issues/5",
+    "title": "[R05][P0] Update vulnerable dependencies and remove unused runtime packages"
+  },
+  "R06": {
+    "number": 6,
+    "url": "https://github.com/alvinxiao/tight/issues/6",
+    "title": "[R06][P1] Restore a deterministic installation and CI release gate"
+  },
+  "R07": {
+    "number": 7,
+    "url": "https://github.com/alvinxiao/tight/issues/7",
+    "title": "[R07][P1] Honor the selected round limit"
+  },
+  "R08": {
+    "number": 8,
+    "url": "https://github.com/alvinxiao/tight/issues/8",
+    "title": "[R08][P1] Make repeated planet acquisition preserve consistent ownership"
+  },
+  "R09": {
+    "number": 9,
+    "url": "https://github.com/alvinxiao/tight/issues/9",
+    "title": "[R09][P1] Notify every subscribed client when a game is deleted"
+  },
+  "R10": {
+    "number": 10,
+    "url": "https://github.com/alvinxiao/tight/issues/10",
+    "title": "[R10][P1] End restart requests with a defined missing-game response"
+  },
+  "R11": {
+    "number": 11,
+    "url": "https://github.com/alvinxiao/tight/issues/11",
+    "title": "[R11][P1] Resolve HTTP and WebSocket endpoints consistently, including ports"
+  },
+  "R12": {
+    "number": 12,
+    "url": "https://github.com/alvinxiao/tight/issues/12",
+    "title": "[R12][P1] Acknowledge commands and recover connections without silent lost actions"
+  },
+  "R13": {
+    "number": 13,
+    "url": "https://github.com/alvinxiao/tight/issues/13",
+    "title": "[R13][P1] Give every request a recoverable error path"
+  },
+  "R14": {
+    "number": 14,
+    "url": "https://github.com/alvinxiao/tight/issues/14",
+    "title": "[R14][P1] Add domain regression tests for real game behavior"
+  },
+  "R15": {
+    "number": 15,
+    "url": "https://github.com/alvinxiao/tight/issues/15",
+    "title": "[R15][P1] Add server integration tests with real clients and storage"
+  },
+  "R16": {
+    "number": 16,
+    "url": "https://github.com/alvinxiao/tight/issues/16",
+    "title": "[R16][P1] Add browser journeys for host and phone clients"
+  },
+  "R17": {
+    "number": 17,
+    "url": "https://github.com/alvinxiao/tight/issues/17",
+    "title": "[R17][P1] Repair accessible naming, keyboard flows, and unknown routes"
+  },
+  "R18": {
+    "number": 18,
+    "url": "https://github.com/alvinxiao/tight/issues/18",
+    "title": "[R18][P1] Make saved games and identity survive ordinary use"
+  },
+  "D01": {
+    "number": 19,
+    "url": "https://github.com/alvinxiao/tight/issues/19",
+    "title": "[D01][P1] Package a managed backend and React UI in Electron"
+  },
+  "D02": {
+    "number": 20,
+    "url": "https://github.com/alvinxiao/tight/issues/20",
+    "title": "[D02][P1] Add a host lobby with a shareable phone join flow"
+  },
+  "D03": {
+    "number": 21,
+    "url": "https://github.com/alvinxiao/tight/issues/21",
+    "title": "[D03][P1] Handle Windows Firewall and multi-adapter networks clearly"
+  },
+  "D04": {
+    "number": 22,
+    "url": "https://github.com/alvinxiao/tight/issues/22",
+    "title": "[D04][P0] Restrict the desktop and LAN security boundaries"
+  },
+  "D05": {
+    "number": 23,
+    "url": "https://github.com/alvinxiao/tight/issues/23",
+    "title": "[D05][P1] Build a signed Windows installer and document distribution rights"
+  },
+  "D06": {
+    "number": 24,
+    "url": "https://github.com/alvinxiao/tight/issues/24",
+    "title": "[D06][P1] Update safely without interrupting a live game"
+  },
+  "D07": {
+    "number": 25,
+    "url": "https://github.com/alvinxiao/tight/issues/25",
+    "title": "[D07][P2] Add host diagnostics and clear shutdown behavior"
+  },
+  "D08": {
+    "number": 26,
+    "url": "https://github.com/alvinxiao/tight/issues/26",
+    "title": "[D08][P1] Validate the actual Windows-and-phone release experience"
+  },
+  "D09": {
+    "number": 42,
+    "url": "https://github.com/alvinxiao/tight/issues/42",
+    "title": "[D09][P1] Restore usable QR invitations after quitting and restarting"
+  },
+  "D10": {
+    "number": 43,
+    "url": "https://github.com/alvinxiao/tight/issues/43",
+    "title": "[D10][P1] Show every player slot in one host setup screen"
+  }
+}

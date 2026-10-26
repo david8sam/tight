@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 import CloseIcon from '@mui/icons-material/Close';
 import {
     AppBar,
+    Alert,
     Box,
     Button,
     CircularProgress,
@@ -19,6 +19,7 @@ import {
 
 import useGameInfo from '../hooks/useGameInfo';
 import api from '../utils/api';
+import useDialogRequest from '../hooks/useDialogRequest';
 
 import NewGameForm, { GameOptions, DEFAULT_GAME_OPTIONS } from './NewGameForm';
 
@@ -43,7 +44,7 @@ interface RestartGameDialogProps {
 export default function RestartGameDialog(props: RestartGameDialogProps) {
     const { open, onClose } = props;
 
-    const [restartingGame, setRestartingGame] = useState(false);
+    const { pending: restartingGame, error: restartError, run, cancel } = useDialogRequest(open);
 
     const { game } = useGameInfo();
 
@@ -55,30 +56,25 @@ export default function RestartGameDialog(props: RestartGameDialogProps) {
         publicObjectives,
     });
 
-    const navigate = useNavigate();
-
     if (!game) {
         return null;
     }
 
     const onCancel = () => {
+        cancel();
         onClose?.();
     };
 
-    const onRestart = () => {
-        setRestartingGame(true);
-        api.gameRestart({ id: game.id, ...gameOptions }).then(gameCode => {
-            if (gameCode) {
-                navigate(`/${gameCode}`);
-            }
-
-            setRestartingGame(false);
-            onClose?.();
-        });
-    };
+    const onRestart = () =>
+        run(
+            signal => api.gameRestart({ id: game.id, ...gameOptions }, { signal }),
+            () => {
+                onClose();
+            },
+        );
 
     return (
-        <Dialog open={open} fullScreen>
+        <Dialog PaperProps={{ 'aria-label': 'Restart game' }} open={open} onClose={onCancel} fullScreen>
             <AppBar sx={styles.appBar}>
                 <Toolbar>
                     <Tooltip title="Close">
@@ -94,6 +90,12 @@ export default function RestartGameDialog(props: RestartGameDialogProps) {
                 </Toolbar>
             </AppBar>
             <DialogContent dividers>
+                {restartError && (
+                    <Alert severity="error">
+                        Could not restart the game or confirm its state. Close this dialog and check the game before
+                        trying again.
+                    </Alert>
+                )}
                 <Box display="flex" flexDirection="column">
                     <Typography>
                         Restarting the game will reset all progress. Update any game settings below and click "Restart
@@ -112,7 +114,7 @@ export default function RestartGameDialog(props: RestartGameDialogProps) {
                         disabled={restartingGame}
                     >
                         {restartingGame ? (
-                            <CircularProgress variant="indeterminate" size={30} sx={{ marginRight: 2 }} />
+                            <CircularProgress aria-label="Restarting game" variant="indeterminate" size={30} sx={{ marginRight: 2 }} />
                         ) : null}
                         Restart Game
                     </Button>

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useId, useCallback, useMemo, useState } from 'react';
 
 import EditIcon from '@mui/icons-material/Edit';
 import SyncIcon from '@mui/icons-material/Sync';
@@ -6,11 +6,7 @@ import SyncDisabledIcon from '@mui/icons-material/SyncDisabled';
 import { AppBar, Divider, IconButton, MenuItem, TextField, Toolbar, Tooltip, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import { debounce, isEmpty } from 'lodash-es';
-
-import { GamePlanetMap } from 'common/Game';
 import { MessageType } from 'common/message';
-import { PlanetMap } from 'common/Planet';
 
 import AddPlanetDialog from '../components/AddPlanetDialog';
 import PlanetIconInfoButton from '../components/PlanetIconInfoButton';
@@ -18,8 +14,9 @@ import PlanetsTable from '../components/PlanetsTable';
 import TotalsTable, { TotalsTableProps } from '../components/TotalsTable';
 import useAutoNavigate from '../hooks/useAutoNavigate';
 import useGameInfo from '../hooks/useGameInfo';
-import { SendDataFunction } from '../hooks/useWebSocket';
 import api from '../utils/api';
+import useRemoteData from '../hooks/useRemoteData';
+import LoadFailure from '../components/LoadFailure';
 import { getPlanetValue } from '../utils/planet';
 
 import { useAppContext } from '../Context';
@@ -34,73 +31,26 @@ const useStyle = makeStyles(() => ({
     },
 }));
 
-interface PlanetStateMap {
-    [name: string]: string;
-}
-
-interface SyncPlanetsParms {
-    sendData: SendDataFunction;
-    refreshed: PlanetStateMap;
-    exhausted: PlanetStateMap;
-    gameId: string;
-    factionName: string;
-    planets: GamePlanetMap;
-}
-
-function syncPlanetsFunc({ sendData, refreshed, exhausted, gameId, factionName, planets }: SyncPlanetsParms) {
-    const refreshedArray = Object.keys(refreshed).filter(r => !planets[r].refreshed);
-    if (refreshedArray.length) {
-        sendData({
-            type: MessageType.REFRESH_PLANET,
-            data: { gameId, factionName, planetId: refreshedArray },
-        });
-    }
-
-    const exhaustedArray = Object.keys(exhausted).filter(e => planets[e].refreshed);
-    if (exhaustedArray.length) {
-        sendData({
-            type: MessageType.EXHAUST_PLANET,
-            data: { gameId, factionName, planetId: exhaustedArray },
-        });
-    }
-}
-
 function Planets() {
+    const selectId = useId();
     const classes = useStyle();
     const { sendData } = useAppContext();
-    const { game, gameId, playerId } = useGameInfo();
-    const [planetMap, setPlanetMap] = useState<PlanetMap>({});
-    const [pending, setPending] = useState(true);
+    const { game, gameId, playerId, canEditTable, canEditPublicFaction } = useGameInfo();
+    const load = useCallback((signal: AbortSignal) => api.planetList(undefined, { signal }), []);
+    const { resource, retry } = useRemoteData(load);
+    const pending = resource.kind === 'loading';
+    const planetMap = resource.kind === 'loaded' ? resource.data : {};
     const [factionName, setFactionName] = useState(() => {
         const faction = playerId && game ? game.factions.find(f => f.playerIds.includes(playerId)) : null;
-        return faction?.name || '';
+        return faction?.name || (canEditTable ? game?.factions[0]?.name : '') || '';
     });
 
     const factionNameOptions = useMemo(() => {
-        const factionsArray = playerId && game ? game.factions.filter(f => f.playerIds.includes(playerId)) : [];
+        const factionsArray = game ? game.factions.filter(f => canEditTable || (playerId && f.playerIds.includes(playerId))) : [];
         return factionsArray.map(f => f.name);
-    }, [game, playerId]);
+    }, [game, playerId, canEditTable]);
 
     const [openAddDialog, setOpenAddDialog] = useState(false);
-    const [planetState, setPlanetState] = useState({
-        refreshed: {} as PlanetStateMap,
-        exhausted: {} as PlanetStateMap,
-    });
-
-    const serverSyncRef = useRef(false);
-
-    // Delay sending updates to the server until all changes are done.
-    const syncPlanets = useMemo(
-        () =>
-            debounce((args: SyncPlanetsParms) => {
-                // Don't send updates to server if currently syncing from server.
-                if (!serverSyncRef.current) {
-                    syncPlanetsFunc(args);
-                }
-            }, 2000),
-        [],
-    );
-
     // Get all planets owned by this faction
     const gamePlanets = game?.planets;
     const faction = game?.factions.find(f => f.name === factionName);
@@ -108,64 +58,15 @@ function Planets() {
 
     useAutoNavigate({ to: `/`, condition: () => !gameId || !playerId, deps: [gameId, playerId] });
 
-    useEffect(() => {
-        api.planetList().then(planets => {
-            setPlanetMap(planets);
-            setPending(false);
-        });
-    }, []);
-
-    // Sync with store data
-    useEffect(
-        () => {
-            serverSyncRef.current = true;
-
-            if (!gamePlanets) {
-                if (!isEmpty(planetState.refreshed) && !isEmpty(planetState.exhausted)) {
-                    setPlanetState({ refreshed: {}, exhausted: {} });
-                }
-
-                serverSyncRef.current = false;
-                return;
-            }
-
-            let hasChange: boolean = false;
-
-            const refreshed: PlanetStateMap = {};
-            const exhausted: PlanetStateMap = {};
-            factionPlanetNames.forEach(p => {
-                if (gamePlanets[p].refreshed) {
-                    refreshed[p] = p;
-                    hasChange = hasChange || Boolean(planetState.refreshed[p]) === false;
-                } else {
-                    exhausted[p] = p;
-                    hasChange = hasChange || Boolean(planetState.exhausted[p]) === false;
-                }
-            });
-
-            if (!hasChange) {
-                const totalPlanets =
-                    Object.keys(planetState.refreshed).length + Object.keys(planetState.exhausted).length;
-                hasChange = hasChange || totalPlanets !== factionPlanetNames.length;
-            }
-
-            if (hasChange) {
-                setPlanetState({ refreshed, exhausted });
-            }
-
-            serverSyncRef.current = false;
-        },
-        // Update on any planet change from the server
-        [gamePlanets, factionPlanetNames],
-    );
-
+    if (resource.kind === 'error') return <LoadFailure retry={retry} />;
     if (pending) {
         return null;
     }
 
     // Compute totals
-    const refreshedPlanets = Object.keys(planetState.refreshed);
-    const exhaustedPlanets = Object.keys(planetState.exhausted);
+    const refreshedPlanets = factionPlanetNames.filter(name => gamePlanets?.[name]?.refreshed);
+    const exhaustedPlanets = factionPlanetNames.filter(name => !gamePlanets?.[name]?.refreshed);
+    const editable = canEditPublicFaction(factionName);
     const totals: TotalsTableProps = {
         resources: 0,
         influence: 0,
@@ -183,55 +84,29 @@ function Planets() {
         totals.influence += refreshed ? getPlanetValue(planet, 'influence') : 0;
 
         // Must exhaust planet to use tech bonus (New in TI4)
-        totals.biotic += refreshed ? getPlanetValue(planet, 'biotic') ?? 0 : 0;
-        totals.warfare += refreshed ? getPlanetValue(planet, 'warfare') ?? 0 : 0;
-        totals.propulsion += refreshed ? getPlanetValue(planet, 'propulsion') ?? 0 : 0;
-        totals.cybernetic += refreshed ? getPlanetValue(planet, 'cybernetic') ?? 0 : 0;
+        totals.biotic += refreshed ? (getPlanetValue(planet, 'biotic') ?? 0) : 0;
+        totals.warfare += refreshed ? (getPlanetValue(planet, 'warfare') ?? 0) : 0;
+        totals.propulsion += refreshed ? (getPlanetValue(planet, 'propulsion') ?? 0) : 0;
+        totals.cybernetic += refreshed ? (getPlanetValue(planet, 'cybernetic') ?? 0) : 0;
     });
 
-    // Handle click events to refresh or exhaust planets
     const onPlanetClick = (name: string) => {
-        const planet = gamePlanets && gamePlanets[name];
-        if (!planet || !gameId || !factionName) {
-            return;
-        }
-
-        const refreshed: PlanetStateMap = { ...planetState.refreshed };
-        const exhausted: PlanetStateMap = { ...planetState.exhausted };
-        if (refreshed[name]) {
-            delete refreshed[name];
-            exhausted[name] = name;
-        } else {
-            delete exhausted[name];
-            refreshed[name] = name;
-        }
-
-        syncPlanets({ sendData, gameId, factionName, exhausted, refreshed, planets: gamePlanets });
-        setPlanetState({ refreshed, exhausted });
+        const planet = gamePlanets?.[name];
+        if (!planet || !gameId || !editable) return;
+        sendData({
+            type: planet.refreshed ? MessageType.EXHAUST_PLANET : MessageType.REFRESH_PLANET,
+            data: { gameId, factionName, planetId: name },
+        });
     };
 
-    // Handle refresh or exahust all planets
     const onRefreshAll = (refresh: boolean) => {
-        if (!gameId || !factionName) {
-            return;
-        }
-
-        // Convert array to object map
-        const planets = factionPlanetNames.reduce((a: PlanetStateMap, n: string) => {
-            a[n] = n;
-            return a;
-        }, {});
-
-        let refreshed = {};
-        let exhausted = {};
-        if (refresh) {
-            refreshed = planets;
-        } else {
-            exhausted = planets;
-        }
-
-        syncPlanets({ sendData, gameId, factionName, exhausted, refreshed, planets: gamePlanets || {} });
-        setPlanetState({ refreshed, exhausted });
+        if (!gameId || !editable) return;
+        const planetIds = refresh ? exhaustedPlanets : refreshedPlanets;
+        if (planetIds.length)
+            sendData({
+                type: refresh ? MessageType.REFRESH_PLANET : MessageType.EXHAUST_PLANET,
+                data: { gameId, factionName, planetId: planetIds },
+            });
     };
 
     return (
@@ -242,6 +117,7 @@ function Planets() {
                         sx={{ marginTop: 2 }}
                         fullWidth
                         select
+                        id={selectId}
                         label={factionNameOptions.length ? 'My Factions' : 'No Factions'}
                         value={factionName}
                         onChange={e => setFactionName(e.target.value)}
@@ -255,7 +131,8 @@ function Planets() {
                     <Tooltip title="Refresh All Planets">
                         <span>
                             <IconButton
-                                disabled={exhaustedPlanets.length === 0 || factionPlanetNames.length === 0}
+                                aria-label="Refresh All Planets"
+                                disabled={!editable || exhaustedPlanets.length === 0 || factionPlanetNames.length === 0}
                                 onClick={() => onRefreshAll(true)}
                                 size="large"
                             >
@@ -266,7 +143,8 @@ function Planets() {
                     <Tooltip title="Exhaust All Planets">
                         <span>
                             <IconButton
-                                disabled={exhaustedPlanets.length === factionPlanetNames.length}
+                                aria-label="Exhaust All Planets"
+                                disabled={!editable || exhaustedPlanets.length === factionPlanetNames.length}
                                 onClick={() => onRefreshAll(false)}
                                 size="large"
                             >
@@ -280,7 +158,8 @@ function Planets() {
                     <Tooltip title="Add/Remove Planets">
                         <span>
                             <IconButton
-                                disabled={!gameId || !factionName}
+                                aria-label="Add/Remove Planets"
+                                disabled={!editable}
                                 onClick={() => setOpenAddDialog(true)}
                                 size="large"
                             >
@@ -298,6 +177,7 @@ function Planets() {
                     filterByPlanetOnly
                     factionName={factionName}
                     PlanetNameCellProps={{ owner: factionName }}
+                    disabled={!editable}
                     onPlanetClick={onPlanetClick}
                     selection={exhaustedPlanets}
                 />

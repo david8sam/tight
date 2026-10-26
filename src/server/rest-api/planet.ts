@@ -12,6 +12,8 @@ import { Planet } from 'common/Planet.js';
 import { listPlanetNames, listPlanets, Planets } from '../database/planet/index.js';
 
 import { GetRequest } from './types.js';
+import { planetQuerySchema } from '../commandSchemas.js';
+import { parseRequest } from './validation.js';
 
 export default function initializePlanetOperations(router: Router) {
     router.get('/planet/list-names', (req: GetRequest<NoParams>, res: Response<PlanetListNamesResults>): void => {
@@ -25,8 +27,10 @@ export default function initializePlanetOperations(router: Router) {
     });
 
     router.get('/planet/search', (req: GetRequest<PlanetSearchParams>, res: Response<PlanetSearchResults>): void => {
+        const parsed = parseRequest(planetQuerySchema, req.query, res);
+        if (!parsed.success) return;
         const allPlanets = Planets as Planet[];
-        const select = req.query.select ? req.query.select.trim().split(',') : ['*'];
+        const select = parsed.data.select ? parsed.data.select.trim().split(',') : ['*'];
 
         let planets: Partial<Planet>[] = [];
         if (select.length === 1 && select[0] === '*') {

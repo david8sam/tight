@@ -1,5 +1,5 @@
 import { MenuItem, Select, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import {
     GameClientData,
@@ -8,13 +8,11 @@ import {
     StrategyCardIndex,
     buildStrategyCardOwners,
     formatFactionName,
-    isPlayerSpectator,
     strategyCardHasOwner,
 } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import useGameInfo from '../hooks/useGameInfo';
-import api from '../utils/api';
 
 import { useAppContext } from '../Context';
 
@@ -36,13 +34,7 @@ function canSelectStrategyCard(strategyCard: StrategyCard, game: GameClientData,
 
 export default function AssignStrategyCardTable() {
     const { sendData } = useAppContext();
-    const { game, gameId, playerId } = useGameInfo();
-
-    const [strategyCards, setStrategryCards] = useState<StrategyCard[]>([]);
-
-    useEffect(() => {
-        api.strategyCardList().then(cards => setStrategryCards(cards));
-    }, []);
+    const { game, gameId, playerId, strategyCards, canEditPublicFaction } = useGameInfo();
 
     if (!game || strategyCards.length === 0) {
         return null;
@@ -67,15 +59,25 @@ export default function AssignStrategyCardTable() {
                             <TableCell>{formatFactionName(game, faction.name)}</TableCell>
                             <TableCell>
                                 <Select
+                                    inputProps={{ 'aria-label': `Strategy card for ${faction.name}` }}
                                     fullWidth
                                     value={faction.strategyCard}
                                     variant="outlined"
                                     onChange={e => onTakeCardClick(faction.name, Number(e.target.value))}
-                                    disabled={isPlayerSpectator(game, playerId)}
+                                    disabled={!canEditPublicFaction(faction.name)}
                                 >
                                     <MenuItem key={0} value={0}>
                                         None
                                     </MenuItem>
+                                    {faction.strategyCard !== StrategyCardIndex.NONE &&
+                                        !strategyCards.some(card => card.initiative === faction.strategyCard) && (
+                                            <MenuItem value={faction.strategyCard}>
+                                                {StrategyCardIndex[faction.strategyCard]
+                                                    .split('_')
+                                                    .map(word => word[0] + word.slice(1).toLowerCase())
+                                                    .join(' ')}
+                                            </MenuItem>
+                                        )}
                                     {strategyCards
                                         .filter(s => canSelectStrategyCard(s, game, faction))
                                         .map(s => (

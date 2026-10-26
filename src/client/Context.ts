@@ -8,10 +8,10 @@ interface ContextValue {
     sendData: SendDataFunction;
 }
 
-const Context = React.createContext({
+const Context = React.createContext<ContextValue>({
     state: {} as State,
     dispatch: (() => {}) as React.Dispatch<Action>,
-    sendData: (() => {}) as SendDataFunction,
+    sendData: () => false,
 });
 
 export const useAppContext = (): ContextValue => useContext(Context);

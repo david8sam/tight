@@ -1,67 +1,42 @@
-import React, { MouseEvent, useEffect, useState } from 'react';
+import React, { MouseEvent } from 'react';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Grid, Toolbar, Typography } from '@mui/material';
 
 import {
     StrategyCardIndex,
-    StrategyCard as StrategyCardType,
     buildStrategyCardOwners,
     getFactionTurn,
+    getStrategyCardOwner,
     getNaalu,
-    isPlayerSpectator,
 } from 'common/Game';
 import { MessageType } from 'common/message';
 
 import AssignStrategyCardTable from '../components/AssignStrategyCardTable';
 import useGameInfo from '../hooks/useGameInfo';
-import api from '../utils/api';
 
 import { useAppContext } from '../Context';
 import { Accordion, AccordionDetails, AccordionSummary } from './Accordion';
 import NaaluZeroSelect from './NaaluZeroSelect';
 import StrategyCard, { StrategyCardProps } from './StrategyCard';
 
-function getCardOwnwer(
-    card: StrategyCardIndex,
-    stratCardOwners: string[],
-): { owner: string | undefined; card: StrategyCardIndex } {
-    let owner = stratCardOwners[card];
-    let actualCard = card;
-
-    // Special case for 2 versions of diplomacy.
-    if (card === StrategyCardIndex.DIPLOMACY && !owner && stratCardOwners[StrategyCardIndex.DIPLOMACY_2]) {
-        owner = stratCardOwners[StrategyCardIndex.DIPLOMACY_2];
-        actualCard = StrategyCardIndex.DIPLOMACY_2;
-    } else if (card === StrategyCardIndex.DIPLOMACY_2 && !owner && stratCardOwners[StrategyCardIndex.DIPLOMACY]) {
-        owner = stratCardOwners[StrategyCardIndex.DIPLOMACY];
-        actualCard = StrategyCardIndex.DIPLOMACY;
-    }
-
-    return { owner, card: actualCard };
-}
-
 function StrategyPhase() {
     const { sendData } = useAppContext();
-    const [strategyCards, setStrategryCards] = useState<StrategyCardType[]>([]);
-
-    useEffect(() => {
-        api.strategyCardList().then(cards => setStrategryCards(cards));
-    }, []);
-
-    const { game, gameId, playerId } = useGameInfo();
+    const { game, gameId, playerId, strategyCards, canEditTable, canEditPublicFaction } = useGameInfo();
     if (!game) {
         return null;
     }
 
     const factionName = getFactionTurn(game);
     const stratCardOwners = buildStrategyCardOwners(game);
-    const isSpectator = isPlayerSpectator(game, playerId);
+    const isSpectator = !canEditTable;
 
     const onTakeCardClick = (e: MouseEvent<HTMLButtonElement>, strategyCard: StrategyCardIndex) => {
         e.stopPropagation();
 
-        const { owner, card } = getCardOwnwer(strategyCard, stratCardOwners);
+        const held = getStrategyCardOwner(stratCardOwners, strategyCard);
+        const owner = held?.owner;
+        const card = held?.card ?? strategyCard;
         const take = !Boolean(owner);
         const type = take ? MessageType.TAKE_STRATEGY_CARD : MessageType.RETURN_STRATEGY_CARD;
 
@@ -89,17 +64,19 @@ function StrategyPhase() {
 
     return (
         <Grid container direction="column">
-            {strategyCards.map((card?: StrategyCardType) => {
+            {strategyCards.map(card => {
                 if (!card) {
                     return null;
                 }
 
                 const { initiative, name } = card;
-                const { owner: cardOwner } = getCardOwnwer(initiative, stratCardOwners);
+                const cardOwner = getStrategyCardOwner(stratCardOwners, initiative)?.owner;
                 let buttonLabel = cardOwner ? 'Return' : 'Take';
 
                 const ButtonProps: NonNullable<StrategyCardProps['ButtonProps']> = {
-                    disabled: isSpectator || (factionName === 'END' && !Boolean(cardOwner)),
+                    'aria-label': `${buttonLabel} ${name}`,
+                    disabled:
+                        !canEditPublicFaction(cardOwner || factionName) || (factionName === 'END' && !Boolean(cardOwner)),
                     onClick: (e: MouseEvent<HTMLButtonElement>) => onTakeCardClick(e, initiative),
                 };
 

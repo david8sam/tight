@@ -12,6 +12,8 @@ import { Faction } from 'common/Faction.js';
 import { getFaction, listFactionNames, listFactions } from '../database/faction/index.js';
 
 import { GetRequest } from './types.js';
+import { factionQuerySchema } from '../commandSchemas.js';
+import { parseRequest } from './validation.js';
 
 export default function initializeFactionOperations(router: Router) {
     router.get('/faction/list', (req: GetRequest<NoParams>, res: Response<FactionListResults>): void => {
@@ -25,7 +27,9 @@ export default function initializeFactionOperations(router: Router) {
     });
 
     router.get('/faction/get-faction', (req: GetRequest<FactionGetParams>, res: Response<FactionGetResults>): void => {
-        const names = req.query.name.split(',');
+        const parsed = parseRequest(factionQuerySchema, req.query, res);
+        if (!parsed.success) return;
+        const names = parsed.data.name.split(',');
         const factions: Faction[] = [];
         names.forEach(n => {
             const faction = getFaction(n);
